@@ -23,7 +23,7 @@ cd ..
 
 buildProd
 
-cp -rf dist/* out/
+cp -rf dist/* tempfolder/
 
 cd tempfolder
 

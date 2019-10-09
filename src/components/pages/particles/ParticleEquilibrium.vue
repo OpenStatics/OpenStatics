@@ -8,7 +8,7 @@
 export default {};
 export const meta = {
   title: "Particle Equilibrium",
-  description: "Non sene"
+  description: "Non sense"
 };
 </script>
 

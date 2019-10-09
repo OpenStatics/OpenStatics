@@ -71,6 +71,6 @@ export const meta = {
 <style>
 .jsx-graph {
   width: 100%;
-  height: 40vh;
+  height: 45vh;
 }
 </style>

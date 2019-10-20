@@ -7,12 +7,6 @@
 
 <script>
 export default {
-  data() {
-    return {
-      board: null,
-      lol: 10
-    };
-  },
   mounted() {
     // create two boards: b1 is the control and b2 is the display
     const b1 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-10, 10, 10, -10] });

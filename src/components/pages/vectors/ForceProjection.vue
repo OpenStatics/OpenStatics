@@ -1,11 +1,15 @@
 <template>
-  <div>
-    <div id="box1" class="jsx-graph2 my-2"></div>
-    <div id="box2" class="jsx-graph my-2 text-center"></div>
+  <div class="row justify-content-center">
+    <div class="col">&nbsp;</div>
+    <div class="col-sm-auto">
+      <div id="box1" style="width: 60vw; height: 60vh"></div>
+    </div>
+    <div class="col">&nbsp;</div>
   </div>
 </template>
 
 <script>
+import * as math from "mathjs";
 export default {
   data() {
     return {
@@ -14,123 +18,39 @@ export default {
     };
   },
   mounted() {
-    // create two boards: b1 is the control and b2 is the display
-    const b1 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-10, 10, 10, -10] });
-    const b2 = JXG.JSXGraph.initBoard("box2", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
-    b1.addChild(b2);
-
-    // set slider for force and angle
-    const force = b1.create("slider", [[1, -2], [6, -2], [0, 1, 5]]);
-    const angle = b1.create("slider", [[1, -4], [6, -4], [0, 0, 360]]);
+    // create two boards: b1 is the control and b1 is the display
+    const b1 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-10, 10, 10, -10], axis: true, keepAspectRatio: true });
 
     // create two points for reference
-    const origin_point = b2.create("point", [0, 0], { fixed: true }, { name: "O" });
-    const end_point = b2.create(
-      "point",
-      [
-        function() {
-          return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
-        },
-        function() {
-          return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
-        }
-      ],
-      { name: "v" }
-    );
+    const pointA = b1.create("point", [0, 0], { fixed: true }, { name: "O", face: "" });
+    const pointB = b1.create("point", [2.0, 4.0], { name: "B", face: "" });
+    const pointC = b1.create("point", [4.0, 2.0], { name: "C" });
 
     // create the main vector
-    const vector = b2.create("line", [origin_point, end_point], { straightFirst: false, straightLast: false, lastArrow: true });
+    const lineAB = b1.create("line", [pointA, pointB], { straightFirst: false, straightLast: false, lastArrow: true, strokeColor: "green" });
+    const lineAC = b1.create("line", [pointA, pointC]);
 
-    // projection of F on x
-    var check_prof_F_on_x = b1.create("checkbox", [1, -6, "Projection of F on x"], {});
-    const proj_F_on_x = b2.create(
-      "line",
-      [
-        origin_point,
-        [
-          function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
-          },
-          0
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        visible: function() {
-          return check_prof_F_on_x.Value();
-        }
-      }
-    );
+    function getVec(a, b) {
+      return math.subtract(b.coords.usrCoords, a.coords.usrCoords);
+    }
 
-    // Projection of F on y
-    var check_prof_F_on_y = b1.create("checkbox", [1, -8, "Projection of F on y"], {});
-    const proj_F_on_y = b2.create(
-      "line",
-      [
-        origin_point,
-        [
-          0,
-          function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
-          }
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        visible: function() {
-          return check_prof_F_on_y.Value();
-        }
-      }
-    );
+    const getBPrime = () => {
+      const vecAB = getVec(pointA, pointB);
+      const vecAC = getVec(pointA, pointC);
 
-    // Resolution of F into components
-    var check_res_F = b1.create("checkbox", [1, -10, "Resolution of F into components"], {});
-    const res_F_y = b2.create(
-      "line",
-      [
-        [
-          0,
-          function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
-          }
-        ],
-        end_point
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        visible: function() {
-          return check_res_F.Value();
-        },
-        dash: 2
-      }
-    );
-    const res_F_x = b2.create(
-      "line",
-      [
-        [
-          function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
-          },
-          0
-        ],
-        end_point
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        visible: function() {
-          return check_res_F.Value();
-        },
-        dash: 2
-      }
-    );
+      const unitAC = math.divide(vecAC, math.norm(vecAC));
+      const scalarProj = math.dot(vecAB, vecAC) / math.norm(vecAC);
+      return math.add(pointA.coords.usrCoords, math.multiply(unitAC, scalarProj));
+    };
+
+    const pointBprime = b1.create("point", [() => getBPrime()[1], () => getBPrime()[2]], { name: "B'", face: "", fillColor: "#000" });
+
+    b1.create("line", [pointA, pointBprime], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeColor: "red"
+    });
   }
 };
 export const meta = {
@@ -139,13 +59,4 @@ export const meta = {
 };
 </script>
 
-<style>
-.jsx-graph {
-  width: 800px !important;
-  height: 800px !important;
-}
-.jsx-graph2 {
-  width: 100% !important;
-  height: 30vh !important;
-}
-</style>
+<style></style>

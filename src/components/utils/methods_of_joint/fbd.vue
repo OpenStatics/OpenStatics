@@ -6,8 +6,7 @@
 
 <script>
 export default {
-  components: {
-  },
+  components: {},
   mounted() {
     const fixedDecimal = 4;
 
@@ -75,7 +74,7 @@ export default {
       }
     ]);
 
-    // add points
+    // create points
     const a = b2.create("point", [0, 0], { name: "a", fixed: true });
     const b = b2.create("point", [-10, 0], { name: "b", fixed: true });
     const c = b2.create("point", [10, 0], { name: "c", fixed: true });
@@ -97,7 +96,7 @@ export default {
           return -3 * force.Value() * y;
         }
       ],
-      { fixed: true, face: "", name: `F_C = ${force.Value()} N` }
+      { visible: false }
     );
 
     // create R_Ax point
@@ -111,11 +110,7 @@ export default {
       ],
       {
         fixed: true,
-        face: "",
-        name: function() {
-          return "R_{A,x} =" + getR_Ax() + "N";
-        },
-        offsetX: 10
+        visible: false
       }
     );
 
@@ -130,10 +125,7 @@ export default {
       ],
       {
         fixed: true,
-        face: "",
-        name: function() {
-          return "R_{A,y} =" + getR_Ay() + "N";
-        }
+        visible: false
       }
     );
 
@@ -148,15 +140,12 @@ export default {
       ],
       {
         fixed: true,
-        face: "",
-        name: function() {
-          return "R_{E} =" + getRE() + "N";
-        }
+        visible: false
       }
     );
 
     // connect points
-    b2.create("line", [a, e], { name: "lala", straightFirst: false, straightLast: false });
+    b2.create("line", [a, e], { straightFirst: false, straightLast: false });
     b2.create("line", [a, d], { straightFirst: false, straightLast: false });
     b2.create("line", [e, d], { straightFirst: false, straightLast: false });
     b2.create("line", [a, b], { straightFirst: false, straightLast: false });
@@ -164,10 +153,10 @@ export default {
     b2.create("line", [b, e], { straightFirst: false, straightLast: false });
     b2.create("line", [c, d], { straightFirst: false, straightLast: false });
 
-    // add force vectors
-    b2.create("line", [a, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
-    b2.create("line", [b, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
-    b2.create("line", [b, pointR_Ax], {
+    // create force vectors
+    const line_afc = b2.create("line", [a, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    const line_bray = b2.create("line", [b, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    const line_brax = b2.create("line", [b, pointR_Ax], {
       straightFirst: false,
       straightLast: false,
       firstArrow: function() {
@@ -178,9 +167,59 @@ export default {
       },
       touchFirstPoint: true
     });
-    b2.create("line", [c, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
+    const line_cre = b2.create("line", [c, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
+// create text on force vector FC
+b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "F_C =" + force.Value() + "N";
+        }
+      ],
+      { anchor: pointFC }
+    );
+    // create text on force vectors RAx
+    b2.create(
+      "text",
+      [
+        -2,
+        1,
+        function() {
+          return "R_{A,x} =" + getR_Ax() + "N";
+        }
+      ],
+      { anchor: pointR_Ax }
+    );
 
-    // need joint analysis
+    // create text on force vectors RAy
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "R_{A,y} =" + getR_Ay() + "N";
+        }
+      ],
+      { anchor: pointR_Ay }
+    );
+
+    // create text on force vectors RE
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "R_{E} =" + getRE() + "N";
+        }
+      ],
+      { anchor: pointRE }
+    );
+
+    
   }
 };
 export const meta = {

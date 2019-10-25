@@ -47,16 +47,6 @@
         >Home page</template
       >
     </div>
-    <!-- <div class="row justify-content-center">
-      <div class="col">&nbsp;</div>
-      <div class="col col-10">
-        <template v-if="current">
-          <component :is="current"></component>
-        </template>
-        <template v-else>Home page</template>
-      </div>
-      <div class="col">&nbsp;</div>
-    </div> -->
   </div>
 </template>
 
@@ -81,8 +71,6 @@ files.keys().map(key => {
   f[dirname].push(component.meta);
   return Vue.component((component.meta.name = filename.split(".")[0]), component.default);
 });
-
-console.log(meta);
 
 export default Vue.extend({
   name: "app",

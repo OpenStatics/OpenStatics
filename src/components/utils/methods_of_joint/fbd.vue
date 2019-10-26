@@ -22,6 +22,16 @@ export default {
       return parseFloat(R_Ax.toFixed(fixedDecimal));
     };
 
+    // get RE value
+    const getRE = function() {
+      const x = Math.sin((angle.Value() / 180) * Math.PI);
+      const lengthRE = 2;
+      const lengthF = 1;
+      const RE = (force.Value() * x * lengthF) / lengthRE;
+      if (Math.abs(RE) < Math.pow(10, -7)) return 0;
+      return parseFloat(RE.toFixed(fixedDecimal));
+    };
+
     // get RA_y value
     const getR_Ay = function() {
       const x = Math.sin((angle.Value() / 180) * Math.PI);
@@ -31,16 +41,6 @@ export default {
       if (Math.abs(R_Ay) < Math.pow(10, -7)) return 0;
 
       return parseFloat(R_Ay.toFixed(fixedDecimal));
-    };
-
-    // get RE value
-    const getRE = function() {
-      const x = Math.sin((angle.Value() / 180) * Math.PI);
-      const lengthRE = 2;
-      const lengthF = 1;
-      const RE = (force.Value() * x * lengthF) / lengthRE;
-      if (Math.abs(RE) < Math.pow(10, -7)) return 0;
-      return parseFloat(RE.toFixed(fixedDecimal));
     };
 
     // create R_Ax text
@@ -75,11 +75,11 @@ export default {
     ]);
 
     // create points
-    const a = b2.create("point", [0, 0], { name: "a", fixed: true });
-    const b = b2.create("point", [-10, 0], { name: "b", fixed: true });
-    const c = b2.create("point", [10, 0], { name: "c", fixed: true });
+    const a = b2.create("point", [-10, 0], { name: "a", fixed: true });
+    const b = b2.create("point", [-5, 5 * Math.sqrt(3)], { name: "b", fixed: true });
+    const c = b2.create("point", [0, 0], { name: "c", fixed: true });
     const d = b2.create("point", [5, 5 * Math.sqrt(3)], { name: "d", fixed: true });
-    const e = b2.create("point", [-5, 5 * Math.sqrt(3)], { name: "e", fixed: true });
+    const e = b2.create("point", [10, 0], { name: "e", fixed: true });
 
     // create FC point
     const pointFC = b2.create(
@@ -145,31 +145,21 @@ export default {
     );
 
     // connect points
-    b2.create("line", [a, e], { straightFirst: false, straightLast: false });
-    b2.create("line", [a, d], { straightFirst: false, straightLast: false });
-    b2.create("line", [e, d], { straightFirst: false, straightLast: false });
     b2.create("line", [a, b], { straightFirst: false, straightLast: false });
     b2.create("line", [a, c], { straightFirst: false, straightLast: false });
-    b2.create("line", [b, e], { straightFirst: false, straightLast: false });
+    b2.create("line", [b, c], { straightFirst: false, straightLast: false });
+    b2.create("line", [b, d], { straightFirst: false, straightLast: false });
     b2.create("line", [c, d], { straightFirst: false, straightLast: false });
+    b2.create("line", [c, e], { straightFirst: false, straightLast: false });
+    b2.create("line", [d, e], { straightFirst: false, straightLast: false });
 
     // create force vectors
-    const line_afc = b2.create("line", [a, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
-    const line_bray = b2.create("line", [b, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
-    const line_brax = b2.create("line", [b, pointR_Ax], {
-      straightFirst: false,
-      straightLast: false,
-      firstArrow: function() {
-        return getR_Ax() > 0;
-      },
-      lastArrow: function() {
-        return getR_Ax() < 0;
-      },
-      touchFirstPoint: true
-    });
-    const line_cre = b2.create("line", [c, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
-// create text on force vector FC
-b2.create(
+    const line_cfc = b2.create("line", [c, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    const line_aray = b2.create("line", [a, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    const line_arax = b2.create("line", [a, pointR_Ax], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    const line_ere = b2.create("line", [e, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
+    // create text on force vector FC
+    b2.create(
       "text",
       [
         0,
@@ -218,8 +208,6 @@ b2.create(
       ],
       { anchor: pointRE }
     );
-
-    
   }
 };
 export const meta = {

@@ -11,10 +11,9 @@
           <li class="nav-item active">
             <a class="nav-link">
               Home
-              <span class="sr-only">(current)</span>
             </a>
           </li>
-          <li v-for="(items, category) in pages" :key="category" class="nav-item dropdown">
+          <li v-for="(items, category) in pages" :key="category" class="nav-item dropdown" style="cursor: pointer">
             <a class="nav-link dropdown-toggle" role="button" data-toggle="dropdown">{{ category }}</a>
             <div class="dropdown-menu">
               <a
@@ -23,16 +22,16 @@
                 v-for="item in items"
                 :key="item.name"
                 :title="item.description"
-                @click="current = item.name"
-                >{{ item.title }}</a
-              >
+                @click="updateRoute()"
+                >{{ item.title }}
+              </a>
             </div>
           </li>
         </ul>
-        <form class="form-inline my-2 my-lg-0">
+        <!-- <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
+        </form> -->
       </div>
     </nav>
     <div class="mx-2 my-2">
@@ -82,7 +81,10 @@ export default Vue.extend({
   methods: {
     updateRoute() {
       const urls = window.location.pathname.split("/");
-      console.log(urls);
+      const [, cat, name] = urls;
+      if (cat && name) {
+        this.current = name;
+      }
     }
   }
 });

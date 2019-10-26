@@ -2,34 +2,30 @@
   <div id="app">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">Open Statics</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="collapse navbar-collapse" id="nav-content">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#">
+            <a class="nav-link">
               Home
               <span class="sr-only">(current)</span>
             </a>
           </li>
           <li v-for="(items, category) in pages" :key="category" class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{
-              category
-            }}</a>
+            <a class="nav-link dropdown-toggle" role="button" data-toggle="dropdown">{{ category }}</a>
             <div class="dropdown-menu">
-              <a class="dropdown-item" v-for="item in items" :key="item.name" :title="item.description" @click="current = item.name">{{
-                item.title
-              }}</a>
+              <a
+                class="dropdown-item"
+                :href="`/${category}/${item.name}`"
+                v-for="item in items"
+                :key="item.name"
+                :title="item.description"
+                @click="current = item.name"
+                >{{ item.title }}</a
+              >
             </div>
           </li>
         </ul>
@@ -43,9 +39,9 @@
       <template v-if="current">
         <component :is="current"></component>
       </template>
-      <template v-else
-        >Home page</template
-      >
+      <template v-else>
+        Home page
+      </template>
     </div>
   </div>
 </template>
@@ -79,6 +75,15 @@ export default Vue.extend({
       pages: meta,
       current: ""
     };
+  },
+  mounted() {
+    this.updateRoute();
+  },
+  methods: {
+    updateRoute() {
+      const urls = window.location.pathname.split("/");
+      console.log(urls);
+    }
   }
 });
 </script>

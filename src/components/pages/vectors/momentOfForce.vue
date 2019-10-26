@@ -6,7 +6,8 @@
           <div id="box" class="jxgbox" style="width:700px; height:500px; margin: auto auto"></div>
         </div>
         <div class="col-3">
-          <button class="btn btn-primary">Start Animation</button>
+          <button class="btn btn-primary mb-3" @click="rotate()">Start Animation</button><br />
+          <button class="btn btn-primary" @click="resetLine()">Reset Line</button>
         </div>
       </div>
     </div>
@@ -14,6 +15,40 @@
 </template>
 <script>
 export default {
+  data() {
+    return {
+      hingePos: undefined,
+      line: undefined,
+      f1: undefined,
+      f2: undefined,
+      angularAcc: undefined,
+      leftPoint: undefined,
+      rightPoint: undefined
+    };
+  },
+  methods: {
+    rotate() {
+      let angularVel = 0;
+      let ang = Math.atan(this.leftPoint.Y() / this.leftPoint.X());
+      for (let i = 0; i < 10000; i += 100) {
+        ang += angularVel * (100 / 1000);
+        angularVel += this.angularAcc() * (100 / 1000);
+        const rx = (5 - this.hingePos()) * Math.cos(ang) + this.hingePos();
+        const ry = (5 - this.hingePos()) * Math.sin(ang);
+        const lx = (5 + this.hingePos()) * Math.cos(Math.PI + ang) + this.hingePos();
+        const ly = (5 + this.hingePos()) * Math.sin(Math.PI + ang);
+        console.log(ang);
+        setTimeout(() => {
+          this.leftPoint.moveTo([lx, ly], 17);
+          this.rightPoint.moveTo([rx, ry], 17);
+        }, i);
+      }
+    },
+    resetLine() {
+      this.leftPoint.moveTo([-5, 0], 17);
+      this.rightPoint.moveTo([5, 0], 17);
+    }
+  },
   mounted() {
     const board = JXG.JSXGraph.initBoard("box", { boundingbox: [-10, 10, 10, -10], axis: true, keepAspectRatio: true });
 
@@ -21,9 +56,10 @@ export default {
     const hingePos = () => {
       return hingePosSlider.Value();
     };
-    const hinge = board.create("point", [hingePos, 0]);
 
-    const line = board.create("line", [[-5, 0], [5, 0]], { straightFirst: false, straightLast: false, strokeWidth: 2, fixed: true });
+    this.hingePos = hingePos;
+
+    const hinge = board.create("point", [hingePos, 0]);
 
     // f1
     const f1MagSlider = board.create("slider", [[6, 7], [11, 7], [-3, 1, 3]], { name: "F1 Magnitude (N)" });
@@ -77,10 +113,38 @@ export default {
 
     const angularAcceleration = () => {
       const torque =
-        (f1StartX() - hingePos()) * Math.sin((f1Ang() / 180) * Math.PI) + (f2StartX() - hingePos()) * Math.sin((f2Ang() / 180) * Math.PI);
+        f1Mag() * (f1StartX() - hingePos()) * Math.sin((f1Ang() / 180) * Math.PI) +
+        f2Mag() * (f2StartX() - hingePos()) * Math.sin((f2Ang() / 180) * Math.PI);
       const inertia = (1 / 12) * 25 + hingePos() ** 2;
       return torque / inertia;
     };
+
+    this.leftPoint = board.create("point", [-5, 0]);
+    this.rightPoint = board.create("point", [5, 0]);
+
+    const lineLX = () => {
+      return this.leftPoint.X();
+    };
+
+    const lineLY = () => {
+      return this.leftPoint.Y();
+    };
+
+    const lineRX = () => {
+      return this.rightPoint.X();
+    };
+
+    const lineRY = () => {
+      return this.rightPoint.Y();
+    };
+
+    this.line = board.create("line", [[lineLX, lineLY], [lineRX, lineRY]], {
+      straightFirst: false,
+      straightLast: false,
+      strokeWidth: 2
+    });
+
+    this.angularAcc = angularAcceleration;
   }
 };
 export const meta = {

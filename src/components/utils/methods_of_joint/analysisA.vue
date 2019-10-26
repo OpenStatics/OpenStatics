@@ -48,10 +48,10 @@ export default {
       "point",
       [
         function() {
-          return -10 + getR_Ay / Math.sin(angle.Value());
+          return -10 + Math.abs(getR_Ay() / Math.sin((angle.Value() / 180) * Math.PI)) * Math.cos(Math.PI / 3) * 10;
         },
         function() {
-            return 2
+          return Math.abs(getR_Ay() / Math.sin((angle.Value() / 180) * Math.PI)) * Math.sin(Math.PI / 3) * 10;
         }
       ],
       { visible: false }

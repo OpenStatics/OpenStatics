@@ -1,6 +1,5 @@
 <template>
   <div>
-    <div id="box1" class="jsx-graph2 my-2"></div>
     <div id="box2" class="jsx-graph my-2 text-center"></div>
   </div>
 </template>
@@ -8,14 +7,15 @@
 <script>
 export default {
   mounted() {
-    // create two boards: b1 is the control and b2 is the display
-    const b1 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-10, 10, 10, -10] });
+    // create b2 board
     const b2 = JXG.JSXGraph.initBoard("box2", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
-    b1.addChild(b2);
 
     // set slider for force and angle
-    const force = b1.create("slider", [[1, -2], [6, -2], [0, 1, 5]]);
-    const angle = b1.create("slider", [[1, -4], [6, -4], [0, 0, 360]]);
+    const force = b2.create("slider", [[1, -6], [6, -6], [0, 1, 5]]);
+    const angle = b2.create("slider", [[1, -8], [6, -8], [0, 0, 360]]);
+    const check_prof_F_on_x = b2.create("checkbox", [1, -10, "Projection of F on x"], {});
+    const check_res_F = b2.create("checkbox", [1, -12, "Resolution of F into components"], {});
+    const check_prof_F_on_y = b2.create("checkbox", [1, -14, "Projection of F on y"], {});
 
     // create two points for reference
     const origin_point = b2.create("point", [0, 0], { fixed: true }, { name: "O" });
@@ -36,7 +36,6 @@ export default {
     const vector = b2.create("line", [origin_point, end_point], { straightFirst: false, straightLast: false, lastArrow: true });
 
     // projection of F on x
-    var check_prof_F_on_x = b1.create("checkbox", [1, -6, "Projection of F on x"], {});
     const proj_F_on_x = b2.create(
       "line",
       [
@@ -59,7 +58,6 @@ export default {
     );
 
     // Projection of F on y
-    var check_prof_F_on_y = b1.create("checkbox", [1, -8, "Projection of F on y"], {});
     const proj_F_on_y = b2.create(
       "line",
       [
@@ -82,7 +80,6 @@ export default {
     );
 
     // Resolution of F into components
-    var check_res_F = b1.create("checkbox", [1, -10, "Resolution of F into components"], {});
     const res_F_y = b2.create(
       "line",
       [
@@ -128,7 +125,7 @@ export default {
   }
 };
 export const meta = {
-  title: "vector demo",
+  title: "Force Vector (2D)",
   description: "from JSX graph"
 };
 </script>

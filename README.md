@@ -1,29 +1,9 @@
-# open-statics
+# OpenStatics
+Development of Statics and Strength of Materials instructional modules that accelerate delivery and learning through user-controlled animation
+Development of Statics and Strength of Materials instructional modules that accelerate delivery and learning through user-controlled animation.
 
-## Project setup
-```
-npm install
-```
+# Reference: The Pindera Group
+http://faculty.virginia.edu/pindera/index.html
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+# Plan 
+Use [JSXGraph](https://github.com/jsxgraph/jsxgraph "Title") (Possibly [Matter.js](https://github.com/liabru/matter-js "Title"), [Three.js](https://github.com/mrdoob/three.js/ "Title"),[d3-force-3d](https://github.com/vasturiano/d3-force-3d)) to create equation visualization. Use Vue for frontend development.

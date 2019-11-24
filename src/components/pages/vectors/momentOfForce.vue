@@ -30,9 +30,10 @@ export default {
     rotate() {
       let angularVel = 0;
       let ang = Math.atan(this.leftPoint.Y() / this.leftPoint.X());
-      for (let i = 0; i < 10000; i += 100) {
-        ang += angularVel * (100 / 1000);
-        angularVel += this.angularAcc() * (100 / 1000);
+      const step = 60;
+      for (let i = 0; i < 8000; i += step) {
+        ang += angularVel * (step / 1000);
+        angularVel += this.angularAcc() * (step / 1000);
         const rx = (5 - this.hingePos()) * Math.cos(ang) + this.hingePos();
         const ry = (5 - this.hingePos()) * Math.sin(ang);
         const lx = (5 + this.hingePos()) * Math.cos(Math.PI + ang) + this.hingePos();
@@ -67,8 +68,8 @@ export default {
     const f1AngleSlicer = board.create("slider", [[6, 6], [11, 6], [0, 90, 360]], { name: "F1 Angle (deg)" });
     const f1Ang = () => f1AngleSlicer.Value();
     const f1PosSlider = board.create("slider", [[6, 5], [11, 5], [-5, -5, 5]], { name: "F1 Position (m)" });
-    const f1StartX = () => f1PosSlider.Value();
 
+    const f1StartX = () => f1PosSlider.Value();
     const f1StartY = () => 0;
     const f1EndX = () => {
       return f1Mag() * Math.cos((f1Ang() / 180) * Math.PI) + f1StartX();

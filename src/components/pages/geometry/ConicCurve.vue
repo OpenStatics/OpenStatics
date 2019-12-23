@@ -9,10 +9,11 @@ var ggbApp = new GGBApplet(
     material_id: "c4gpsw6j",
     width: document.documentElement.clientWidth,
     height: document.documentElement.clientHeight - 75,
-    showToolBar: true,
-    showAlgebraInput: true,
-    showMenuBar: true,
-    autoHeight: true
+    showToolBar: false,
+    showAlgebraInput: false,
+    showMenuBar: false,
+    autoHeight: false,
+    
   },
   true
 );

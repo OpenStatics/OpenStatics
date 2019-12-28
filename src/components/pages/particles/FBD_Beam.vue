@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1 class="text-danger text-center my-4">Free Body Diagram of Beam</h1>
     <cantForce :globalData="storeData" @fromChild="updateGlobal" v-if="storeData.cantMode && storeData.forceMode"></cantForce>
     <cantMoment :globalData="storeData" @fromChild="updateGlobal" v-if="storeData.cantMode && !storeData.forceMode"></cantMoment>
     <ssForce :globalData="storeData" @fromChild="updateGlobal" v-if="!storeData.cantMode && storeData.forceMode"></ssForce>

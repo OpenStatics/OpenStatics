@@ -1,13 +1,13 @@
 <template>
   <div class="row">
-    moment cant
-    <div id="cant_moment" class="jsx-graph"></div>
-    <div>
-      <div class="border">
+    <div id="cant_moment" class="jsx-graph col-6 mx-2"></div>
+    <div class="col-4 mx-2">
+      <FBDtext></FBDtext>
+      <div>
         <button class="btn btn-warning mx-3">Cantilever</button>
         <button class="btn btn-primary mx-3" @click="clickOnSS">Simple Supported</button>
       </div>
-      <div class="border">
+      <div>
         <button class="btn btn-primary mx-3" @click="clickOnForce">Force</button>
         <button class="btn btn-warning mx-3">Moment</button>
       </div>
@@ -15,8 +15,12 @@
   </div>
 </template>
 <script>
+import FBDtext from "./FBD_text";
 export default {
   name: "cant_moment",
+  components: {
+    FBDtext
+  },
   data() {
     return {
       position: undefined,
@@ -34,10 +38,10 @@ export default {
 
     const { posVal, magVal, dirVal } = this.globalData;
     const board = JXG.JSXGraph.initBoard("cant_moment", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
-    const rec_a = board.create("point", [0, -1], { fixed: true });
-    const rec_b = board.create("point", [0, 1], { fixed: true });
-    const rec_c = board.create("point", [10, 1], { fixed: true });
-    const rec_d = board.create("point", [10, -1], { fixed: true });
+    const rec_a = board.create("point", [0, -1], { fixed: true, visible: false });
+    const rec_b = board.create("point", [0, 1], { fixed: true, visible: false });
+    const rec_c = board.create("point", [10, 1], { fixed: true, visible: false });
+    const rec_d = board.create("point", [10, -1], { fixed: true, visible: false });
     const rectangle = board.create("polygon", [rec_a, rec_b, rec_c, rec_d]);
 
     this.magnitude = board.create("slider", [[0, -6], [10, -6], [0, magVal, 2]], { name: "Magnitude of Loading[kN]" });
@@ -60,16 +64,12 @@ export default {
         }
       ],
       {
-        strokeWidth: 5,
+        strokeWidth: 3,
         lastArrow: true
       }
     );
 
-    const MA_Text = board.create("text", [
-      -3,
-      0.5,
-      "M_A"
-    ]);
+    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
 
     const F_0 = board.create(
       "point",
@@ -98,13 +98,13 @@ export default {
         }
       ],
       {
-        strokeWidth: 5,
+        strokeWidth: 3,
         strokeColor: "red",
         lastArrow: true
       }
     );
 
-    const F_Curve_Label = board.create("text", [2.5, 0, "M"], { anchor: F_0 });
+    const F_Curve_Label = board.create("text", [3, 0, "M"], { anchor: F_0 });
 
     const Ma = board.create("text", [
       -10,

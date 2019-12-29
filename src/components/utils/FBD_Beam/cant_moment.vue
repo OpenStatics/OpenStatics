@@ -47,30 +47,6 @@ export default {
     this.magnitude = board.create("slider", [[0, -6], [10, -6], [0, magVal, 2]], { name: "Magnitude of Loading[kN]" });
     this.position = board.create("slider", [[0, -8], [10, -8], [0, posVal, 1]], { name: "Position of Loading (m)" });
 
-    const MA_Curve = board.create(
-      "curve",
-      [
-        function(t) {
-          return -2 * Math.sin(t);
-        },
-        function(t) {
-          return -2 * Math.cos(t);
-        },
-        () => {
-          return ((this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
-        },
-        () => {
-          return ((-this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
-        }
-      ],
-      {
-        strokeWidth: 3,
-        lastArrow: true
-      }
-    );
-
-    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
-
     const F_0 = board.create(
       "point",
       [
@@ -105,6 +81,30 @@ export default {
     );
 
     const F_Curve_Label = board.create("text", [3, 0, "M"], { anchor: F_0 });
+
+    const MA_Curve = board.create(
+      "curve",
+      [
+        function(t) {
+          return -2 * Math.sin(t);
+        },
+        function(t) {
+          return -2 * Math.cos(t);
+        },
+        () => {
+          return ((this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          return ((-this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        lastArrow: true
+      }
+    );
+
+    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
 
     const Ma = board.create("text", [
       -10,

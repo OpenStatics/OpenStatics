@@ -48,32 +48,6 @@ export default {
     this.position = board.create("slider", [[0, -8], [10, -8], [0, posVal, 1]], { name: "Position of Loading (m)" });
     this.direction = board.create("slider", [[0, -10], [10, -10], [0, dirVal, 360]], { name: "Direction of Force [degree]" });
 
-    const MA_Curve = board.create(
-      "curve",
-      [
-        function(t) {
-          return -2 * Math.sin(t);
-        },
-        function(t) {
-          return -2 * Math.cos(t);
-        },
-        () => {
-          let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          return ((val * 3) / 8 + 0.5) * Math.PI;
-        },
-        () => {
-          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          return ((val * 3) / 8 + 0.5) * Math.PI;
-        }
-      ],
-      {
-        strokeWidth: 3,
-        firstArrow: true
-      }
-    );
-
-    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
-
     const F_0 = board.create(
       "point",
       [
@@ -101,6 +75,31 @@ export default {
     const forceLine = board.create("line", [F_0, F_1], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
     const forceLineLabel = board.create("text", [1, 0, "F"], { anchor: forceLine });
 
+    const MA_Curve = board.create(
+      "curve",
+      [
+        function(t) {
+          return -2 * Math.sin(t);
+        },
+        function(t) {
+          return -2 * Math.cos(t);
+        },
+        () => {
+          let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        firstArrow: true
+      }
+    );
+
+    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
     const MA = board.create("text", [
       -10,
       -2,

@@ -3,7 +3,7 @@
     <div id="ss_moment" class="jsx-graph col-6 mx-2"></div>
     <div class="col-4 mx-2">
       <FBDtext></FBDtext>
-      <div>
+      <div class='my-3'>
         <button class="btn btn-primary mx-3" @click="clickOnCant">Cantilever</button>
         <button class="btn btn-warning mx-3">Simple Supported</button>
       </div>

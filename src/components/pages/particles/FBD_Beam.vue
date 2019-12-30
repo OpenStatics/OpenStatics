@@ -18,7 +18,6 @@ export default {
   components: { cantForce, ssForce, cantMoment, ssMoment },
   data() {
     return {
-      Cantilever: true,
       storeData: {
         posVal: 0.5,
         magVal: 1,

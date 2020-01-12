@@ -1,18 +1,30 @@
 <template>
   <div>
-    <div id="box2" class="jsx-graph my-2 text-center"></div>
+    <h1 class="text-danger text-center my-4">Force Vector Representation in 2D</h1>
+    <div class="row">
+      <div id="ForceVec2D" class="jsx-graph col-xl mx-2"></div>
+      <div class="col-xl mx-2">
+        <ForceText></ForceText>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import ForceText from "../../utils/ForceVec2D/ForceText";
 export default {
+  components: {
+    ForceText
+  },
   mounted() {
+    const multiplier = 3;
+
     // create b2 board
-    const b2 = JXG.JSXGraph.initBoard("box2", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
+    const b2 = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
 
     // set slider for force and angle
-    const force = b2.create("slider", [[1, -6], [6, -6], [0, 1, 5]]);
-    const angle = b2.create("slider", [[1, -8], [6, -8], [0, 0, 360]]);
+    const force = b2.create("slider", [[1, -6], [6, -6], [0, 1, 5]], { name: "F(N)" });
+    const angle = b2.create("slider", [[1, -8], [6, -8], [0, 0, 360]], { name: "a(degree)" });
     const check_prof_F_on_x = b2.create("checkbox", [1, -10, "Projection of F on x"], {});
     const check_res_F = b2.create("checkbox", [1, -12, "Resolution of F into components"], {});
     const check_prof_F_on_y = b2.create("checkbox", [1, -14, "Projection of F on y"], {});
@@ -23,10 +35,10 @@ export default {
       "point",
       [
         function() {
-          return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
+          return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
         },
         function() {
-          return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
+          return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
         }
       ],
       { name: "v" }
@@ -42,7 +54,7 @@ export default {
         origin_point,
         [
           function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
+            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
           },
           0
         ]
@@ -65,7 +77,7 @@ export default {
         [
           0,
           function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
+            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
           }
         ]
       ],
@@ -86,7 +98,7 @@ export default {
         [
           0,
           function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value();
+            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
           }
         ],
         end_point
@@ -96,7 +108,7 @@ export default {
         straightLast: false,
         lastArrow: true,
         visible: function() {
-          return check_res_F.Value();
+          return check_res_F.Value() * multiplier;
         },
         dash: 2
       }
@@ -106,7 +118,7 @@ export default {
       [
         [
           function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
+            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
           },
           0
         ],

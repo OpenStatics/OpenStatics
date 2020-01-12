@@ -1,7 +1,7 @@
 <template>
   <div class="row">
-    <div id="startFBD" class="jsx-graph col-6 mx-2"></div>
-    <div class="col-4 mx-2">
+    <div id="startFBD" class="jsx-graph col-xl mx-2"></div>
+    <div class="col-xl mx-2">
       <IntroFBDText></IntroFBDText>
       <div class='my-3'>
         <span>Reactive Force at Equilibrium</span>

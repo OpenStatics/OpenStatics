@@ -1,7 +1,7 @@
 <template>
   <div class="row">
-    <div id="ss_force" class="jsx-graph col-6 mx-2"></div>
-    <div class="col-4 mx-2">
+    <div id="ss_force" class="jsx-graph col-xl mx-2"></div>
+    <div class="col-xl mx-2">
       <FBDtext></FBDtext>
       <div class='my-3'>
         <button class="btn btn-primary mx-3" @click="clickOnCant">Cantilever</button>

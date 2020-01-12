@@ -1,7 +1,7 @@
 <template>
   <div class="row">
-    <div id="fixFix" class="jsx-graph col-6 mx-2"></div>
-    <div class="col-5 mx-2">
+    <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
+    <div class="col-xl mx-2">
       <DeterminacyText></DeterminacyText>
       <div class="my-3">
         <span>Constraints at the left end of beam</span> <br />

@@ -1,7 +1,7 @@
 <template>
   <div class="row">
-    <div id="pin" class="jsx-graph col-6 mx-2"></div>
-    <div class="col-5 mx-2">
+    <div id="pin" class="jsx-graph col-xl mx-2"></div>
+    <div class="col-xl mx-2">
       <DeterminacyText></DeterminacyText>
 
       <div class="my-3">

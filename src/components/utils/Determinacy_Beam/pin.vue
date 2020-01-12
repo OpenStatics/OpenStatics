@@ -2,10 +2,12 @@
   <div class="row">
     <div id="pin" class="jsx-graph col-6 mx-2"></div>
     <div class="col-5 mx-2">
+      <DeterminacyText></DeterminacyText>
+
       <div class="my-3">
         <span>Constraints at the left end of beam</span> <br />
-        <button class="btn btn-primary mx-3">Fixed</button>
-        <button class="btn btn-warning mx-3" @click="clickOnPin">Smooth pin</button>
+        <button class="btn btn-primary mx-3" @click="clickOnFix">Fixed</button>
+        <button class="btn btn-warning mx-3">Smooth pin</button>
         <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
       </div>
       <div>
@@ -44,10 +46,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-export default Vue.extend({
+<script>
+import DeterminacyText from "./determinacy_text";
+
+export default {
   name: "pin",
+  components: {
+    DeterminacyText
+  },
   data() {
     return {
       currentSelection: 0,
@@ -487,15 +493,15 @@ export default Vue.extend({
         this.constraintObj[toBeSet][j].setAttribute({ visible: true });
       }
     },
-    clickOnPin() {
+    clickOnFix() {
       const posVal = this.position.Value();
       const magVal = this.magnitude.Value();
       const dirVal = this.direction.Value();
       const magMoment = this.momentMag.Value();
       const posMoment = this.momentPos.Value();
       const dirMoment = this.globalData.dirMoment;
-      const fix = false;
-      const pin = true;
+      const fix = true;
+      const pin = false;
       const roller = false;
       const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
       this.$emit("fromChild", obj);
@@ -508,11 +514,11 @@ export default Vue.extend({
       const posMoment = this.momentPos.Value();
       const dirMoment = this.globalData.dirMoment;
       const fix = false;
-      const pin = true;
-      const roller = false;
+      const pin = false;
+      const roller = true;
       const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
       this.$emit("fromChild", obj);
     }
   }
-});
+};
 </script>

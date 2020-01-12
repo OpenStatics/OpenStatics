@@ -2,6 +2,7 @@
   <div class="row">
     <div id="fixFix" class="jsx-graph col-6 mx-2"></div>
     <div class="col-5 mx-2">
+      <DeterminacyText></DeterminacyText>
       <div class="my-3">
         <span>Constraints at the left end of beam</span> <br />
         <button class="btn btn-warning mx-3">Fixed</button>
@@ -57,10 +58,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-export default Vue.extend({
+<script>
+import DeterminacyText from "./determinacy_text";
+
+export default {
   name: "fixFix",
+  components: {
+    DeterminacyText
+  },
   data() {
     return {
       currentSelection: 0,
@@ -584,11 +589,11 @@ export default Vue.extend({
       const posMoment = this.momentPos.Value();
       const dirMoment = this.globalData.dirMoment;
       const fix = false;
-      const pin = true;
-      const roller = false;
+      const pin = false;
+      const roller = true;
       const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
       this.$emit("fromChild", obj);
     }
   }
-});
+};
 </script>

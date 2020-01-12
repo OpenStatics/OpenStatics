@@ -50,14 +50,13 @@
           <li>
             Equations of Equilibrium: 3
           </li>
-          <li>
-            Status: Statically indeterminate
-          </li>
+          <li>Status: Statically <span v-if="currentSelection <= 2">indeterminate</span> <span v-if="currentSelection === 3">determinate</span></li>
         </ul>
       </div>
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import Vue from "vue";
 export default Vue.extend({
@@ -130,16 +129,16 @@ export default Vue.extend({
     this.momentMag = board.create("slider", [[0, -12], [10, -12], [0, magMoment, 2]], { name: "Magnitude of Moment[kN*m]" });
     this.momentPos = board.create("slider", [[0, -14], [10, -14], [0, posMoment, 1]], { name: "Position of Moment (m)" });
     const CCW = board.create("button", [
-      3,
-      -15,
+      -5,
+      -4,
       "CCW",
       () => {
         this.globalData.dirMoment = true;
       }
     ]);
     const CW = board.create("button", [
-      1,
-      -15,
+      -7,
+      -4,
       "CW",
       () => {
         this.globalData.dirMoment = false;
@@ -302,30 +301,232 @@ export default Vue.extend({
       "M"
     ]);
 
-    // const MA_Curve = board.create(
-    //   "curve",
-    //   [
-    //     function(t) {
-    //       return -2 * Math.sin(t);
-    //     },
-    //     function(t) {
-    //       return -2 * Math.cos(t);
-    //     },
-    //     () => {
-    //       return ((this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
-    //     },
-    //     () => {
-    //       return ((-this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
-    //     }
-    //   ],
-    //   {
-    //     strokeWidth: 3,
-    //     lastArrow: true,
-    //     strokeColor: "red"
-    //   }
-    // );
+    const MA_Curve = board.create(
+      "curve",
+      [
+        function(t) {
+          return -2 * Math.sin(t);
+        },
+        function(t) {
+          return -2 * Math.cos(t);
+        },
+        () => {
+          if (this.currentSelection !== 3) return ((1 * 3) / 8 + 0.5) * Math.PI;
+          let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (this.globalData.dirMoment === true) val = val - this.momentMag.Value();
+          else val = val + this.momentMag.Value();
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          if (this.currentSelection !== 3) return ((-1 * 3) / 8 + 0.5) * Math.PI;
+          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+          else val = val - this.momentMag.Value();
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        lastArrow: true,
+        strokeColor: "red"
+      }
+    );
 
-    // const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
+    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
+    const MA = board.create("text", [
+      -10,
+      4,
+      () => {
+        if (this.currentSelection !== 3) return "";
+        let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+        else val = val - this.momentMag.Value();
+        return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
+      }
+    ]);
+
+    const MB_Curve = board.create(
+      "curve",
+      [
+        function(t) {
+          return 2 * Math.sin(t) + 10;
+        },
+        function(t) {
+          return 2 * Math.cos(t);
+        },
+        () => {
+          return ((1 * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          return ((-1 * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        lastArrow: true,
+        strokeColor: "red",
+        visible: () => {
+          return this.currentSelection === 0;
+        }
+      }
+    );
+
+    const MB_Text = board.create("text", [13, 0.5, "M_B"], {
+      visible: () => {
+        return this.currentSelection === 0;
+      }
+    });
+
+    const Ax_Line = board.create(
+      "line",
+      [
+        [
+          () => {
+            if (this.currentSelection !== 3) return -1;
+            let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -2 * Math.abs(val);
+          },
+          0
+        ],
+        [0, 0]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: () => {
+          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return val < 0;
+        },
+        lastArrow: () => {
+          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return val > 0;
+        },
+        strokeWidth: 3,
+        strokeColor: "red"
+      }
+    );
+
+    const Ax_Line_Label = board.create("text", [-1, -0.5, "A_x"]);
+
+    const Ax = board.create("text", [
+      -10,
+      6,
+      () => {
+        if (this.currentSelection !== 3) return "";
+        let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+      }
+    ]);
+
+    const Bx_Line = board.create("line", [[10, 0], [11, 0]], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeWidth: 3,
+      strokeColor: "red",
+      visible: () => {
+        return this.currentSelection <= 1;
+      }
+    });
+
+    const Bx_Line_Label = board.create("text", [11.5, -0.5, "B_x"], {
+      visible: () => {
+        return this.currentSelection <= 1;
+      }
+    });
+
+    const Ay_Line = board.create(
+      "line",
+      [
+        [1, -1],
+        [
+          1,
+          () => {
+            if (this.currentSelection !== 3) return -2;
+            let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -val - 1;
+          }
+        ]
+      ],
+      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red" }
+    );
+
+    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
+    const Ay = board.create("text", [
+      -10,
+      5,
+      () => {
+        if (this.currentSelection !== 3) return "";
+        let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+      }
+    ]);
+
+    const By_Line = board.create("line", [[9, -1], [9, -2]], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      strokeWidth: 3,
+      strokeColor: "red",
+      visible: () => {
+        return this.currentSelection <= 2;
+      }
+    });
+
+    const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
+      anchor: By_Line,
+      visible: () => {
+        return this.currentSelection <= 2;
+      }
+    });
+
+    const L = board.create("line", [[0, 6], [10, 6]], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      lastArrow: true,
+      strokeWidth: 3,
+      strokeColor: "red",
+      visible: () => {
+        return this.currentSelection <= 1;
+      }
+    });
+    const L_Line_Label = board.create("text", [0, 1, "L"], {
+      anchor: L,
+      visible: () => {
+        return this.currentSelection <= 1;
+      }
+    });
+
+    const Lf = board.create(
+      "line",
+      [
+        [0, 4],
+        [
+          () => {
+            return this.position.Value() * 10;
+          },
+          4
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        lastArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red"
+      }
+    );
+    const Lf_Line_Label = board.create("text", [0, 1, "L_f"], {
+      anchor: Lf
+    });
   },
   methods: {
     fixed() {

@@ -1,11 +1,19 @@
 <template>
-  <div>
-    <div id="boxA" class="jsx-graph"></div>
+  <div class="row">
+    <div id="boxA" class="jsx-graph col-xl mx-2"></div>
+    <div class="col-xl mx-2">
+      <jointText></jointText>
+    </div>
   </div>
 </template>
 
 <script>
+import jointText from './joint_text';
+
 export default {
+  components:{
+    jointText
+  },
   mounted() {
     const fixedDecimal = 4;
 

@@ -9,7 +9,7 @@
       <div class="collapse navbar-collapse" id="nav-content">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" :href="`/`" @click="updateRoute()">
+            <a class="nav-link" @click="updateRoute('/')">
               Home
             </a>
           </li>
@@ -18,11 +18,10 @@
             <div class="dropdown-menu">
               <a
                 class="dropdown-item"
-                :href="`/${category}/${item.name}`"
                 v-for="item in items"
                 :key="item.name"
                 :title="item.description"
-                @click="updateRoute()"
+                @click="updateRoute(`/${category}/${item.name}`)"
                 >{{ item.title }}
               </a>
             </div>
@@ -75,15 +74,16 @@ export default Vue.extend({
       current: ""
     };
   },
-  mounted() {
-    this.updateRoute();
-  },
+  mounted() {},
   methods: {
-    updateRoute() {
-      const urls = window.location.pathname.split("/");
-      const [, cat, name] = urls;
+    /**
+     * @param {string} path
+     */
+    updateRoute(path) {
+      const [, cat, name] = path.split("/");
       if (cat && name) {
         this.current = name;
+        window.history.pushState({}, "", path);
       }
     }
   }

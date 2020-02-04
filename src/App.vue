@@ -9,7 +9,7 @@
       <div class="collapse navbar-collapse" id="nav-content">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" @click="updateRoute('/')">
+            <a class="nav-link" :href="'/'">
               Home
             </a>
           </li>
@@ -34,7 +34,7 @@
         <component :is="current"></component>
       </template>
       <template v-else>
-        <home />
+        <home :modulesInfo='pages' @fromChild="updateRoute"/>
       </template>
     </div>
   </div>
@@ -49,7 +49,7 @@ const meta = {};
 const files = require.context("./components/pages", true, /\.vue$/i);
 
 files.keys().map(key => {
-  const comps = key.split("/");
+  const comps = key.split("/").splice(1);
 
   const filename = comps.pop();
   const dirname = comps.pop();

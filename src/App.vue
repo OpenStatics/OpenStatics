@@ -74,7 +74,13 @@ export default Vue.extend({
       current: ""
     };
   },
-  mounted() {},
+  mounted() {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("path")) {
+      console.log(query);
+      this.updateRoute(query.get("path"));
+    }
+  },
   methods: {
     /**
      * @param {string} path

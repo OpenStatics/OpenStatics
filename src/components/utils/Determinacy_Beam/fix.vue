@@ -1,7 +1,6 @@
 <template>
-  <div class="row">
-    <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
-    <div class="col-xl mx-2">
+  <div>
+    <div class="mx-2">
       <DeterminacyText></DeterminacyText>
       <div class="my-3">
         <span>Constraints at the left end of beam</span> <br />
@@ -55,6 +54,7 @@
         </ul>
       </div>
     </div>
+    <div id="fixFix" class="text-center jsx-graph mx-2"></div>
   </div>
 </template>
 
@@ -532,6 +532,9 @@ export default {
     const Lf_Line_Label = board.create("text", [0, 1, "L_f"], {
       anchor: Lf
     });
+
+    // add coodinate button
+    const coordinate_btn = board.create("button");
   },
   methods: {
     fixed() {

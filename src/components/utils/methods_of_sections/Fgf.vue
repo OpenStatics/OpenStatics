@@ -1,0 +1,331 @@
+<template>
+  <div>
+    <div id="box1" class="jsx-graph my-2 text-center"></div>
+  </div>
+</template>
+
+<script>
+export default {
+  components: {},
+  mounted() {
+    const scale = 3;
+
+    const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
+
+    const force = b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
+    const angle = b2.create("slider", [[-3, -12], [3, -12], [19, 90, 198]], { name: "Angle(&Phi;)" });
+
+    /*
+    // get RA_x value
+    const getR_Ax = function() {
+      const R_Ax = Math.cos((angle.Value() / 180) * Math.PI) * force.Value();
+      if (Math.abs(R_Ax) < Math.pow(10, -7)) return 0;
+      return parseFloat(R_Ax.toFixed(fixedDecimal));
+    };
+
+    // get RE value
+    const getRE = function() {
+      const x = Math.sin((angle.Value() / 180) * Math.PI);
+      const lengthRE = 2;
+      const lengthF = 1;
+      const RE = (force.Value() * x * lengthF) / lengthRE;
+      if (Math.abs(RE) < Math.pow(10, -7)) return 0;
+      return parseFloat(RE.toFixed(fixedDecimal));
+    };
+
+    // get RA_y value
+    const getR_Ay = function() {
+      const x = Math.sin((angle.Value() / 180) * Math.PI);
+
+      const R_Ay = force.Value() * x - getRE();
+
+      if (Math.abs(R_Ay) < Math.pow(10, -7)) return 0;
+
+      return parseFloat(R_Ay.toFixed(fixedDecimal));
+    };
+    */
+
+    // create R_Ax text
+    // b2.create(
+    //   "text",
+    //   [
+    //     -2,
+    //     -4,
+    //     function() {
+    //       return "Sum of the x forces:" + getR_Ax();
+    //     }
+    //   ],
+    //   { fixed: true }
+    // );
+
+    // create R_Ay text
+    // b2.create("text", [
+    //   -2,
+    //   -8,
+    //   function() {
+    //     return "R_Ay: " + getR_Ay();
+    //   }
+    // ]);
+
+    // // create RE text
+    // b2.create("text", [
+    //   -2,
+    //   -6,
+    //   function() {
+    //     return "R_E: " + getRE();
+    //   }
+    // ]);
+
+    // create points
+    const a = b2.create("point", [-3 * scale, 0], { name: "a", fixed: true, fillColor: "blue", strokeColor: "blue" });
+    const b = b2.create("point", [-1 * scale, 2 * scale], { name: "b", fixed: true, fillColor: "blue", strokeColor: "blue" });
+    const c = b2.create("point", [1 * scale, 2 * scale], { name: "c", fixed: true, visible: true, fillColor: "red", strokeColor: "red" });
+    //const d = b2.create("point", [3 * scale, 2 * scale], { name: "d", fixed: true });
+    //const e = b2.create("point", [3 * scale, 0], { name: "e", fixed: true });
+    const f = b2.create("point", [1 * scale, 0], { name: "f", fixed: true, visible: false, fillColor: "blue", strokeColor: "blue" });
+    const g = b2.create("point", [-1 * scale, 0], { name: "g", fixed: true, fillColor: "blue", strokeColor: "blue" });
+
+    const bc = b2.create("point", [0, 2 * scale], { name: "bc", fixed: true, visible: false });
+    const gc = b2.create("point", [0, 1 * scale], { name: "gc", fixed: true, visible: false });
+    const gf = b2.create("point", [0, 0], { name: "gf", fixed: true, visible: false });
+
+    const Fbc = b2.create("point", [0.5 * scale, 2 * scale], { name: "Fbc", fixed: true, visible: false });
+    const Fgc = b2.create("point", [0.5 * scale, 1.5 * scale], { name: "Fgc", fixed: true, visible: false });
+    const Fgf = b2.create("point", [0.5 * scale, 0], { name: "Fgf", fixed: true, visible: false });
+
+    const pointF = b2.create(
+      "point",
+      [
+        function() {
+          let x = Math.cos((angle.Value() / 180) * Math.PI);
+          if (Math.abs(x) < Math.pow(10, -7)) x = 0;
+          return -1 * scale * force.Value() * x - 3 * scale;
+        },
+        function() {
+          let y = Math.sin((angle.Value() / 180) * Math.PI);
+          if (Math.abs(y) < Math.pow(10, -7)) y = 0;
+          return -1 * scale * force.Value() * y;
+        }
+      ],
+      { visible: false }
+    );
+    /*
+    // create FC point
+    const pointFC = b2.create(
+      "point",
+      [
+        function() {
+          const x = Math.cos((angle.Value() / 180) * Math.PI);
+          if (Math.abs(x) < Math.pow(10, -7)) return 0;
+          return -3 * x;
+        },
+        function() {
+          const y = Math.sin((angle.Value() / 180) * Math.PI);
+          if (Math.abs(y) < Math.pow(10, -7)) return 0;
+          return -3 * force.Value() * y;
+        }
+      ],
+      { visible: false }
+    );
+
+    // create R_Ax point
+    const pointR_Ax = b2.create(
+      "point",
+      [
+        function() {
+          return -3 * Math.abs(getR_Ax()) - 10;
+        },
+        0
+      ],
+      {
+        fixed: true,
+        visible: false
+      }
+    );
+
+    // create R_Ay point
+    const pointR_Ay = b2.create(
+      "point",
+      [
+        -10,
+        function() {
+          return -3 * Math.abs(getR_Ay());
+        }
+      ],
+      {
+        fixed: true,
+        visible: false
+      }
+    );
+
+    // create RE point
+    const pointRE = b2.create(
+      "point",
+      [
+        10,
+        function() {
+          return -3 * Math.abs(getRE());
+        }
+      ],
+      {
+        fixed: true,
+        visible: false
+      }
+    );
+    */
+
+    // connect points
+    b2.create("line", [a, b], { straightFirst: false, straightLast: false });
+    b2.create("line", [a, g], { straightFirst: false, straightLast: false });
+    b2.create("line", [b, g], { straightFirst: false, straightLast: false });
+
+    b2.create("line", [b, bc], { straightFirst: false, straightLast: false });
+    b2.create("line", [g, gc], { straightFirst: false, straightLast: false });
+    b2.create("line", [g, gf], { straightFirst: false, straightLast: false });
+
+    b2.create("line", [Fbc, c], { straightFirst: false, straightLast: false, strokeWidth: 2, dash: 2 });
+    b2.create("line", [Fgc, c], { straightFirst: false, straightLast: false, strokeWidth: 2, dash: 2 });
+    b2.create("line", [Fgf, f], { straightFirst: false, straightLast: false, strokeWidth: 2, dash: 2 });
+
+    // create force vectors
+    // const line_cfc = b2.create("line", [c, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    // const line_aray = b2.create("line", [a, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    // const line_arax = b2.create("line", [a, pointR_Ax], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    // const line_ere = b2.create("line", [e, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
+    b2.create("line", [a, pointF], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    b2.create("line", [bc, Fbc], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    b2.create("line", [gf, Fgf], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true, strokeColor: "red" });
+    b2.create("line", [gc, Fgc], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+
+    // create text on force vector FC
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          let val = force.Value();
+          return "F = " + Math.round(val * 100) / 100 + "N";
+        }
+      ],
+      { anchor: pointF }
+    );
+    b2.create(
+      "text",
+      [
+        0,
+        0.5,
+        function() {
+          return "F_{BC}";
+        }
+      ],
+      { anchor: Fbc }
+    );
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "F_{GC}";
+        }
+      ],
+      { anchor: Fgc }
+    );
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "F_{GF}";
+        }
+      ],
+      { anchor: Fgf }
+    );
+    const label1 = b2.create("text", [
+      -5,
+      -6,
+      () => {
+        return "\\Sigma M_C = 0 = F*sin(\\alpha)*L_{AF} - F*cos(\\alpha)*L_{CF} + F_{GF}*L_{CF}";
+      }
+    ]);
+    const label2 = b2.create("text", [
+      -5,
+      -8,
+      () => {
+        let radians = (angle.Value() * Math.PI) / 180;
+        let val = 4 * force.Value() * Math.sin(radians) - 2 * force.Value() * Math.cos(radians);
+        val /= -2;
+        return "F_{GF} = " + Math.round(val * 100) / 100 + " N";
+      }
+    ]);
+    const label3 = b2.create("text", [
+      -5,
+      -9,
+      () => {
+        let radians = (angle.Value() * Math.PI) / 180;
+        let val = 4 * force.Value() * Math.sin(radians) - 2 * force.Value() * Math.cos(radians);
+        val /= -2;
+        if (val >= 0) return "Member GF is in tension";
+        else return "Member GF is in compression";
+      }
+    ]);
+    /*
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "F_C =" + force.Value() + "N";
+        }
+      ],
+      { anchor: pointFC }
+    );
+    // create text on force vectors RAx
+    b2.create(
+      "text",
+      [
+        -2,
+        1,
+        function() {
+          return "R_{A,x} =" + getR_Ax() + "N";
+        }
+      ],
+      { anchor: pointR_Ax }
+    );
+
+    // create text on force vectors RAy
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "R_{A,y} =" + getR_Ay() + "N";
+        }
+      ],
+      { anchor: pointR_Ay }
+    );
+
+    // create text on force vectors RE
+    b2.create(
+      "text",
+      [
+        0,
+        -0.5,
+        function() {
+          return "R_{E} =" + getRE() + "N";
+        }
+      ],
+      { anchor: pointRE }
+    );
+    */
+  }
+};
+export const meta = {
+  title: "methods of sections",
+  description: "In Progress - WATKINS"
+};
+</script>

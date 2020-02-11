@@ -17,19 +17,17 @@
   "vetur.format.options.tabSize": 2,
   "vetur.experimental.templateInterpolationService": true,
   "eslint.options": {
-    "extensions": [".html", ".js", ".vue", ".jsx"]
+    "extensions": [
+      ".html",
+      ".js",
+      ".vue",
+      ".jsx"
+    ]
   },
   "eslint.validate": [
     "javascript",
     "javascriptreact",
-    {
-      "language": "vue",
-      "autoFix": true
-    },
-    {
-      "language": "typescript",
-      "autoFix": true
-    }
-  ],
-  "eslint.autoFixOnSave": true
+    "vue",
+    "typescript"
+  ]
 }

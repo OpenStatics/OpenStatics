@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">Open Statics</a>
+      <a class="navbar-brand" :href="'/'">Open Statics</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -9,7 +9,7 @@
       <div class="collapse navbar-collapse" id="nav-content">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link">
+            <a class="nav-link" :href="'/'">
               Home
             </a>
           </li>
@@ -18,20 +18,15 @@
             <div class="dropdown-menu">
               <a
                 class="dropdown-item"
-                :href="`/${category}/${item.name}`"
                 v-for="item in items"
                 :key="item.name"
                 :title="item.description"
-                @click="updateRoute()"
+                @click="updateRoute(`/${category}/${item.name}`)"
                 >{{ item.title }}
               </a>
             </div>
           </li>
         </ul>
-        <!-- <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form> -->
       </div>
     </nav>
     <div class="mx-2 my-2">
@@ -39,7 +34,7 @@
         <component :is="current"></component>
       </template>
       <template v-else>
-        Home page
+        <home :modulesInfo='pages' @fromChild="updateRoute"/>
       </template>
     </div>
   </div>
@@ -47,13 +42,14 @@
 
 <script>
 import Vue from "vue";
+import home from "./components/home/home";
 
 // register all pages components
 const meta = {};
 const files = require.context("./components/pages", true, /\.vue$/i);
 
 files.keys().map(key => {
-  const comps = key.split("/");
+  const comps = key.split("/").splice(1);
 
   const filename = comps.pop();
   const dirname = comps.pop();
@@ -69,6 +65,9 @@ files.keys().map(key => {
 
 export default Vue.extend({
   name: "app",
+  components: {
+    home
+  },
   data() {
     return {
       pages: meta,
@@ -76,14 +75,21 @@ export default Vue.extend({
     };
   },
   mounted() {
-    this.updateRoute();
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("path")) {
+      console.log(query);
+      this.updateRoute(query.get("path"));
+    }
   },
   methods: {
-    updateRoute() {
-      const urls = window.location.pathname.split("/");
-      const [, cat, name] = urls;
+    /**
+     * @param {string} path
+     */
+    updateRoute(path) {
+      const [, cat, name] = path.split("/");
       if (cat && name) {
         this.current = name;
+        window.history.pushState({}, "", path);
       }
     }
   }

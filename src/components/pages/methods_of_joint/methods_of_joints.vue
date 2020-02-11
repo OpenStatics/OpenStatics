@@ -42,7 +42,7 @@ export default {
   mounted() {}
 };
 export const meta = {
-  title: "methods of joint demo",
+  title: "methods of joint",
   description: "joint"
 };
 </script>

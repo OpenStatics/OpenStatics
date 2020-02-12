@@ -5,56 +5,62 @@
 
     <div class="row">
       <div class="col-xl mx-2">
-        <div class="my-3">
-          <span>Constraints at the left end of beam</span> <br />
-          <button class="btn btn-warning mx-3">Fixed</button>
-          <button class="btn btn-primary mx-3" @click="clickOnPin">Smooth pin</button>
-          <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
-        </div>
-        <div>
-          <span>Constraints at the right end of beam</span> <br />
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="fixed">Fixed</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="smooth">Smooth pin</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="roller">Roller</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="none">None</button>
-        </div>
-        <div>
-          <div>
-            <p>
-              <span>&Sigma;</span>
-              M = <span style="color:red">M<sub>A</sub></span> +
-              <span v-if="currentSelection === 0"
-                ><span style="color:red">M<sub>B</sub></span> + </span
-              >F<sub>y</sub> &#215; L<sub>f</sub> +
-              <span v-if="currentSelection <= 1"
-                ><span style="color:red">B<sub>y</sub></span> &#215; L +</span
-              >
-              M = 0
-            </p>
-            <p>
-              <span>&Sigma;</span>
-              F<sub>x</sub> = <span style="color:red">A<sub>x</sub></span> +
-              <span v-if="currentSelection <= 1"
-                ><span style="color:red">B<sub>x</sub></span> +</span
-              >
-              F<sub>x</sub> = 0
-            </p>
-            <p>
-              <span>&Sigma;</span>
-              F<sub>y</sub> = <span style="color:red">A<sub>y</sub></span> +
-              <span v-if="currentSelection <= 2"
-                ><span style="color:red">B<sub>y</sub></span> +</span
-              >
-              F<sub>y</sub> = 0
-            </p>
+        <div class="row">
+          <div class="col">
+            <div class="my-3">
+              <span>Constraints at the left end of beam</span> <br />
+              <button class="btn btn-warning mx-3">Fixed</button>
+              <button class="btn btn-primary mx-3" @click="clickOnPin">Smooth pin</button>
+              <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
+            </div>
+            <div>
+              <span>Constraints at the right end of beam</span> <br />
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="fixed">Fixed</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="smooth">Smooth pin</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="roller">Roller</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="none">None</button>
+            </div>
           </div>
-          <ul>
-            <li>Reactive forces/moments: {{ 6 - currentSelection }}</li>
-            <li>
-              Equations of Equilibrium: 3
-            </li>
-            <li>Status: Statically <span v-if="currentSelection <= 2">indeterminate</span> <span v-if="currentSelection === 3">determinate</span></li>
-          </ul>
+          <div class="col">
+            <div>
+              <p>
+                <span>&Sigma;</span>
+                M = <span style="color:red">M<sub>A</sub></span> +
+                <span v-if="currentSelection === 0"
+                  ><span style="color:red">M<sub>B</sub></span> + </span
+                >F<sub>y</sub> &#215; L<sub>f</sub> +
+                <span v-if="currentSelection <= 1"
+                  ><span style="color:red">B<sub>y</sub></span> &#215; L +</span
+                >
+                M = 0
+              </p>
+              <p>
+                <span>&Sigma;</span>
+                F<sub>x</sub> = <span style="color:red">A<sub>x</sub></span> +
+                <span v-if="currentSelection <= 1"
+                  ><span style="color:red">B<sub>x</sub></span> +</span
+                >
+                F<sub>x</sub> = 0
+              </p>
+              <p>
+                <span>&Sigma;</span>
+                F<sub>y</sub> = <span style="color:red">A<sub>y</sub></span> +
+                <span v-if="currentSelection <= 2"
+                  ><span style="color:red">B<sub>y</sub></span> +</span
+                >
+                F<sub>y</sub> = 0
+              </p>
+            </div>
+            <ul>
+              <li>Reactive forces/moments: {{ 6 - currentSelection }}</li>
+              <li>
+                Equations of Equilibrium: 3
+              </li>
+              <li>
+                Status: Statically <span v-if="currentSelection <= 2">indeterminate</span> <span v-if="currentSelection === 3">determinate</span>
+              </li>
+            </ul>
+          </div>
         </div>
         <div id="control" style="height:500px;width:100%" class=" mx-2"></div>
       </div>
@@ -93,6 +99,10 @@ export default {
   },
   mounted() {
     const fixedDecimal = 3;
+    const x_shift = -5;
+    const y_shift = 6;
+    const y_react_shift = -12;
+    const moment_radius = 1.5;
 
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
@@ -105,40 +115,44 @@ export default {
     // board_control.resizeContainer(500,500)
 
     // create base
-    const rec_a = board.create("point", [0, -1], { fixed: true, visible: false });
-    const rec_b = board.create("point", [0, 1], { fixed: true, visible: false });
-    const rec_c = board.create("point", [10, 1], { fixed: true, visible: false });
-    const rec_d = board.create("point", [10, -1], { fixed: true, visible: false });
+    const rec_a = board.create("point", [0 + x_shift, -1 + y_shift], { fixed: true, visible: false });
+    const rec_b = board.create("point", [0 + x_shift, 1 + y_shift], { fixed: true, visible: false });
+    const rec_c = board.create("point", [10 + x_shift, 1 + y_shift], { fixed: true, visible: false });
+    const rec_d = board.create("point", [10 + x_shift, -1 + y_shift], { fixed: true, visible: false });
     const rectangle = board.create("polygon", [rec_a, rec_b, rec_c, rec_d]);
 
     const fix_left = this.constraintObj[0];
-    const fix_p1_left = board.create("point", [0, 1.5], { fixed: true, visible: false });
-    const fix_p2_left = board.create("point", [0, -1.5], { fixed: true, visible: false });
+    const fix_p1_left = board.create("point", [0 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
+    const fix_p2_left = board.create("point", [0 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     const fix_line_left = board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false });
     const fix_comb_left = board.create("comb", [fix_p2_left, fix_p1_left]);
 
     const fix = this.constraintObj[0];
-    const fix_p1 = board.create("point", [10, 1.5], { fixed: true, visible: false });
-    const fix_p2 = board.create("point", [10, -1.5], { fixed: true, visible: false });
+    const fix_p1 = board.create("point", [10 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
+    const fix_p2 = board.create("point", [10 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     fix.fix_line = board.create("line", [fix_p1, fix_p2], { straightFirst: false, straightLast: false });
     fix.fix_comb = board.create("comb", [fix_p1, fix_p2]);
 
     const pin = this.constraintObj[1];
-    const pin_p1 = board.create("point", [9.7, 0], { fixed: true, visible: false });
-    const pin_p2 = board.create("point", [10.3, 0], { fixed: true, visible: false });
-    const pin_p3 = board.create("point", [11, -1.5], { fixed: true, visible: false });
-    const pin_p4 = board.create("point", [9, -1.5], { fixed: true, visible: false });
-    pin.pin_circ = board.create("circle", [[10, 0], 0.3], { fillColor: "red", fixed: true });
+    const pin_p1 = board.create("point", [9.7 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p2 = board.create("point", [10.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p3 = board.create("point", [11 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    const pin_p4 = board.create("point", [9 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    pin.pin_circ = board.create("circle", [[10 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true });
     pin.pin_body = board.create("polygon", [pin_p1, pin_p2, pin_p3, pin_p4], { fillColor: "red" });
     pin.pin_comb = board.create("comb", [pin_p3, pin_p4]);
 
     const roller = this.constraintObj[2];
-    const roller_p1 = board.create("point", [9.4, -1.6], { fixed: true, visible: false });
-    const roller_p2 = board.create("point", [10.6, -1.6], { fixed: true, visible: false });
-    roller.roller_circ = board.create("circle", [[10, -1.3], 0.3], { fillColor: "red", fixed: true });
+    const roller_p1 = board.create("point", [9.4 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    const roller_p2 = board.create("point", [10.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    roller.roller_circ = board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true });
     roller.roller_line = board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
     roller.roller_comb = board.create("comb", [roller_p2, roller_p1]);
     this.setAllInvis(0);
+
+    // reactive force and moment base
+    const react_trans = board.create("transform", [0, y_react_shift], { type: "translate" });
+    const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false } });
 
     // controller
     this.magnitude = board_control.create("slider", [[2, 14], [12, 14], [0, magVal, 2]], { withLabel: false });
@@ -254,14 +268,14 @@ export default {
       }
     ]);
 
-    // logic
+    // variables
     const F_0 = board.create(
       "point",
       [
         () => {
-          return this.position.Value() * 10;
+          return this.position.Value() * 10 + x_shift;
         },
-        0
+        y_shift
       ],
       { visible: false }
     );
@@ -282,62 +296,14 @@ export default {
     const forceLine = board.create("line", [F_0, F_1], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
     const forceLineLabel = board.create("text", [1, 1, "F"], { anchor: forceLine });
 
-    const Fx = board.create(
-      "point",
-      [
-        () => {
-          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + F_0.X();
-        },
-        () => {
-          return 0;
-        }
-      ],
-      {
-        visible: false
-      }
-    );
-    const Fx_Line = board.create("line", [Fx, F_0], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeWidth: 3,
-      dash: true,
-      strokeColor: "red"
-    });
-    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line });
-
-    const Fy = board.create(
-      "point",
-      [
-        () => {
-          return F_0.X();
-        },
-        () => {
-          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 4 + F_0.Y();
-        }
-      ],
-      {
-        visible: false
-      }
-    );
-    const Fy_Line = board.create("line", [Fy, F_0], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeWidth: 3,
-      dash: true,
-      strokeColor: "red"
-    });
-    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line });
-
     const Moment_0_Curve = board.create(
       "curve",
       [
         t => {
-          return 2 * Math.sin(t) + this.momentPos.Value() * 10;
+          return moment_radius * Math.sin(t) + this.momentPos.Value() * 10 + x_shift;
         },
         t => {
-          return 2 * Math.cos(t);
+          return moment_radius * Math.cos(t) + y_shift;
         },
         () => {
           return ((this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
@@ -359,20 +325,81 @@ export default {
 
     const Moment_0_Curve_Label = board.create("text", [
       () => {
-        return this.momentPos.Value() * 10 + 3;
+        return this.momentPos.Value() * 10 + 3 + x_shift;
       },
-      0,
+      y_shift,
       "M"
     ]);
 
+    // reactive forces
+    // translating variables
+    const react_F_0 = board.create("line", [forceLine, react_trans], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
+    const react_Moment_0 = board.create("curve", [Moment_0_Curve, react_trans], {
+      strokeWidth: 3,
+      lastArrow: () => {
+        return this.globalData.dirMoment;
+      },
+      firstArrow: () => {
+        return !this.globalData.dirMoment;
+      }
+    });
+
+    // creating sub forces
+    const Fx = board.create(
+      "point",
+      [
+        () => {
+          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + react_F_0.point1.X();
+        },
+        () => {
+          return y_shift + y_react_shift;
+        }
+      ],
+      {
+        visible: false
+      }
+    );
+    const Fx_Line = board.create("line", [Fx, react_F_0.point1], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeWidth: 3,
+      dash: true
+    });
+    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line });
+
+    const Fy = board.create(
+      "point",
+      [
+        () => {
+          return react_F_0.point1.X();
+        },
+        () => {
+          return react_F_0.point2.Y();
+        }
+      ],
+      {
+        visible: false
+      }
+    );
+    const Fy_Line = board.create("line", [Fy, react_F_0.point1], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeWidth: 3,
+      dash: true
+    });
+    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line });
+
+    // create moment force on the left
     const MA_Curve = board.create(
       "curve",
       [
         function(t) {
-          return -2 * Math.sin(t);
+          return -moment_radius * Math.sin(t) + x_shift;
         },
         function(t) {
-          return -2 * Math.cos(t);
+          return -moment_radius * Math.cos(t) + y_shift + y_react_shift;
         },
         () => {
           if (this.currentSelection !== 3) return ((1 * 3) / 8 + 0.5) * Math.PI;
@@ -396,7 +423,7 @@ export default {
       }
     );
 
-    const MA_Text = board.create("text", [-3, 0.5, "M_A"]);
+    const MA_Text = board.create("text", [0, 0, "M_A"], { anchor: MA_Curve }); /// needs change
     const MA = board.create("text", [
       -10,
       4,
@@ -409,14 +436,15 @@ export default {
       }
     ]);
 
+    // make moment force on the right
     const MB_Curve = board.create(
       "curve",
       [
         function(t) {
-          return 2 * Math.sin(t) + 10;
+          return moment_radius * Math.sin(t) + 10 + x_shift;
         },
         function(t) {
-          return 2 * Math.cos(t);
+          return moment_radius * Math.cos(t) + y_shift + y_react_shift;
         },
         () => {
           return ((1 * 3) / 8 + 0.5) * Math.PI;
@@ -441,19 +469,20 @@ export default {
       }
     });
 
+    // make reactive force in x direction
     const Ax_Line = board.create(
       "line",
       [
         [
           () => {
-            if (this.currentSelection !== 3) return -1;
+            if (this.currentSelection !== 3) return -1.5 + x_shift;
             let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -2 * Math.abs(val);
+            return -2 * Math.abs(val) + x_shift;
           },
-          0
+          y_shift + y_react_shift
         ],
-        [0, 0]
+        [-0.5 + x_shift, y_shift + y_react_shift]
       ],
       {
         straightFirst: false,
@@ -486,6 +515,7 @@ export default {
       }
     ]);
 
+    // needs to continue here
     const Bx_Line = board.create("line", [[10, 0], [11, 0]], {
       straightFirst: false,
       straightLast: false,

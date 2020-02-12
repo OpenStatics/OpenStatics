@@ -10,7 +10,7 @@ export default {
   mounted() {
     const scale = 3;
 
-    const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
+    const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-20, 20, 20, -20], keepAspectRatio: true, showCopyright: false });
 
     const force = b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
     const angle = b2.create("slider", [[-3, -12], [3, -12], [19, 90, 198]], { name: "Angle(&Phi;)" });
@@ -77,13 +77,13 @@ export default {
     // ]);
 
     // create points
-    const a = b2.create("point", [-3 * scale, 0], { name: "a", fixed: true, fillColor: "blue", strokeColor: "blue" });
-    const b = b2.create("point", [-1 * scale, 2 * scale], { name: "b", fixed: true, fillColor: "blue", strokeColor: "blue" });
-    const c = b2.create("point", [1 * scale, 2 * scale], { name: "c", fixed: true, visible: true, fillColor: "red", strokeColor: "red" });
+    const a = b2.create("point", [-3 * scale, 0], { name: "A", fixed: true, fillColor: "blue", strokeColor: "blue" });
+    const b = b2.create("point", [-1 * scale, 2 * scale], { name: "B", fixed: true, fillColor: "blue", strokeColor: "blue" });
+    const c = b2.create("point", [1 * scale, 2 * scale], { name: "C", fixed: true, visible: true, fillColor: "red", strokeColor: "red" });
     //const d = b2.create("point", [3 * scale, 2 * scale], { name: "d", fixed: true });
     //const e = b2.create("point", [3 * scale, 0], { name: "e", fixed: true });
-    const f = b2.create("point", [1 * scale, 0], { name: "f", fixed: true, visible: false, fillColor: "blue", strokeColor: "blue" });
-    const g = b2.create("point", [-1 * scale, 0], { name: "g", fixed: true, fillColor: "blue", strokeColor: "blue" });
+    const f = b2.create("point", [1 * scale, 0], { name: "F", fixed: true, visible: false, fillColor: "blue", strokeColor: "blue" });
+    const g = b2.create("point", [-1 * scale, 0], { name: "G", fixed: true, fillColor: "blue", strokeColor: "blue" });
 
     const bc = b2.create("point", [0, 2 * scale], { name: "bc", fixed: true, visible: false });
     const gc = b2.create("point", [0, 1 * scale], { name: "gc", fixed: true, visible: false });
@@ -247,7 +247,7 @@ export default {
       -5,
       -6,
       () => {
-        return "\\Sigma M_C = 0 = F*sin(\\alpha)*L_{AF} - F*cos(\\alpha)*L_{CF} + F_{GF}*L_{CF}";
+        return "\u03a3 M_C = 0 = F*sin(\u03b1)*L_{AF} - F*cos(\u03b1)*L_{CF} + F_{GF}*L_{CF}";
       }
     ]);
     const label2 = b2.create("text", [

@@ -10,7 +10,7 @@ export default {
   mounted() {
     const scale = 3;
 
-    const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
+    const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-20, 20, 20, -20], keepAspectRatio: true, showCopyright: false });
 
     const force = b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
     const angle = b2.create("slider", [[-3, -12], [3, -12], [19, 90, 198]], { name: "Angle(&Phi;)" });

@@ -62,7 +62,7 @@
             </ul>
           </div>
         </div>
-        <div id="control" style="height:500px;width:100%" class=" mx-2"></div>
+        <div v-show="currentSelection === 3" id="control" style="height:500px;width:100%" class=" mx-2"></div>
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
@@ -396,20 +396,20 @@ export default {
       "curve",
       [
         function(t) {
-          return -moment_radius * Math.sin(t) + x_shift;
+          return -moment_radius * Math.sin(t) + x_shift - 1;
         },
         function(t) {
           return -moment_radius * Math.cos(t) + y_shift + y_react_shift;
         },
         () => {
-          if (this.currentSelection !== 3) return ((1 * 3) / 8 + 0.5) * Math.PI;
+          if (this.currentSelection !== 3) return ((-1 * 3) / 8 + 0.5) * Math.PI;
           let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
           if (this.globalData.dirMoment === true) val = val - this.momentMag.Value();
           else val = val + this.momentMag.Value();
           return ((val * 3) / 8 + 0.5) * Math.PI;
         },
         () => {
-          if (this.currentSelection !== 3) return ((-1 * 3) / 8 + 0.5) * Math.PI;
+          if (this.currentSelection !== 3) return ((1 * 3) / 8 + 0.5) * Math.PI;
           let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
           if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
           else val = val - this.momentMag.Value();
@@ -423,25 +423,29 @@ export default {
       }
     );
 
-    const MA_Text = board.create("text", [0, 0, "M_A"], { anchor: MA_Curve }); /// needs change
-    const MA = board.create("text", [
-      -10,
-      4,
-      () => {
-        if (this.currentSelection !== 3) return "";
-        let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-        if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
-        else val = val - this.momentMag.Value();
-        return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
-      }
-    ]);
+    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"]); /// needs change
+    const MA = board.create(
+      "text",
+      [
+        -10,
+        4,
+        () => {
+          if (this.currentSelection !== 3) return "";
+          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+          else val = val - this.momentMag.Value();
+          return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
+        }
+      ],
+      { fixed: true }
+    );
 
     // make moment force on the right
     const MB_Curve = board.create(
       "curve",
       [
         function(t) {
-          return moment_radius * Math.sin(t) + 10 + x_shift;
+          return moment_radius * Math.sin(t) + 11 + x_shift;
         },
         function(t) {
           return moment_radius * Math.cos(t) + y_shift + y_react_shift;
@@ -463,7 +467,7 @@ export default {
       }
     );
 
-    const MB_Text = board.create("text", [13, 0.5, "M_B"], {
+    const MB_Text = board.create("text", [13.5 + x_shift, 0.5 + y_shift + y_react_shift, "M_B"], {
       visible: () => {
         return this.currentSelection === 0;
       }
@@ -475,10 +479,10 @@ export default {
       [
         [
           () => {
-            if (this.currentSelection !== 3) return -1.5 + x_shift;
+            if (this.currentSelection !== 3) return -1.25 + x_shift;
             let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -2 * Math.abs(val) + x_shift;
+            return -2 * Math.abs(val) + x_shift - 1.25;
           },
           y_shift + y_react_shift
         ],
@@ -495,14 +499,14 @@ export default {
         lastArrow: () => {
           let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-          return val > 0;
+          return val >= 0;
         },
         strokeWidth: 3,
         strokeColor: "red"
       }
     );
 
-    const Ax_Line_Label = board.create("text", [-1, -0.5, "A_x"]);
+    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"]);
 
     const Ax = board.create("text", [
       -10,
@@ -515,8 +519,7 @@ export default {
       }
     ]);
 
-    // needs to continue here
-    const Bx_Line = board.create("line", [[10, 0], [11, 0]], {
+    const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -524,10 +527,11 @@ export default {
       strokeColor: "red",
       visible: () => {
         return this.currentSelection <= 1;
-      }
+      },
+      fixed: true
     });
 
-    const Bx_Line_Label = board.create("text", [11.5, -0.5, "B_x"], {
+    const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
       visible: () => {
         return this.currentSelection <= 1;
       }
@@ -536,14 +540,14 @@ export default {
     const Ay_Line = board.create(
       "line",
       [
-        [1, -1],
+        [0 + x_shift, -1.25 + y_shift + y_react_shift],
         [
-          1,
+          0 + x_shift,
           () => {
-            if (this.currentSelection !== 3) return -2;
+            if (this.currentSelection !== 3) return -2.25 + y_react_shift + y_shift;
             let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -val - 1;
+            return -val - 1.25 + y_shift + y_react_shift;
           }
         ]
       ],
@@ -562,7 +566,7 @@ export default {
       }
     ]);
 
-    const By_Line = board.create("line", [[9, -1], [9, -2]], {
+    const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
       straightFirst: false,
       straightLast: false,
       firstArrow: true,
@@ -580,7 +584,7 @@ export default {
       }
     });
 
-    const L = board.create("line", [[0, 6], [10, 6]], {
+    const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,
       firstArrow: true,
@@ -589,9 +593,10 @@ export default {
       strokeColor: "red",
       visible: () => {
         return this.currentSelection <= 1;
-      }
+      },
+      fixed: true
     });
-    const L_Line_Label = board.create("text", [0, 1, "L"], {
+    const L_Line_Label = board.create("text", [0, 0.5, "L"], {
       anchor: L,
       visible: () => {
         return this.currentSelection <= 1;
@@ -601,12 +606,12 @@ export default {
     const Lf = board.create(
       "line",
       [
-        [0, 4],
+        [0 + x_shift, 4 + y_shift + y_react_shift],
         [
           () => {
-            return this.position.Value() * 10;
+            return this.position.Value() * 10 + x_shift;
           },
-          4
+          4 + y_shift + y_react_shift
         ]
       ],
       {
@@ -618,8 +623,9 @@ export default {
         strokeColor: "red"
       }
     );
-    const Lf_Line_Label = board.create("text", [0, 1, "L_f"], {
-      anchor: Lf
+    const Lf_Line_Label = board.create("text", [0, -0.5, "L_f"], {
+      anchor: Lf,
+      fixed: true
     });
   },
   methods: {

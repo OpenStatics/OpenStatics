@@ -1,12 +1,12 @@
 <template>
-  <!-- Development Note: use style to change the board_control. Put board_control and button together. Look at history and commit next time before dev-->
-  <div>
+  <div style="margin:20px">
+    <!-- needs to figure out the moment A value -->
     <DeterminacyText></DeterminacyText>
 
     <div class="row">
-      <div class="col-xl mx-2">
+      <div class="col-xl-6 mx-2">
         <div class="row">
-          <div class="col">
+          <div class="col-lg-8">
             <div class="my-3">
               <span>Constraints at the left end of beam</span> <br />
               <button class="btn btn-warning mx-3">Fixed</button>
@@ -21,7 +21,7 @@
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="none">None</button>
             </div>
           </div>
-          <div class="col">
+          <div class="col-lg-4 text-center">
             <div>
               <p>
                 <span>&Sigma;</span>
@@ -103,10 +103,18 @@ export default {
     const y_shift = 6;
     const y_react_shift = -12;
     const moment_radius = 1.5;
+    const fontSize = 20;
+    const strokeColor = "red";
 
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
-    const board = JXG.JSXGraph.initBoard("fixFix", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
+    const board = JXG.JSXGraph.initBoard("fixFix", {
+      boundingbox: [-15, 15, 15, -15],
+      axis: true,
+      keepAspectRatio: true,
+      showCopyright: false,
+      showNavigation: false
+    });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
@@ -366,7 +374,7 @@ export default {
       strokeWidth: 3,
       dash: true
     });
-    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line });
+    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line, fixed: true });
 
     const Fy = board.create(
       "point",
@@ -389,7 +397,7 @@ export default {
       strokeWidth: 3,
       dash: true
     });
-    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line });
+    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line, fixed: true });
 
     // create moment force on the left
     const MA_Curve = board.create(
@@ -423,22 +431,7 @@ export default {
       }
     );
 
-    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"]); /// needs change
-    const MA = board.create(
-      "text",
-      [
-        -10,
-        4,
-        () => {
-          if (this.currentSelection !== 3) return "";
-          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
-          else val = val - this.momentMag.Value();
-          return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
-        }
-      ],
-      { fixed: true }
-    );
+    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"], { fixed: true });
 
     // make moment force on the right
     const MB_Curve = board.create(
@@ -470,10 +463,11 @@ export default {
     const MB_Text = board.create("text", [13.5 + x_shift, 0.5 + y_shift + y_react_shift, "M_B"], {
       visible: () => {
         return this.currentSelection === 0;
-      }
+      },
+      fixed: true
     });
 
-    // make reactive force in x direction
+    // make reactive force in x direction on the left
     const Ax_Line = board.create(
       "line",
       [
@@ -506,19 +500,9 @@ export default {
       }
     );
 
-    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"]);
+    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"], { fixed: true });
 
-    const Ax = board.create("text", [
-      -10,
-      6,
-      () => {
-        if (this.currentSelection !== 3) return "";
-        let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-      }
-    ]);
-
+    // make reactive force in x direction on the right
     const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,
@@ -534,9 +518,11 @@ export default {
     const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
       visible: () => {
         return this.currentSelection <= 1;
-      }
+      },
+      fixed: true
     });
 
+    // make reactive force in y direction on the left
     const Ay_Line = board.create(
       "line",
       [
@@ -555,17 +541,8 @@ export default {
     );
 
     const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
-    const Ay = board.create("text", [
-      -10,
-      5,
-      () => {
-        if (this.currentSelection !== 3) return "";
-        let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-      }
-    ]);
 
+    // make reactive force in y direction on the right
     const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
       straightFirst: false,
       straightLast: false,
@@ -581,7 +558,8 @@ export default {
       anchor: By_Line,
       visible: () => {
         return this.currentSelection <= 2;
-      }
+      },
+      fixed: true
     });
 
     const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
@@ -627,6 +605,59 @@ export default {
       anchor: Lf,
       fixed: true
     });
+
+    // reactive force analysis
+    const Ax = board.create(
+      "text",
+      [
+        -10,
+        6,
+        () => {
+          if (this.currentSelection !== 3) return "";
+          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+        }
+      ],
+      {
+        fontSize,
+        strokeColor,
+        fixed: true
+      }
+    );
+    const Ay = board.create(
+      "text",
+      [
+        -10,
+        5,
+        () => {
+          if (this.currentSelection !== 3) return "";
+          let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+        }
+      ],
+      {
+        fontSize,
+        strokeColor,
+        fixed: true
+      }
+    );
+    const MA = board.create(
+      "text",
+      [
+        -10,
+        4,
+        () => {
+          if (this.currentSelection !== 3) return "";
+          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+          else val = val - this.momentMag.Value();
+          return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
+        }
+      ],
+      { fixed: true, fontSize, strokeColor }
+    );
   },
   methods: {
     fixed() {

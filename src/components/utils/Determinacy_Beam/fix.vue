@@ -98,6 +98,7 @@ export default {
     }
   },
   mounted() {
+    console.log(this.globalData.showReactive);
     const fixedDecimal = 3;
     const x_shift = -5;
     const y_shift = 6;
@@ -230,6 +231,15 @@ export default {
       }
     ]);
 
+    const showReactive = board_control.create("button", [
+      8,
+      4,
+      "Show Reactive",
+      () => {
+        this.globalData.showReactive = this.globalData.showReactive ? false : true;
+      }
+    ]);
+
     const inputMag = board_control.create("input", [7, 13, "", ""], { cssStyle: "width: 50px" });
     const buttonMag = board_control.create("button", [
       8,
@@ -341,7 +351,16 @@ export default {
 
     // reactive forces
     // translating variables
-    const react_F_0 = board.create("line", [forceLine, react_trans], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
+    const react_visible = () => {
+      return this.globalData.showReactive;
+    };
+    const react_F_0 = board.create("line", [forceLine, react_trans], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      strokeWidth: 3,
+      visible: react_visible
+    });
     const react_Moment_0 = board.create("curve", [Moment_0_Curve, react_trans], {
       strokeWidth: 3,
       lastArrow: () => {
@@ -349,7 +368,8 @@ export default {
       },
       firstArrow: () => {
         return !this.globalData.dirMoment;
-      }
+      },
+      visible:react_visible
     });
 
     // creating sub forces
@@ -704,7 +724,8 @@ export default {
       const fix = false;
       const pin = true;
       const roller = false;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
+      const showReactive = this.globalData.showReactive;
+      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
       this.$emit("fromChild", obj);
     },
     clickOnRoller() {
@@ -717,7 +738,8 @@ export default {
       const fix = false;
       const pin = false;
       const roller = true;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
+      const showReactive = this.globalData.showReactive;
+      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
       this.$emit("fromChild", obj);
     }
   }

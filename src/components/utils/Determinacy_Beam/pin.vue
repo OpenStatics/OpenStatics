@@ -75,6 +75,7 @@ export default {
   },
   mounted() {
     const fixedDecimal = 4;
+    console.log(this.globalData.showReactive)
 
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
@@ -503,7 +504,8 @@ export default {
       const fix = true;
       const pin = false;
       const roller = false;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
+      const showReactive = this.globalData.showReactive;
+      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
       this.$emit("fromChild", obj);
     },
     clickOnRoller() {
@@ -516,7 +518,8 @@ export default {
       const fix = false;
       const pin = false;
       const roller = true;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller };
+      const showReactive = this.globalData.showReactive;
+      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
       this.$emit("fromChild", obj);
     }
   }

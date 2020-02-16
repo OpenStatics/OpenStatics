@@ -25,7 +25,8 @@ export default {
         dirMoment: true,
         fix: true,
         pin: false,
-        roller: false
+        roller: false,
+        showReactive: false
       }
     };
   },

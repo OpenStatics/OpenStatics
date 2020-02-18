@@ -106,6 +106,9 @@ export default {
     const moment_radius = 1.5;
     const fontSize = 20;
     const strokeColor = "red";
+    const react_visible = () => {
+      return this.globalData.showReactive;
+    };
 
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
@@ -121,6 +124,15 @@ export default {
       showCopyright: false
     });
     board_control.addChild(board);
+
+    const showReactive = board.create("button", [
+      8,
+      4,
+      "Show Reactive",
+      () => {
+        this.globalData.showReactive = this.globalData.showReactive ? false : true;
+      }
+    ]);
     // board_control.resizeContainer(500,500)
 
     // create base
@@ -161,7 +173,7 @@ export default {
 
     // reactive force and moment base
     const react_trans = board.create("transform", [0, y_react_shift], { type: "translate" });
-    const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false } });
+    const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
 
     // controller
     this.magnitude = board_control.create("slider", [[2, 14], [12, 14], [0, magVal, 2]], { withLabel: false });
@@ -228,15 +240,6 @@ export default {
       "CW",
       () => {
         this.globalData.dirMoment = false;
-      }
-    ]);
-
-    const showReactive = board_control.create("button", [
-      8,
-      4,
-      "Show Reactive",
-      () => {
-        this.globalData.showReactive = this.globalData.showReactive ? false : true;
       }
     ]);
 
@@ -351,9 +354,7 @@ export default {
 
     // reactive forces
     // translating variables
-    const react_visible = () => {
-      return this.globalData.showReactive;
-    };
+
     const react_F_0 = board.create("line", [forceLine, react_trans], {
       straightFirst: false,
       straightLast: false,
@@ -369,7 +370,7 @@ export default {
       firstArrow: () => {
         return !this.globalData.dirMoment;
       },
-      visible:react_visible
+      visible: react_visible
     });
 
     // creating sub forces
@@ -392,9 +393,10 @@ export default {
       straightLast: false,
       lastArrow: true,
       strokeWidth: 3,
-      dash: true
+      dash: true,
+      visible: react_visible
     });
-    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line, fixed: true });
+    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line, fixed: true, visible: react_visible });
 
     const Fy = board.create(
       "point",
@@ -415,9 +417,10 @@ export default {
       straightLast: false,
       lastArrow: true,
       strokeWidth: 3,
-      dash: true
+      dash: true,
+      visible: react_visible
     });
-    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line, fixed: true });
+    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line, fixed: true, visible: react_visible });
 
     // create moment force on the left
     const MA_Curve = board.create(
@@ -447,11 +450,12 @@ export default {
       {
         strokeWidth: 3,
         lastArrow: true,
-        strokeColor: "red"
+        strokeColor: "red",
+        visible: react_visible
       }
     );
 
-    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"], { fixed: true });
+    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"], { fixed: true, visible: react_visible });
 
     // make moment force on the right
     const MB_Curve = board.create(
@@ -475,14 +479,14 @@ export default {
         lastArrow: true,
         strokeColor: "red",
         visible: () => {
-          return this.currentSelection === 0;
+          return this.currentSelection === 0 && react_visible();
         }
       }
     );
 
     const MB_Text = board.create("text", [13.5 + x_shift, 0.5 + y_shift + y_react_shift, "M_B"], {
       visible: () => {
-        return this.currentSelection === 0;
+        return this.currentSelection === 0 && react_visible();
       },
       fixed: true
     });
@@ -516,11 +520,12 @@ export default {
           return val >= 0;
         },
         strokeWidth: 3,
-        strokeColor: "red"
+        strokeColor: "red",
+        visible: react_visible
       }
     );
 
-    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"], { fixed: true });
+    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"], { fixed: true, visible: react_visible });
 
     // make reactive force in x direction on the right
     const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
@@ -530,14 +535,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 1;
+        return this.currentSelection <= 1 && react_visible();
       },
       fixed: true
     });
 
     const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
       visible: () => {
-        return this.currentSelection <= 1;
+        return this.currentSelection <= 1 && react_visible();
       },
       fixed: true
     });
@@ -557,10 +562,10 @@ export default {
           }
         ]
       ],
-      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red" }
+      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red", visible: react_visible }
     );
 
-    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
+    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible });
 
     // make reactive force in y direction on the right
     const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
@@ -570,14 +575,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 2;
+        return this.currentSelection <= 2 && react_visible();
       }
     });
 
     const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
       anchor: By_Line,
       visible: () => {
-        return this.currentSelection <= 2;
+        return this.currentSelection <= 2 && react_visible();
       },
       fixed: true
     });
@@ -590,14 +595,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 1;
+        return this.currentSelection <= 1 && react_visible();
       },
       fixed: true
     });
     const L_Line_Label = board.create("text", [0, 0.5, "L"], {
       anchor: L,
       visible: () => {
-        return this.currentSelection <= 1;
+        return this.currentSelection <= 1 && react_visible();
       }
     });
 
@@ -618,12 +623,14 @@ export default {
         firstArrow: true,
         lastArrow: true,
         strokeWidth: 3,
-        strokeColor: "red"
+        strokeColor: "red",
+        visible: react_visible
       }
     );
     const Lf_Line_Label = board.create("text", [0, -0.5, "L_f"], {
       anchor: Lf,
-      fixed: true
+      fixed: true,
+      visible: react_visible
     });
 
     // reactive force analysis
@@ -642,7 +649,8 @@ export default {
       {
         fontSize,
         strokeColor,
-        fixed: true
+        fixed: true,
+        visible: react_visible
       }
     );
     const Ay = board.create(
@@ -660,7 +668,8 @@ export default {
       {
         fontSize,
         strokeColor,
-        fixed: true
+        fixed: true,
+        visible: react_visible
       }
     );
     const MA = board.create(
@@ -676,7 +685,7 @@ export default {
           return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
         }
       ],
-      { fixed: true, fontSize, strokeColor }
+      { fixed: true, fontSize, strokeColor, visible: react_visible }
     );
   },
   methods: {

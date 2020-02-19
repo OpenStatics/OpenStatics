@@ -1,5 +1,5 @@
 <template>
-  <div class="row">
+  <div>
     <div>
       <p>
         When we need to find the force in only a few members of a truss, we can analyze the truss using the method of sections. It is based on the
@@ -23,13 +23,20 @@
       </p>
     </div>
     <div>
-      <truss v-if="currentSelection == 0" />
+      <!--<truss v-if="currentSelection == 0" />
       <cutSections v-if="currentSelection == 1" />
       <Fbc v-if="currentSelection == 2" />
       <Fgc v-if="currentSelection == 3" />
       <Fgf v-if="currentSelection == 4" />
 
-      <!-- <div id="box2" class="jsx-graph my-2 text-center"></div> -->
+      
+      <button @click="() => changeSelection(0)">Overview</button>
+      <button @click="() => changeSelection(1)">Section</button>
+      <button @click="() => changeSelection(2)">F_BC</button>
+      <button @click="() => changeSelection(3)">F_GC</button>
+      <button @click="() => changeSelection(4)">F_GF</button>-->
+      <methOfSec ref="foo" />
+
       <button @click="() => changeSelection(0)">Overview</button>
       <button @click="() => changeSelection(1)">Section</button>
       <button @click="() => changeSelection(2)">F_BC</button>
@@ -45,22 +52,24 @@ import cutSections from "../../utils/methods_of_sections/cutSections";
 import Fbc from "../../utils/methods_of_sections/Fbc";
 import Fgc from "../../utils/methods_of_sections/Fgc";
 import Fgf from "../../utils/methods_of_sections/Fgf";
+import meth_of_sec from "../../utils/methods_of_sections/meth_of_sec";
 
 export default {
   data() {
     return { currentSelection: 0 };
   },
   components: {
-    truss: truss,
-    cutSections: cutSections,
-    Fbc: Fbc,
-    Fgc: Fgc,
-    Fgf: Fgf
+    methOfSec: meth_of_sec
+    //truss: truss,
+    //cutSections: cutSections,
+    //Fbc: Fbc,
+    //Fgc: Fgc,
+    //Fgf: Fgf
   },
   methods: {
     changeSelection(nextState) {
-      this.currentSelection = nextState;
-      console.log(this.currentSelection);
+      this.$refs.foo.change_state(nextState);
+      console.log(nextState);
     }
   },
   mounted() {

@@ -41,7 +41,6 @@
             </ul>
           </div>
         </div>
-        <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
       <div id="roller" class="jsx-graph col-xl mx-2"></div>
     </div>
@@ -91,11 +90,6 @@ export default {
       showCopyright: false,
       showNavigation: false
     });
-    const board_control = JXG.JSXGraph.initBoard("control", {
-      boundingbox: [0, 15, 15, 0],
-      showCopyright: false
-    });
-    board_control.addChild(board);
 
     const showReactive = board.create("button", [
       8,
@@ -129,126 +123,12 @@ export default {
     const react_trans = board.create("transform", [0, y_react_shift], { type: "translate" });
     const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
 
-    // controller
-    this.magnitude = board_control.create("slider", [[2, 14], [12, 14], [0, magVal, 2]], { withLabel: false });
-    board_control.create("text", [
-      3,
-      13,
-      () => {
-        const value = parseFloat(this.magnitude.Value().toFixed(fixedDecimal));
-        return "Magnitude of Loading [kN]:" + value;
-      }
-    ]);
-
-    this.position = board_control.create("slider", [[2, 12], [12, 12], [0, posVal, 1]], { withLabel: false });
-    board_control.create("text", [
-      3,
-      11,
-      () => {
-        const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
-        return "Position of Loading (m):" + value;
-      }
-    ]);
-
-    this.direction = board_control.create("slider", [[2, 10], [12, 10], [0, dirVal, 360]], { withLabel: false });
-    board_control.create("text", [
-      3,
-      9,
-      () => {
-        const value = parseFloat(this.direction.Value().toFixed(fixedDecimal));
-        return "Direction of Force [degree]:" + value;
-      }
-    ]);
-
-    this.momentMag = board_control.create("slider", [[2, 8], [12, 8], [0, magMoment, 2]], { withLabel: false });
-    board_control.create("text", [
-      3,
-      7,
-      () => {
-        const value = parseFloat(this.momentMag.Value().toFixed(fixedDecimal));
-        return "Magnitude of Moment[kN*m]:" + value;
-      }
-    ]);
-
-    this.momentPos = board_control.create("slider", [[2, 6], [12, 6], [0, posMoment, 1]], { withLabel: false });
-    board_control.create("text", [
-      3,
-      5,
-      () => {
-        const value = parseFloat(this.momentPos.Value().toFixed(fixedDecimal));
-        return "Position of Moment (m):" + value;
-      }
-    ]);
-
-    const CCW = board_control.create("button", [
-      3.5,
-      4,
-      "CCW",
-      () => {
-        this.globalData.dirMoment = true;
-      }
-    ]);
-    const CW = board_control.create("button", [
-      6.5,
-      4,
-      "CW",
-      () => {
-        this.globalData.dirMoment = false;
-      }
-    ]);
-
-    const inputMag = board_control.create("input", [7, 13, "", ""], { cssStyle: "width: 50px" });
-    const buttonMag = board_control.create("button", [
-      8,
-      13,
-      "Update",
-      () => {
-        if (Number(inputMag.Value())) this.magnitude.setValue(Number(inputMag.Value()));
-      }
-    ]);
-    const inputPos = board_control.create("input", [7, 11, "", ""], { cssStyle: "width: 50px" });
-    const buttonPos = board_control.create("button", [
-      8,
-      11,
-      "Update",
-      () => {
-        if (Number(inputPos.Value())) this.position.setValue(Number(inputPos.Value()));
-      }
-    ]);
-    const inputDir = board_control.create("input", [7, 9, "", ""], { cssStyle: "width: 50px" });
-    const buttonDir = board_control.create("button", [
-      8,
-      9,
-      "Update",
-      () => {
-        if (Number(inputDir.Value())) this.direction.setValue(Number(inputDir.Value()));
-      }
-    ]);
-    const inputMagMoment = board_control.create("input", [7, 7, "", ""], { cssStyle: "width: 50px" });
-    const buttonMagMoment = board_control.create("button", [
-      8,
-      7,
-      "Update",
-      () => {
-        if (Number(inputMagMoment.Value())) this.momentMag.setValue(Number(inputMagMoment.Value()));
-      }
-    ]);
-    const inputPosMoment = board_control.create("input", [7, 5, "", ""], { cssStyle: "width: 50px" });
-    const buttonPosMoment = board_control.create("button", [
-      8,
-      5,
-      "Update",
-      () => {
-        if (Number(inputPosMoment.Value())) this.momentPos.setValue(Number(inputPosMoment.Value()));
-      }
-    ]);
-
     // variable
     const F_0 = board.create(
       "point",
       [
         () => {
-          return this.position.Value() * 10 + x_shift;
+          return posVal * 10 + x_shift;
         },
         0 + y_shift
       ],
@@ -258,10 +138,10 @@ export default {
       "point",
       [
         () => {
-          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + F_0.X();
+          return magVal * Math.cos((dirVal / 180) * Math.PI) * 4 + F_0.X();
         },
         () => {
-          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 4 + F_0.Y();
+          return magVal * Math.sin((dirVal / 180) * Math.PI) * 4 + F_0.Y();
         }
       ],
       {
@@ -275,16 +155,16 @@ export default {
       "curve",
       [
         t => {
-          return moment_radius * Math.sin(t) + this.momentPos.Value() * 10 + x_shift;
+          return moment_radius * Math.sin(t) + posMoment * 10 + x_shift;
         },
         t => {
           return moment_radius * Math.cos(t) + y_shift;
         },
         () => {
-          return ((this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
+          return ((magMoment * 3) / 8 + 0.5) * Math.PI;
         },
         () => {
-          return ((-this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
+          return ((-magMoment * 3) / 8 + 0.5) * Math.PI;
         }
       ],
       {
@@ -300,7 +180,7 @@ export default {
 
     const Moment_0_Curve_Label = board.create("text", [
       () => {
-        return this.momentPos.Value() * 10 + 3 + x_shift;
+        return posMoment * 10 + 3 + x_shift;
       },
       0 + y_shift,
       "M"
@@ -332,7 +212,7 @@ export default {
       "point",
       [
         () => {
-          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + react_F_0.point1.X();
+          return magVal * Math.cos((dirVal / 180) * Math.PI) * 4 + react_F_0.point1.X();
         },
         () => {
           return y_shift + y_react_shift;
@@ -427,7 +307,7 @@ export default {
         [0 + x_shift, 4 + y_shift + y_react_shift],
         [
           () => {
-            return this.position.Value() * 10 + x_shift;
+            return posVal * 10 + x_shift;
           },
           4 + y_shift + y_react_shift
         ]
@@ -450,12 +330,7 @@ export default {
   },
   methods: {
     clickOnFix() {
-      const posVal = this.position.Value();
-      const magVal = this.magnitude.Value();
-      const dirVal = this.direction.Value();
-      const magMoment = this.momentMag.Value();
-      const posMoment = this.momentPos.Value();
-      const dirMoment = this.globalData.dirMoment;
+      const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
       const fix = true;
       const pin = false;
       const roller = false;
@@ -464,12 +339,7 @@ export default {
       this.$emit("fromChild", obj);
     },
     clickOnPin() {
-      const posVal = this.position.Value();
-      const magVal = this.magnitude.Value();
-      const dirVal = this.direction.Value();
-      const magMoment = this.momentMag.Value();
-      const posMoment = this.momentPos.Value();
-      const dirMoment = this.globalData.dirMoment;
+      const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
       const fix = false;
       const pin = true;
       const roller = false;

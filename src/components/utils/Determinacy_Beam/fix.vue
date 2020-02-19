@@ -586,7 +586,7 @@ export default {
       fixed: true
     });
 
-    // length 
+    // length
     const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,
@@ -603,7 +603,8 @@ export default {
       anchor: L,
       visible: () => {
         return this.currentSelection <= 1 && react_visible();
-      }
+      },
+      fixed: true
     });
 
     const Lf = board.create(

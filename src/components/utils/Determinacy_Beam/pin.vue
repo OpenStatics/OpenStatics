@@ -84,7 +84,7 @@ export default {
     }
   },
   mounted() {
-    const fixedDecimal = 4;
+    const fixedDecimal = 3;
     const x_shift = -5;
     const y_shift = 6;
     const y_react_shift = -12;
@@ -98,8 +98,13 @@ export default {
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
 
-    const board = JXG.JSXGraph.initBoard("pin", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
-    const board_control = JXG.JSXGraph.initBoard("control", {
+    const board = JXG.JSXGraph.initBoard("pin", {
+      boundingbox: [-15, 15, 15, -15],
+      axis: true,
+      keepAspectRatio: true,
+      showCopyright: false,
+      showNavigation: false
+    });    const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
     });
@@ -296,10 +301,10 @@ export default {
       "curve",
       [
         t => {
-          return 2 * Math.sin(t) + this.momentPos.Value() * 10 + x_shift;
+          return moment_radius * Math.sin(t) + this.momentPos.Value() * 10 + x_shift;
         },
         t => {
-          return 2 * Math.cos(t) + y_shift;
+          return moment_radius * Math.cos(t) + y_shift;
         },
         () => {
           return ((this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;

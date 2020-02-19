@@ -564,7 +564,7 @@ export default {
       { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red", visible: react_visible }
     );
 
-    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible });
+    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible, fixed: true });
 
     // make reactive force in y direction on the right
     const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
@@ -586,6 +586,7 @@ export default {
       fixed: true
     });
 
+    // length 
     const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,

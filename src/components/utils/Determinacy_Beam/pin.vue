@@ -1,4 +1,5 @@
 <template>
+  <!-- Need to figure out Ay and By -->
   <div style="margin:20px">
     <DeterminacyText></DeterminacyText>
 
@@ -327,67 +328,89 @@ export default {
     ]);
 
     // reactive forces
+    // translating variables
+
+    const react_F_0 = board.create("line", [forceLine, react_trans], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      strokeWidth: 3,
+      visible: react_visible
+    });
+    const react_Moment_0 = board.create("curve", [Moment_0_Curve, react_trans], {
+      strokeWidth: 3,
+      lastArrow: () => {
+        return this.globalData.dirMoment;
+      },
+      firstArrow: () => {
+        return !this.globalData.dirMoment;
+      },
+      visible: react_visible
+    });
+
+    // creating sub forces
     const Fx = board.create(
       "point",
       [
         () => {
-          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + F_0.X();
+          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + react_F_0.point1.X();
         },
         () => {
-          return 0;
+          return 0 + y_shift + y_react_shift;
         }
       ],
       {
         visible: false
       }
     );
-    const Fx_Line = board.create("line", [Fx, F_0], {
+    const Fx_Line = board.create("line", [Fx, react_F_0.point1], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
       strokeWidth: 3,
       dash: true,
-      strokeColor: "red"
+      visible: react_visible
     });
-    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line });
+    const Fx_line_Label = board.create("text", [-0.5, 0.5, "F_x"], { anchor: Fx_Line, fixed: true, visible: react_visible });
 
     const Fy = board.create(
       "point",
       [
         () => {
-          return F_0.X();
+          return react_F_0.point1.X();
         },
         () => {
-          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 4 + F_0.Y();
+          return react_F_0.point2.Y();
         }
       ],
       {
         visible: false
       }
     );
-    const Fy_Line = board.create("line", [Fy, F_0], {
+    const Fy_Line = board.create("line", [Fy, react_F_0.point1], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
       strokeWidth: 3,
       dash: true,
-      strokeColor: "red"
+      visible: react_visible
     });
-    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line });
+    const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line, fixed: true, visible: react_visible });
 
+    // make reactive force in x direction on the left
     const Ax_Line = board.create(
       "line",
       [
         [
           () => {
-            if (this.currentSelection !== 3) return -1;
+            if (this.currentSelection !== 1) return -1.25 + x_shift;
             let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -2 * Math.abs(val);
+            return -2 * Math.abs(val) + x_shift - 1.25;
           },
-          0
+          0 + y_shift + y_react_shift
         ],
-        [0, 0]
+        [-0.5 + x_shift, 0 + y_shift + y_react_shift]
       ],
       {
         straightFirst: false,
@@ -400,15 +423,139 @@ export default {
         lastArrow: () => {
           let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-          return val > 0;
+          return val >= 0;
         },
         strokeWidth: 3,
-        strokeColor: "red"
+        strokeColor: "red",
+        visible: react_visible
       }
     );
 
-    const Ax_Line_Label = board.create("text", [-1, -0.5, "A_x"]);
+    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_shift + y_react_shift, "A_x"], { fixed: true, visible: react_visible });
 
+    // make reactive force in x direction on the right
+    const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeWidth: 3,
+      strokeColor: "red",
+      visible: () => {
+        return this.currentSelection <= 0 && react_visible();
+      },
+      fixed: true
+    });
+
+    const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
+      visible: () => {
+        return this.currentSelection <= 0 && react_visible();
+      },
+      fixed: true
+    });
+
+    // make reactive force in y direction on the left some problem here????
+    const Ay_Line = board.create(
+      "line",
+      [
+        [0 + x_shift, -1.25 + y_shift + y_react_shift],
+        [
+          0 + x_shift,
+          () => {
+            if (this.currentSelection !== 1) return -2.25 + y_react_shift + y_shift;
+            const Fy = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            const By =
+              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
+            let val = -Fy - By;
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -val - 1.25 + y_shift + y_react_shift;
+          }
+        ]
+      ],
+      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red", visible: react_visible }
+    );
+
+    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible, fixed: true });
+
+    // make reactive force in y direction on the right
+    const By_Line = board.create(
+      "line",
+      [
+        [10 + x_shift, -1.25 + y_shift + y_react_shift],
+        [
+          10 + x_shift,
+          () => {
+            if (this.currentSelection === 0) return -2.25 + y_react_shift + y_shift;
+            let val =
+              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
+            return val - 1 + y_react_shift + y_shift;
+          }
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: react_visible
+      }
+    );
+
+    const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
+      anchor: By_Line,
+      visible: react_visible,
+      fixed: true
+    });
+
+    // length
+    const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      lastArrow: true,
+      strokeWidth: 3,
+      strokeColor: "red",
+      visible: () => {
+        return this.currentSelection <= 1 && react_visible();
+      },
+      fixed: true
+    });
+
+    const L_Line_Label = board.create("text", [0, 1, "L"], {
+      anchor: L,
+      visible: () => {
+        return this.currentSelection <= 1 && react_visible();
+      }
+    });
+
+    const Lf = board.create(
+      "line",
+      [
+        [0 + x_shift, 4 + y_shift + y_react_shift],
+        [
+          () => {
+            return this.position.Value() * 10 + x_shift;
+          },
+          4 + y_shift + y_react_shift
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        lastArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: react_visible
+      }
+    );
+    const Lf_Line_Label = board.create("text", [0, -0.5, "L_f"], {
+      anchor: Lf,
+      fixed: true,
+      visible: react_visible
+    });
+
+    // reactive force analysis
     const Ax = board.create("text", [
       -10,
       6,
@@ -419,45 +566,6 @@ export default {
         return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
       }
     ]);
-
-    const Bx_Line = board.create("line", [[10, 0], [11, 0]], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeWidth: 3,
-      strokeColor: "red",
-      visible: () => {
-        return this.currentSelection <= 0;
-      }
-    });
-
-    const Bx_Line_Label = board.create("text", [11.5, -0.5, "B_x"], {
-      visible: () => {
-        return this.currentSelection <= 0;
-      }
-    });
-
-    const Ay_Line = board.create(
-      "line",
-      [
-        [1, -1],
-        [
-          1,
-          () => {
-            if (this.currentSelection !== 1) return -2;
-            const Fy = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-            const By =
-              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
-            let val = -Fy - By;
-            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -val - 1;
-          }
-        ]
-      ],
-      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red" }
-    );
-
-    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
     const Ay = board.create("text", [
       -10,
       5,
@@ -471,34 +579,6 @@ export default {
         return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
       }
     ]);
-
-    const By_Line = board.create(
-      "line",
-      [
-        [9, -1],
-        [
-          9,
-          () => {
-            if (this.currentSelection === 0) return -2;
-            let val =
-              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
-            return val - 1;
-          }
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        firstArrow: true,
-        strokeWidth: 3,
-        strokeColor: "red"
-      }
-    );
-
-    const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
-      anchor: By_Line
-    });
-
     const By = board.create("text", [
       -10,
       4,
@@ -509,48 +589,6 @@ export default {
         return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
       }
     ]);
-
-    const L = board.create("line", [[0, 6], [10, 6]], {
-      straightFirst: false,
-      straightLast: false,
-      firstArrow: true,
-      lastArrow: true,
-      strokeWidth: 3,
-      strokeColor: "red",
-      visible: () => {
-        return this.currentSelection <= 1;
-      }
-    });
-    const L_Line_Label = board.create("text", [0, 1, "L"], {
-      anchor: L,
-      visible: () => {
-        return this.currentSelection <= 1;
-      }
-    });
-
-    const Lf = board.create(
-      "line",
-      [
-        [0, 4],
-        [
-          () => {
-            return this.position.Value() * 10;
-          },
-          4
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        firstArrow: true,
-        lastArrow: true,
-        strokeWidth: 3,
-        strokeColor: "red"
-      }
-    );
-    const Lf_Line_Label = board.create("text", [0, 1, "L_f"], {
-      anchor: Lf
-    });
   },
   methods: {
     smooth() {

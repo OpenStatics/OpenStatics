@@ -62,7 +62,7 @@
             </ul>
           </div>
         </div>
-        <div v-show="currentSelection === 3" id="control" style="height:500px;width:100%" class=" mx-2"></div>
+        <div v-show="currentSelection === 3" id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
@@ -98,7 +98,6 @@ export default {
     }
   },
   mounted() {
-    console.log(this.globalData.showReactive);
     const fixedDecimal = 3;
     const x_shift = -5;
     const y_shift = 6;
@@ -133,7 +132,7 @@ export default {
         this.globalData.showReactive = this.globalData.showReactive ? false : true;
       }
     ]);
-    // board_control.resizeContainer(500,500)
+    // board_control.resizeContainer(500,500) -> useless code
 
     // create base
     const rec_a = board.create("point", [0 + x_shift, -1 + y_shift], { fixed: true, visible: false });

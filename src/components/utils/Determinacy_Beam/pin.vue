@@ -1,47 +1,56 @@
 <template>
-  <div class="row">
-    <div id="pin" class="jsx-graph col-xl mx-2"></div>
-    <div class="col-xl mx-2">
-      <DeterminacyText></DeterminacyText>
+  <div style="margin:20px">
+    <DeterminacyText></DeterminacyText>
 
-      <div class="my-3">
-        <span>Constraints at the left end of beam</span> <br />
-        <button class="btn btn-primary mx-3" @click="clickOnFix">Fixed</button>
-        <button class="btn btn-warning mx-3">Smooth pin</button>
-        <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
-      </div>
-      <div>
-        <span>Constraints at the right end of beam</span> <br />
-        <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="smooth">Smooth pin</button>
-        <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="roller">Roller</button>
-      </div>
-      <div>
-        <div>
-          <p>
-            <span>&Sigma;</span>
-            M = F<sub>y</sub> &#215; L<sub>f</sub> + <span style="color:red">B<sub>y</sub></span> &#215; L + M = 0
-          </p>
-          <p>
-            <span>&Sigma;</span>
-            F<sub>x</sub> = <span style="color:red">A<sub>x</sub></span> +
-            <span v-if="currentSelection === 0"
-              ><span style="color:red">B<sub>x</sub></span> +</span
-            >
-            F<sub>x</sub> = 0
-          </p>
-          <p>
-            <span>&Sigma;</span>
-            F<sub>y</sub> = <span style="color:red">A<sub>y</sub></span> + <span style="color:red">B<sub>y</sub></span> + F<sub>y</sub> = 0
-          </p>
+    <div class="row">
+      <div class="col-xl-6 mx-2">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="my-3">
+              <span>Constraints at the left end of beam</span> <br />
+              <button class="btn btn-primary mx-3" @click="clickOnFix">Fixed</button>
+              <button class="btn btn-warning mx-3">Smooth pin</button>
+              <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
+            </div>
+            <div>
+              <span>Constraints at the right end of beam</span> <br />
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="smooth">Smooth pin</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="roller">Roller</button>
+            </div>
+          </div>
+          <div class="col-lg-4 text-center">
+            <div>
+              <p>
+                <span>&Sigma;</span>
+                M = F<sub>y</sub> &#215; L<sub>f</sub> + <span style="color:red">B<sub>y</sub></span> &#215; L + M = 0
+              </p>
+              <p>
+                <span>&Sigma;</span>
+                F<sub>x</sub> = <span style="color:red">A<sub>x</sub></span> +
+                <span v-if="currentSelection === 0"
+                  ><span style="color:red">B<sub>x</sub></span> +</span
+                >
+                F<sub>x</sub> = 0
+              </p>
+              <p>
+                <span>&Sigma;</span>
+                F<sub>y</sub> = <span style="color:red">A<sub>y</sub></span> + <span style="color:red">B<sub>y</sub></span> + F<sub>y</sub> = 0
+              </p>
+            </div>
+            <ul>
+              <li>Reactive forces/moments: {{ 4 - currentSelection }}</li>
+              <li>
+                Equations of Equilibrium: 3
+              </li>
+              <li>
+                Status: Statically <span v-if="currentSelection <= 0">indeterminate</span> <span v-if="currentSelection === 1">determinate</span>
+              </li>
+            </ul>
+          </div>
         </div>
-        <ul>
-          <li>Reactive forces/moments: {{ 4 - currentSelection }}</li>
-          <li>
-            Equations of Equilibrium: 3
-          </li>
-          <li>Status: Statically <span v-if="currentSelection <= 0">indeterminate</span> <span v-if="currentSelection === 1">determinate</span></li>
-        </ul>
+        <div v-show="currentSelection === 1" id="control" style="height:500px;width:100%" class=" mx-2">aaa</div>
       </div>
+      <div id="pin" class="jsx-graph col-xl mx-2"></div>
     </div>
   </div>
 </template>
@@ -75,119 +84,193 @@ export default {
   },
   mounted() {
     const fixedDecimal = 4;
-    console.log(this.globalData.showReactive)
+    const x_shift = -5;
+    const y_shift = 6;
+    const y_react_shift = -12;
+    const moment_radius = 1.5;
+    const fontSize = 20;
+    const strokeColor = "red";
+    const react_visible = () => {
+      return this.globalData.showReactive;
+    };
 
     // retrieve data
     const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
 
     const board = JXG.JSXGraph.initBoard("pin", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
-    const rec_a = board.create("point", [0, -1], { fixed: true, visible: false });
-    const rec_b = board.create("point", [0, 1], { fixed: true, visible: false });
-    const rec_c = board.create("point", [10, 1], { fixed: true, visible: false });
-    const rec_d = board.create("point", [10, -1], { fixed: true, visible: false });
+    const board_control = JXG.JSXGraph.initBoard("control", {
+      boundingbox: [0, 15, 15, 0],
+      showCopyright: false
+    });
+    board_control.addChild(board);
+    const showReactive = board.create("button", [
+      8,
+      4,
+      "Show Reactive",
+      () => {
+        this.globalData.showReactive = this.globalData.showReactive ? false : true;
+      }
+    ]);
+
+    // create base
+    const rec_a = board.create("point", [0 + x_shift, -1 + y_shift], { fixed: true, visible: false });
+    const rec_b = board.create("point", [0 + x_shift, 1 + y_shift], { fixed: true, visible: false });
+    const rec_c = board.create("point", [10 + x_shift, 1 + y_shift], { fixed: true, visible: false });
+    const rec_d = board.create("point", [10 + x_shift, -1 + y_shift], { fixed: true, visible: false });
     const rectangle = board.create("polygon", [rec_a, rec_b, rec_c, rec_d]);
 
     const pin_left = this.constraintObj[0];
-    const pin_p1_left = board.create("point", [-0.3, 0], { fixed: true, visible: false });
-    const pin_p2_left = board.create("point", [0.3, 0], { fixed: true, visible: false });
-    const pin_p3_left = board.create("point", [1, -1.5], { fixed: true, visible: false });
-    const pin_p4_left = board.create("point", [-1, -1.5], { fixed: true, visible: false });
-    pin_left.pin_circ = board.create("circle", [[0, 0], 0.3], { fillColor: "red", fixed: true });
+    const pin_p1_left = board.create("point", [-0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p2_left = board.create("point", [0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p3_left = board.create("point", [1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    const pin_p4_left = board.create("point", [-1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    pin_left.pin_circ = board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true });
     pin_left.pin_body = board.create("polygon", [pin_p1_left, pin_p2_left, pin_p3_left, pin_p4_left], { fillColor: "red" });
     pin_left.pin_comb = board.create("comb", [pin_p3_left, pin_p4_left]);
 
     const pin = this.constraintObj[0];
-    const pin_p1 = board.create("point", [9.7, 0], { fixed: true, visible: false });
-    const pin_p2 = board.create("point", [10.3, 0], { fixed: true, visible: false });
-    const pin_p3 = board.create("point", [11, -1.5], { fixed: true, visible: false });
-    const pin_p4 = board.create("point", [9, -1.5], { fixed: true, visible: false });
-    pin.pin_circ = board.create("circle", [[10, 0], 0.3], { fillColor: "red", fixed: true });
+    const pin_p1 = board.create("point", [9.7 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p2 = board.create("point", [10.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p3 = board.create("point", [11 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    const pin_p4 = board.create("point", [9 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    pin.pin_circ = board.create("circle", [[10 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true });
     pin.pin_body = board.create("polygon", [pin_p1, pin_p2, pin_p3, pin_p4], { fillColor: "red" });
     pin.pin_comb = board.create("comb", [pin_p3, pin_p4]);
 
     const roller = this.constraintObj[1];
-    const roller_p1 = board.create("point", [9.4, -1.6], { fixed: true, visible: false });
-    const roller_p2 = board.create("point", [10.6, -1.6], { fixed: true, visible: false });
-    roller.roller_circ = board.create("circle", [[10, -1.3], 0.3], { fillColor: "red", fixed: true });
+    const roller_p1 = board.create("point", [9.4 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    const roller_p2 = board.create("point", [10.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    roller.roller_circ = board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true });
     roller.roller_line = board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
     roller.roller_comb = board.create("comb", [roller_p2, roller_p1]);
     this.setAllInvis(0);
 
-    this.magnitude = board.create("slider", [[0, -6], [10, -6], [0, magVal, 2]], { name: "Magnitude of Loading[kN]" });
-    this.position = board.create("slider", [[0, -8], [10, -8], [0, posVal, 1]], { name: "Position of Loading (m)" });
-    this.direction = board.create("slider", [[0, -10], [10, -10], [0, dirVal, 360]], { name: "Direction of Force [degree]" });
-    this.momentMag = board.create("slider", [[0, -12], [10, -12], [0, magMoment, 2]], { name: "Magnitude of Moment[kN*m]" });
-    this.momentPos = board.create("slider", [[0, -14], [10, -14], [0, posMoment, 1]], { name: "Position of Moment (m)" });
-    const CCW = board.create("button", [
-      -5,
-      -4,
+    // reactive force and moment base
+    const react_trans = board.create("transform", [0, y_react_shift], { type: "translate" });
+    const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
+
+    // controller
+    this.magnitude = board_control.create("slider", [[2, 14], [12, 14], [0, magVal, 2]], { withLabel: false });
+    board_control.create("text", [
+      3,
+      13,
+      () => {
+        const value = parseFloat(this.magnitude.Value().toFixed(fixedDecimal));
+        return "Magnitude of Loading [kN]:" + value;
+      }
+    ]);
+
+    this.position = board_control.create("slider", [[2, 12], [12, 12], [0, posVal, 1]], { withLabel: false });
+    board_control.create("text", [
+      3,
+      11,
+      () => {
+        const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
+        return "Position of Loading (m):" + value;
+      }
+    ]);
+
+    this.direction = board_control.create("slider", [[2, 10], [12, 10], [0, dirVal, 360]], { withLabel: false });
+    board_control.create("text", [
+      3,
+      9,
+      () => {
+        const value = parseFloat(this.direction.Value().toFixed(fixedDecimal));
+        return "Direction of Force [degree]:" + value;
+      }
+    ]);
+
+    this.momentMag = board_control.create("slider", [[2, 8], [12, 8], [0, magMoment, 2]], { withLabel: false });
+    board_control.create("text", [
+      3,
+      7,
+      () => {
+        const value = parseFloat(this.momentMag.Value().toFixed(fixedDecimal));
+        return "Magnitude of Moment[kN*m]:" + value;
+      }
+    ]);
+
+    this.momentPos = board_control.create("slider", [[2, 6], [12, 6], [0, posMoment, 1]], { withLabel: false });
+    board_control.create("text", [
+      3,
+      5,
+      () => {
+        const value = parseFloat(this.momentPos.Value().toFixed(fixedDecimal));
+        return "Position of Moment (m):" + value;
+      }
+    ]);
+
+    const CCW = board_control.create("button", [
+      3.5,
+      4,
       "CCW",
       () => {
         this.globalData.dirMoment = true;
       }
     ]);
-    const CW = board.create("button", [
-      -7,
-      -4,
+    const CW = board_control.create("button", [
+      6.5,
+      4,
       "CW",
       () => {
         this.globalData.dirMoment = false;
       }
     ]);
 
-    const inputMag = board.create("input", [-12, -6, "", "Magnitude of Loading[kN] "], { cssStyle: "width: 100px" });
-    const buttonMag = board.create("button", [
-      -4,
-      -6,
+    const inputMag = board_control.create("input", [7, 13, "", ""], { cssStyle: "width: 50px" });
+    const buttonMag = board_control.create("button", [
+      8,
+      13,
       "Update",
       () => {
         if (Number(inputMag.Value())) this.magnitude.setValue(Number(inputMag.Value()));
       }
     ]);
-    const inputPos = board.create("input", [-12, -8, "", "Position of Loading (m) "], { cssStyle: "width: 100px" });
-    const buttonPos = board.create("button", [
-      -4,
-      -8,
+    const inputPos = board_control.create("input", [7, 11, "", ""], { cssStyle: "width: 50px" });
+    const buttonPos = board_control.create("button", [
+      8,
+      11,
       "Update",
       () => {
         if (Number(inputPos.Value())) this.position.setValue(Number(inputPos.Value()));
       }
     ]);
-    const inputDir = board.create("input", [-12, -10, "", "Direction of Force [degree] "], { cssStyle: "width: 100px" });
-    const buttonDir = board.create("button", [
-      -4,
-      -10,
+    const inputDir = board_control.create("input", [7, 9, "", ""], { cssStyle: "width: 50px" });
+    const buttonDir = board_control.create("button", [
+      8,
+      9,
       "Update",
       () => {
         if (Number(inputDir.Value())) this.direction.setValue(Number(inputDir.Value()));
       }
     ]);
-    const inputMagMoment = board.create("input", [-12, -12, "", "Magnitude of Moment[kN*m] "], { cssStyle: "width: 80px" });
-    const buttonMagMoment = board.create("button", [
-      -4,
-      -12,
+    const inputMagMoment = board_control.create("input", [7, 7, "", ""], { cssStyle: "width: 50px" });
+    const buttonMagMoment = board_control.create("button", [
+      8,
+      7,
       "Update",
       () => {
         if (Number(inputMagMoment.Value())) this.momentMag.setValue(Number(inputMagMoment.Value()));
       }
     ]);
-    const inputPosMoment = board.create("input", [-12, -14, "", "Position of Moment (m) "], { cssStyle: "width: 100px" });
-    const buttonPosMoment = board.create("button", [
-      -4,
-      -14,
+    const inputPosMoment = board_control.create("input", [7, 5, "", ""], { cssStyle: "width: 50px" });
+    const buttonPosMoment = board_control.create("button", [
+      8,
+      5,
       "Update",
       () => {
         if (Number(inputPosMoment.Value())) this.momentPos.setValue(Number(inputPosMoment.Value()));
       }
     ]);
 
+    // variables
     const F_0 = board.create(
       "point",
       [
         () => {
-          return this.position.Value() * 10;
+          return this.position.Value() * 10 + x_shift;
         },
-        0
+        0 + y_shift
       ],
       { visible: false }
     );
@@ -208,6 +291,42 @@ export default {
     const forceLine = board.create("line", [F_0, F_1], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
     const forceLineLabel = board.create("text", [1, 1, "F"], { anchor: forceLine });
 
+    const Moment_0_Curve = board.create(
+      "curve",
+      [
+        t => {
+          return 2 * Math.sin(t) + this.momentPos.Value() * 10 + x_shift;
+        },
+        t => {
+          return 2 * Math.cos(t) + y_shift;
+        },
+        () => {
+          return ((this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          return ((-this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        lastArrow: () => {
+          return this.globalData.dirMoment;
+        },
+        firstArrow: () => {
+          return !this.globalData.dirMoment;
+        }
+      }
+    );
+
+    const Moment_0_Curve_Label = board.create("text", [
+      () => {
+        return this.momentPos.Value() * 10 + 3 + x_shift;
+      },
+      0 + y_shift,
+      "M"
+    ]);
+
+    // reactive forces
     const Fx = board.create(
       "point",
       [
@@ -255,41 +374,6 @@ export default {
       strokeColor: "red"
     });
     const Fy_line_Label = board.create("text", [1, 0, "F_y"], { anchor: Fy_Line });
-
-    const Moment_0_Curve = board.create(
-      "curve",
-      [
-        t => {
-          return 2 * Math.sin(t) + this.momentPos.Value() * 10;
-        },
-        t => {
-          return 2 * Math.cos(t);
-        },
-        () => {
-          return ((this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
-        },
-        () => {
-          return ((-this.momentMag.Value() * 3) / 8 + 0.5) * Math.PI;
-        }
-      ],
-      {
-        strokeWidth: 3,
-        lastArrow: () => {
-          return this.globalData.dirMoment;
-        },
-        firstArrow: () => {
-          return !this.globalData.dirMoment;
-        }
-      }
-    );
-
-    const Moment_0_Curve_Label = board.create("text", [
-      () => {
-        return this.momentPos.Value() * 10 + 3;
-      },
-      0,
-      "M"
-    ]);
 
     const Ax_Line = board.create(
       "line",

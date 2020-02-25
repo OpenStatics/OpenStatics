@@ -5,9 +5,9 @@
       <div id="MovingDownUp" class="jsx-graph col-xl mx-2"></div>
       <div class="col-xl mx-2">
         Two blocks, M on the slope and W hanged, are connected by rope crossing through a drum. The slope has an inclination of angle \(\Theta\), the
-        coefficient of static friction between M and slope is \(\mu_1\), and that between rope and drum is \(\mu_2\). Try to
-        determine the critical values of W which lead to the break of equilibrium under different conditions, and compare with the given solution.
-        Note that two critical values of W are involved which cause W move up or move down separately. 
+        coefficient of static friction between M and slope is \(\mu_1\), and that between rope and drum is \(\mu_2\). Try to determine the critical
+        values of W which lead to the break of equilibrium under different conditions, and compare with the given solution. Note that two critical
+        values of W are involved which cause W move up or move down separately.
       </div>
     </div>
   </div>
@@ -16,7 +16,7 @@
 export default {
   name: "Moving",
   data() {
-    return { test: 10 };
+    return { initBoxPos: 10 };
   },
   mounted() {
     const board = JXG.JSXGraph.initBoard("MovingDownUp", {
@@ -83,10 +83,10 @@ export default {
       "point",
       [
         () => {
-          return x(this.test);
+          return x(this.initBoxPos);
         },
         () => {
-          return y(this.test);
+          return y(this.initBoxPos);
         }
       ],
       { visible: false }
@@ -161,7 +161,7 @@ export default {
       "aaa",
       () => {
         setInterval(() => {
-          this.test -= 0.1;
+          this.initBoxPos -= 0.1;
           board.update();
         }, 100);
       }

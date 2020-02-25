@@ -81,34 +81,64 @@ export default {
 
       const pointFill = "red";
       const pointStroke = "red";
+      const pointLabel = "black";
+      const offsetFactor = 11;
 
       // create points
       this.a = this.b2.create("point", [-3 * scale, 0], {
-        name: "",
+        name: "A",
         fixed: true,
         visible: true,
         fillColor: pointFill,
         strokeColor: pointStroke,
-        label: { strokeColor: "red" }
+        label: { strokeColor: pointLabel, offset: [-offsetFactor, -offsetFactor] }
       });
-      this.b = this.b2.create("point", [-1 * scale, 2 * scale], { name: "B", fixed: true, fillColor: pointFill, strokeColor: pointStroke });
+      this.b = this.b2.create("point", [-1 * scale, 2 * scale], {
+        name: "B",
+        fixed: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [offsetFactor, offsetFactor] }
+      });
       this.c = this.b2.create("point", [1 * scale, 2 * scale], {
         name: "C",
         fixed: true,
         visible: true,
         fillColor: pointFill,
-        strokeColor: pointStroke
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [offsetFactor, offsetFactor] }
       });
       this.d = this.b2.create("point", [3 * scale, 2 * scale], {
         name: "D",
         fixed: true,
         visible: true,
         fillColor: pointFill,
-        strokeColor: pointStroke
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [(-offsetFactor * 3) / 2, offsetFactor] }
       });
-      this.e = this.b2.create("point", [3 * scale, 0], { name: "E", fixed: true, visible: true, fillColor: pointFill, strokeColor: pointStroke });
-      this.f = this.b2.create("point", [1 * scale, 0], { name: "F", fixed: true, visible: true, fillColor: pointFill, strokeColor: pointStroke });
-      this.g = this.b2.create("point", [-1 * scale, 0], { name: "G", fixed: true, fillColor: pointFill, strokeColor: pointStroke });
+      this.e = this.b2.create("point", [3 * scale, 0], {
+        name: "E",
+        fixed: true,
+        visible: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [(-offsetFactor * 3) / 2, -offsetFactor] }
+      });
+      this.f = this.b2.create("point", [1 * scale, 0], {
+        name: "F",
+        fixed: true,
+        visible: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [offsetFactor, -offsetFactor] }
+      });
+      this.g = this.b2.create("point", [-1 * scale, 0], {
+        name: "G",
+        fixed: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke,
+        label: { strokeColor: pointLabel, offset: [offsetFactor, -offsetFactor] }
+      });
 
       this.bc = this.b2.create("point", [0, 2 * scale], { name: "bc", fixed: true, visible: false });
       this.gc = this.b2.create("point", [0, 1 * scale], { name: "gc", fixed: true, visible: false });

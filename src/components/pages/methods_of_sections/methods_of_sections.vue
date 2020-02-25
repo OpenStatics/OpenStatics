@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>
+    <div class="mx-2">
       <p>
         When we need to find the force in only a few members of a truss, we can analyze the truss using the method of sections. It is based on the
         principle that if the truss is in equilibrium then any segment of the truss is also in equilibrium. Since we only have three independent
@@ -21,37 +21,23 @@
         Such method of section is very quick. As a comparison, if the method of joints were used to determine, say, the force in member GC, it would
         be necessary to analyze joints A, B, and G in sequence, which is more tedious.
       </p>
-    </div>
-    <div>
-      <!--<truss v-if="currentSelection == 0" />
-      <cutSections v-if="currentSelection == 1" />
-      <Fbc v-if="currentSelection == 2" />
-      <Fgc v-if="currentSelection == 3" />
-      <Fgf v-if="currentSelection == 4" />
 
-      
-      <button @click="() => changeSelection(0)">Overview</button>
-      <button @click="() => changeSelection(1)">Section</button>
-      <button @click="() => changeSelection(2)">F_BC</button>
-      <button @click="() => changeSelection(3)">F_GC</button>
-      <button @click="() => changeSelection(4)">F_GF</button>-->
-      <methOfSec ref="foo" />
-
-      <button @click="() => changeSelection(0)">Overview</button>
-      <button @click="() => changeSelection(1)">Section</button>
-      <button @click="() => changeSelection(2)">F_BC</button>
-      <button @click="() => changeSelection(3)">F_GC</button>
-      <button @click="() => changeSelection(4)">F_GF</button>
+      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">Overview</button>
+      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">Section</button>
+      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">F_BC</button>
+      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">F_GC</button>
+      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">F_GF</button>
     </div>
+    <methOfSec ref="foo" />
   </div>
 </template>
 
 <script>
-import truss from "../../utils/methods_of_sections/truss";
-import cutSections from "../../utils/methods_of_sections/cutSections";
-import Fbc from "../../utils/methods_of_sections/Fbc";
-import Fgc from "../../utils/methods_of_sections/Fgc";
-import Fgf from "../../utils/methods_of_sections/Fgf";
+//import truss from "../../utils/methods_of_sections/truss";
+//import cutSections from "../../utils/methods_of_sections/cutSections";
+//import Fbc from "../../utils/methods_of_sections/Fbc";
+//import Fgc from "../../utils/methods_of_sections/Fgc";
+//import Fgf from "../../utils/methods_of_sections/Fgf";
 import meth_of_sec from "../../utils/methods_of_sections/meth_of_sec";
 
 export default {
@@ -68,6 +54,7 @@ export default {
   },
   methods: {
     changeSelection(nextState) {
+      this.currentSelection = nextState;
       this.$refs.foo.change_state(nextState);
       console.log(nextState);
     }

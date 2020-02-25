@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="box1" class="jsx-graph my-2 text-center"></div>
+    <div id="box1" class="jsx-graph mx-2"></div>
   </div>
 </template>
 

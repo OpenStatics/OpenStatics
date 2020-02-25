@@ -79,21 +79,36 @@ export default {
       this.force = this.b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
       this.angle = this.b2.create("slider", [[-3, -12], [3, -12], [19, 90, 198]], { name: "Angle(&Phi;)" });
 
+      const pointFill = "red";
+      const pointStroke = "red";
+
       // create points
       this.a = this.b2.create("point", [-3 * scale, 0], {
-        name: "A",
+        name: "",
         fixed: true,
         visible: true,
-        fillColor: "black",
-        strokeColor: "gray",
-        label: { strokeColor: "yellow" }
+        fillColor: pointFill,
+        strokeColor: pointStroke,
+        label: { strokeColor: "red" }
       });
-      this.b = this.b2.create("point", [-1 * scale, 2 * scale], { name: "B", fixed: true, fillColor: "blue", strokeColor: "blue" });
-      this.c = this.b2.create("point", [1 * scale, 2 * scale], { name: "C", fixed: true, visible: true, fillColor: "blue", strokeColor: "blue" });
-      this.d = this.b2.create("point", [3 * scale, 2 * scale], { name: "D", fixed: true, visible: true, fillColor: "blue", strokeColor: "blue" });
-      this.e = this.b2.create("point", [3 * scale, 0], { name: "E", fixed: true, visible: true, fillColor: "blue", strokeColor: "blue" });
-      this.f = this.b2.create("point", [1 * scale, 0], { name: "F", fixed: true, visible: true, fillColor: "blue", strokeColor: "blue" });
-      this.g = this.b2.create("point", [-1 * scale, 0], { name: "G", fixed: true, fillColor: "blue", strokeColor: "blue" });
+      this.b = this.b2.create("point", [-1 * scale, 2 * scale], { name: "B", fixed: true, fillColor: pointFill, strokeColor: pointStroke });
+      this.c = this.b2.create("point", [1 * scale, 2 * scale], {
+        name: "C",
+        fixed: true,
+        visible: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke
+      });
+      this.d = this.b2.create("point", [3 * scale, 2 * scale], {
+        name: "D",
+        fixed: true,
+        visible: true,
+        fillColor: pointFill,
+        strokeColor: pointStroke
+      });
+      this.e = this.b2.create("point", [3 * scale, 0], { name: "E", fixed: true, visible: true, fillColor: pointFill, strokeColor: pointStroke });
+      this.f = this.b2.create("point", [1 * scale, 0], { name: "F", fixed: true, visible: true, fillColor: pointFill, strokeColor: pointStroke });
+      this.g = this.b2.create("point", [-1 * scale, 0], { name: "G", fixed: true, fillColor: pointFill, strokeColor: pointStroke });
 
       this.bc = this.b2.create("point", [0, 2 * scale], { name: "bc", fixed: true, visible: false });
       this.gc = this.b2.create("point", [0, 1 * scale], { name: "gc", fixed: true, visible: false });
@@ -165,25 +180,29 @@ export default {
         straightFirst: false,
         straightLast: false,
         touchFirstPoint: true,
-        lastArrow: true
+        lastArrow: true,
+        strokeWidth: 4
       });
       this.line_bc_Fbc = this.b2.create("line", [this.bc, this.Fbc], {
         straightFirst: false,
         straightLast: false,
         touchFirstPoint: true,
-        lastArrow: true
+        lastArrow: true,
+        strokeWidth: 4
       });
       this.line_gf_Fgf = this.b2.create("line", [this.gf, this.Fgf], {
         straightFirst: false,
         straightLast: false,
         touchFirstPoint: true,
-        lastArrow: true
+        lastArrow: true,
+        strokeWidth: 4
       });
       this.line_gc_Fgc = this.b2.create("line", [this.gc, this.Fgc], {
         straightFirst: false,
         straightLast: false,
         touchFirstPoint: true,
-        lastArrow: true
+        lastArrow: true,
+        strokeWidth: 4
       });
 
       const f_text_func = function(force) {
@@ -191,7 +210,6 @@ export default {
           return "F = " + Math.round(force.Value() * 100) / 100 + "N";
         };
       };
-
       // create text on force vectors
       this.text_F = this.b2.create("text", [0, -0.5, f_text_func(this.force)], { anchor: this.pointF, visible: true });
       this.text_Fbc = this.b2.create(
@@ -265,13 +283,6 @@ export default {
         this.tension_computed(this.force, this.angle, "GC"),
         this.tension_computed(this.force, this.angle, "GF")
       ];
-      //let width = 0.2;
-      //this.bCorner1 = this.b2.create("point", [this.a.X, this.a.Y - width], { visible: false });
-      //this.bCorner2 = this.b2.create("point", [this.a.X, this.a.Y + width], { visible: false });
-      //this.bCorner3 = this.b2.create("point", [this.g.X, this.g.Y - width], { visible: false });
-      //this.bCorner4 = this.b2.create("point", [this.g.X, this.g.Y + width], { visible: false });
-
-      //this.box = this.b2.create("polygon", [this.bCorner1, this.bCorner2, this.bCorner3, this.bCorner4], { fillColor: "blue", strokeColor: "green" });
 
       this.b2.fullUpdate();
     },
@@ -280,10 +291,7 @@ export default {
         visible: [
           this.d,
           this.e,
-          this.line_a_b,
-          this.line_a_g,
           this.line_b_c,
-          this.line_b_g,
           this.line_c_d,
           this.line_c_f,
           this.line_c_g,
@@ -291,14 +299,10 @@ export default {
           this.line_d_f,
           this.line_e_f,
           this.line_f_g,
-          this.line_a_pointF,
-          this.text_F,
-          this.label_top,
           this.roller,
           this.triangle
         ],
         invisible: [
-          this.pointF,
           this.bc,
           this.gc,
           this.gf,
@@ -321,21 +325,14 @@ export default {
           this.label_bottom
         ],
         aspects: [
-          [this.g, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_bc_Fbc, { strokeColor: "blue" }],
           [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.c, { fillColor: "blue", strokeColor: "blue" }],
+
           [this.line_gf_Fgf, { strokeColor: "blue" }]
         ]
       };
       let state_1 = {
         visible: [
-          this.line_a_b,
-          this.line_a_g,
-          this.line_b_g,
-          this.line_a_pointF,
-          this.text_F,
-          this.label_top,
           this.line_b_bc,
           this.line_g_gc,
           this.line_g_gf,
@@ -350,7 +347,6 @@ export default {
           this.text_Fgf
         ],
         invisible: [
-          this.pointF,
           this.d,
           this.e,
           this.line_b_c,
@@ -373,22 +369,15 @@ export default {
           this.triangle
         ],
         aspects: [
-          [this.g, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_bc_Fbc, { strokeColor: "blue" }],
           [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.c, { fillColor: "blue", strokeColor: "blue" }],
+
           [this.line_gf_Fgf, { strokeColor: "blue" }]
         ]
       };
 
       let state_2 = {
         visible: [
-          this.line_a_b,
-          this.line_a_g,
-          this.line_b_g,
-          this.line_a_pointF,
-          this.text_F,
-          this.label_top,
           this.line_b_bc,
           this.line_g_gc,
           this.line_g_gf,
@@ -405,7 +394,6 @@ export default {
           this.label_bottom
         ],
         invisible: [
-          this.pointF,
           this.d,
           this.e,
           this.line_b_c,
@@ -426,22 +414,14 @@ export default {
           this.triangle
         ],
         aspects: [
-          [this.g, { fillColor: "red", strokeColor: "red" }],
           [this.line_bc_Fbc, { strokeColor: "red" }],
           [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.c, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_gf_Fgf, { strokeColor: "blue" }]
         ]
       };
 
       let state_3 = {
         visible: [
-          this.line_a_b,
-          this.line_a_g,
-          this.line_b_g,
-          this.line_a_pointF,
-          this.text_F,
-          this.label_top,
           this.line_b_bc,
           this.line_g_gc,
           this.line_g_gf,
@@ -458,7 +438,6 @@ export default {
           this.label_bottom
         ],
         invisible: [
-          this.pointF,
           this.d,
           this.e,
           this.line_b_c,
@@ -479,22 +458,14 @@ export default {
           this.triangle
         ],
         aspects: [
-          [this.g, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_bc_Fbc, { strokeColor: "blue" }],
           [this.line_gc_Fgc, { strokeColor: "red" }],
-          [this.c, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_gf_Fgf, { strokeColor: "blue" }]
         ]
       };
 
       let state_4 = {
         visible: [
-          this.line_a_b,
-          this.line_a_g,
-          this.line_b_g,
-          this.line_a_pointF,
-          this.text_F,
-          this.label_top,
           this.line_b_bc,
           this.line_g_gc,
           this.line_g_gf,
@@ -511,7 +482,6 @@ export default {
           this.label_bottom
         ],
         invisible: [
-          this.pointF,
           this.d,
           this.e,
           this.line_b_c,
@@ -532,10 +502,8 @@ export default {
           this.triangle
         ],
         aspects: [
-          [this.g, { fillColor: "blue", strokeColor: "blue" }],
           [this.line_bc_Fbc, { strokeColor: "blue" }],
           [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.c, { fillColor: "red", strokeColor: "red" }],
           [this.line_gf_Fgf, { strokeColor: "red" }]
         ]
       };

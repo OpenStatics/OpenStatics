@@ -657,7 +657,7 @@ export default {
     });
 
     // length
-    const L = board.create("line", [[0 + x_shift, 4.5 + y_shift + y_react_shift], [10 + x_shift, 4.5 + y_shift + y_react_shift]], {
+    const L = board.create("line", [[0 + x_shift, 6 + y_shift + y_react_shift], [10 + x_shift, 6 + y_shift + y_react_shift]], {
       straightFirst: false,
       straightLast: false,
       firstArrow: true,
@@ -665,27 +665,28 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return component_visible([]);
+        return component_visible([0, 1, 2, 3, 4, 5, 6]);
       },
       fixed: true
     });
-    const L_Line_Label = board.create("text", [0, 0.5, "L"], {
+    const L_Line_Label = board.create("text", [0, 1.5, "L"], {
       anchor: L,
       visible: () => {
-        return component_visible([]);
+        return component_visible([0, 1, 2, 3, 4, 5, 6]);
       },
-      fixed: true
+      fixed: true,
+      fontSize
     });
 
     const Lf = board.create(
       "line",
       [
-        [0 + x_shift, 4 + y_shift + y_react_shift],
+        [0 + x_shift, 5 + y_shift + y_react_shift],
         [
           () => {
             return this.position.Value() * 10 + x_shift;
           },
-          4 + y_shift + y_react_shift
+          5 + y_shift + y_react_shift
         ]
       ],
       {
@@ -696,16 +697,17 @@ export default {
         strokeWidth: 3,
         strokeColor: "red",
         visible: () => {
-          return component_visible([]);
+          return component_visible([0, 1, 2, 3, 4, 5, 6]);
         }
       }
     );
-    const Lf_Line_Label = board.create("text", [0, -0.5, "L_f"], {
+    const Lf_Line_Label = board.create("text", [0, 1, "L_f"], {
       anchor: Lf,
       fixed: true,
       visible: () => {
-        return component_visible([]);
-      }
+        return component_visible([0, 1, 2, 3, 4, 5, 6]);
+      },
+      fontSize
     });
 
     // reactive force analysis
@@ -833,14 +835,17 @@ export default {
     clickOnFixed() {
       this.currentSelection = 0;
       this.updateVisibility(0, this.left_base);
+      this.updateVisibility(0, this.right_base);
     },
     clickOnPin() {
       this.currentSelection = 4;
       this.updateVisibility(1, this.left_base);
+      this.updateVisibility(1, this.right_base);
     },
     clickOnRoller() {
       this.currentSelection = 6;
       this.updateVisibility(2, this.left_base);
+      this.updateVisibility(2, this.right_base);
     }
   }
 };

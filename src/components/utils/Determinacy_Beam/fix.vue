@@ -9,16 +9,31 @@
           <div class="col-lg-8">
             <div class="my-3">
               <span>Constraints at the left end of beam</span> <br />
-              <button class="btn btn-warning mx-3" @click="clickOnFixed">Fixed</button>
-              <button class="btn btn-primary mx-3" @click="clickOnPin">Smooth pin</button>
-              <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection <= 3 }" @click="clickOnFixed">Fixed</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 || currentSelection === 4 }" @click="clickOnPin">
+                Smooth pin
+              </button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 6 }" @click="clickOnRoller">Roller</button>
             </div>
             <div>
               <span>Constraints at the right end of beam</span> <br />
-              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="fixed">Fixed</button>
-              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="smooth">Smooth pin</button>
-              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="roller">Roller</button>
-              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="none">None</button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" v-show="currentSelection <= 3" @click="fixed">
+                Fixed
+              </button>
+              <button
+                class="btn btn-primary mx-3"
+                :class="{ 'btn-warning': currentSelection === 1 || currentSelection === 4 }"
+                v-show="currentSelection <= 5"
+                @click="smooth"
+              >
+                Smooth pin
+              </button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 || currentSelection >= 5 }" @click="roller">
+                Roller
+              </button>
+              <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" v-show="currentSelection <= 3" @click="none">
+                None
+              </button>
             </div>
           </div>
           <div class="col-lg-4 text-center">
@@ -119,6 +134,7 @@ export default {
     const moment_radius = 1.5;
     const fontSize = 20;
     const strokeColor = "red";
+
     const react_visible = () => {
       return this.globalData.showReactive;
     };

@@ -66,6 +66,7 @@
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
+    <div id="fixFix" class="text-center jsx-graph mx-2"></div>
   </div>
 </template>
 

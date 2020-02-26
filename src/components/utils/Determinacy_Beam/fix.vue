@@ -79,11 +79,25 @@ export default {
   },
   data() {
     return {
+      /**
+       * 0: Fixed, Fixed
+       * 1: Fixed, Smooth pin
+       * 2: Fixed, Roller
+       * 3: Fixed, None
+       * 4: Smooth pin, Smooth pin
+       * 5: Smooth pin, Roller
+       * 6: Roller, Roller
+       */
       currentSelection: 0,
       constraintObj: [
         { fix_line: undefined, fix_comb: undefined },
         { pin_circ: undefined, pin_body: undefined, pin_comb: undefined },
         { roller_circ: undefined, roller_line: undefined, roller_comb: undefined }
+      ],
+      left_base: [
+        { fix_line_left: undefined, fix_comb_left: undefined },
+        { pin_circ_left: undefined, pin_body_left: undefined, pin_comb_left: undefined },
+        { roller_circ_left: undefined, roller_line_left: undefined, roller_comb_left: undefined }
       ],
       position: undefined,
       magnitude: undefined,
@@ -132,21 +146,46 @@ export default {
         this.globalData.showReactive = this.globalData.showReactive ? false : true;
       }
     ]);
-    // board_control.resizeContainer(500,500) -> useless code
 
     // create base
+    // create rectangle
     const rec_a = board.create("point", [0 + x_shift, -1 + y_shift], { fixed: true, visible: false });
     const rec_b = board.create("point", [0 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_c = board.create("point", [10 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_d = board.create("point", [10 + x_shift, -1 + y_shift], { fixed: true, visible: false });
     const rectangle = board.create("polygon", [rec_a, rec_b, rec_c, rec_d]);
 
-    const fix_left = this.constraintObj[0];
+    // create the base fixed on the left side
+    const fixed_object = this.left_base[0];
     const fix_p1_left = board.create("point", [0 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
     const fix_p2_left = board.create("point", [0 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
-    const fix_line_left = board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false });
-    const fix_comb_left = board.create("comb", [fix_p2_left, fix_p1_left]);
+    fixed_object.fix_line_left = board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false, visible: false });
+    fixed_object.fix_comb_left = board.create("comb", [fix_p2_left, fix_p1_left]);
+    fixed_object.fix_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
 
+    const pin_object = this.left_base[1];
+    const pin_p1_left = board.create("point", [-0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p2_left = board.create("point", [0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
+    const pin_p3_left = board.create("point", [1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    const pin_p4_left = board.create("point", [-1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
+    pin_object.pin_circ_left = board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true, visible: false });
+    pin_object.pin_body_left = board.create("polygon", [pin_p1_left, pin_p2_left, pin_p3_left, pin_p4_left], { fillColor: "red", visible: false });
+    pin_object.pin_comb_left = board.create("comb", [pin_p3_left, pin_p4_left]);
+    pin_object.pin_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
+
+    const roller_object = this.left_base[2];
+    const roller_p1_left = board.create("point", [-0.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    const roller_p2_left = board.create("point", [0.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
+    roller_object.roller_circ_left = board.create("circle", [[0 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true, visible: false });
+    roller_object.roller_line_left = board.create("line", [roller_p1_left, roller_p2_left], {
+      straightFirst: false,
+      straightLast: false,
+      visible: false
+    });
+    roller_object.roller_comb_left = board.create("comb", [roller_p2_left, roller_p1_left], { visible: false });
+    roller_object.roller_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
+
+    // create base fixed on the right side
     const fix = this.constraintObj[0];
     const fix_p1 = board.create("point", [10 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
     const fix_p2 = board.create("point", [10 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
@@ -725,32 +764,32 @@ export default {
       }
     },
     clickOnPin() {
-      const posVal = this.position.Value();
-      const magVal = this.magnitude.Value();
-      const dirVal = this.direction.Value();
-      const magMoment = this.momentMag.Value();
-      const posMoment = this.momentPos.Value();
-      const dirMoment = this.globalData.dirMoment;
-      const fix = false;
-      const pin = true;
-      const roller = false;
-      const showReactive = this.globalData.showReactive;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
-      this.$emit("fromChild", obj);
+      const toBeExcluded = 1;
+      for (let i in this.left_base) {
+        if (Number(i) === toBeExcluded) {
+          for (let j in this.left_base[i]) {
+            this.left_base[i][j].setAttribute({ visible: true });
+          }
+          continue;
+        }
+        for (let j in this.left_base[i]) {
+          this.left_base[i][j].setAttribute({ visible: false });
+        }
+      }
     },
     clickOnRoller() {
-      const posVal = this.position.Value();
-      const magVal = this.magnitude.Value();
-      const dirVal = this.direction.Value();
-      const magMoment = this.momentMag.Value();
-      const posMoment = this.momentPos.Value();
-      const dirMoment = this.globalData.dirMoment;
-      const fix = false;
-      const pin = false;
-      const roller = true;
-      const showReactive = this.globalData.showReactive;
-      const obj = { posVal, magVal, dirVal, magMoment, posMoment, dirMoment, fix, pin, roller, showReactive };
-      this.$emit("fromChild", obj);
+      const toBeExcluded = 2;
+      for (let i in this.left_base) {
+        if (Number(i) === toBeExcluded) {
+          for (let j in this.left_base[i]) {
+            this.left_base[i][j].setAttribute({ visible: true });
+          }
+          continue;
+        }
+        for (let j in this.left_base[i]) {
+          this.left_base[i][j].setAttribute({ visible: false });
+        }
+      }
     }
   }
 };

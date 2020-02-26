@@ -134,7 +134,9 @@ export default {
     const moment_radius = 1.5;
     const fontSize = 20;
     const strokeColor = "red";
-
+    const component_visible = currentSelectionList => {
+      return currentSelectionList.includes(this.currentSelection) && react_visible();
+    };
     const react_visible = () => {
       return this.globalData.showReactive;
     };
@@ -499,11 +501,18 @@ export default {
         strokeWidth: 3,
         lastArrow: true,
         strokeColor: "red",
-        visible: react_visible
+        visible: () => {
+          return component_visible([0, 1, 2, 3]);
+        }
       }
     );
 
-    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"], { fixed: true, visible: react_visible });
+    const MA_Text = board.create("text", [-3 + x_shift, 0 + y_shift + y_react_shift, "M_A"], {
+      fixed: true,
+      visible: () => {
+        return component_visible([0, 1, 2, 3]);
+      }
+    });
 
     // make moment force on the right
     const MB_Curve = board.create(
@@ -527,14 +536,14 @@ export default {
         lastArrow: true,
         strokeColor: "red",
         visible: () => {
-          return this.currentSelection === 0 && react_visible();
+          return component_visible([0]);
         }
       }
     );
 
     const MB_Text = board.create("text", [13.5 + x_shift, 0.5 + y_shift + y_react_shift, "M_B"], {
       visible: () => {
-        return this.currentSelection === 0 && react_visible();
+        return component_visible([0]);
       },
       fixed: true
     });
@@ -569,11 +578,18 @@ export default {
         },
         strokeWidth: 3,
         strokeColor: "red",
-        visible: react_visible
+        visible: () => {
+          return component_visible([0, 1, 2, 3, 4, 5]);
+        }
       }
     );
 
-    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"], { fixed: true, visible: react_visible });
+    const Ax_Line_Label = board.create("text", [-0.5 + x_shift, -0.5 + y_react_shift + y_shift, "A_x"], {
+      fixed: true,
+      visible: () => {
+        return component_visible([0, 1, 2, 3, 4, 5]);
+      }
+    });
 
     // make reactive force in x direction on the right
     const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
@@ -583,14 +599,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 1 && react_visible();
+        return component_visible([0, 1, 4]);
       },
       fixed: true
     });
 
     const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
       visible: () => {
-        return this.currentSelection <= 1 && react_visible();
+        return component_visible([0, 1, 4]);
       },
       fixed: true
     });
@@ -610,10 +626,25 @@ export default {
           }
         ]
       ],
-      { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3, strokeColor: "red", visible: react_visible }
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: () => {
+          return component_visible([0,1,2,3,4,5,6]);
+        }
+      }
     );
 
-    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible, fixed: true });
+    const Ay_Line_Label = board.create("text", [1, 0, "A_y"], {
+      anchor: Ay_Line,
+      visible: () => {
+        return component_visible([0,1,2,3,4,5,6]);
+      },
+      fixed: true
+    });
 
     // make reactive force in y direction on the right
     const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
@@ -623,14 +654,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 2 && react_visible();
+        return component_visible([0, 1, 2, 4, 5, 6]);
       }
     });
 
     const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
       anchor: By_Line,
       visible: () => {
-        return this.currentSelection <= 2 && react_visible();
+        return component_visible([0, 1, 2, 4, 5, 6]);
       },
       fixed: true
     });
@@ -644,14 +675,14 @@ export default {
       strokeWidth: 3,
       strokeColor: "red",
       visible: () => {
-        return this.currentSelection <= 1 && react_visible();
+        return component_visible([]);
       },
       fixed: true
     });
     const L_Line_Label = board.create("text", [0, 0.5, "L"], {
       anchor: L,
       visible: () => {
-        return this.currentSelection <= 1 && react_visible();
+        return component_visible([]);
       },
       fixed: true
     });
@@ -674,13 +705,17 @@ export default {
         lastArrow: true,
         strokeWidth: 3,
         strokeColor: "red",
-        visible: react_visible
+        visible: () => {
+          return component_visible([]);
+        }
       }
     );
     const Lf_Line_Label = board.create("text", [0, -0.5, "L_f"], {
       anchor: Lf,
       fixed: true,
-      visible: react_visible
+      visible: () => {
+        return component_visible([]);
+      }
     });
 
     // reactive force analysis
@@ -700,7 +735,9 @@ export default {
         fontSize,
         strokeColor,
         fixed: true,
-        visible: react_visible
+        visible: () => {
+          return component_visible([]);
+        }
       }
     );
     const Ay = board.create(
@@ -719,7 +756,9 @@ export default {
         fontSize,
         strokeColor,
         fixed: true,
-        visible: react_visible
+        visible: () => {
+          return component_visible([]);
+        }
       }
     );
     const MA = board.create(
@@ -735,7 +774,14 @@ export default {
           return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
         }
       ],
-      { fixed: true, fontSize, strokeColor, visible: react_visible }
+      {
+        fixed: true,
+        fontSize,
+        strokeColor,
+        visible: () => {
+          return component_visible([]);
+        }
+      }
     );
   },
   methods: {

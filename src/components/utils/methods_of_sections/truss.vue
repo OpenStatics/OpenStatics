@@ -184,7 +184,7 @@ export default {
     // const line_aray = b2.create("line", [a, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
     // const line_arax = b2.create("line", [a, pointR_Ax], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
     // const line_ere = b2.create("line", [e, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
-    const line_af = b2.create("line", [a, pointF], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    b2.create("line", [a, pointF], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
 
     // create text on force vector FC
     b2.create(
@@ -199,11 +199,7 @@ export default {
       { anchor: pointF }
     );
 
-    const label1 = b2.create("text", [
-      -5,
-      -8,
-      "If only the forces in several members are desired, method of section gives us a quick and direct way"
-    ]);
+    b2.create("text", [-5, -8, "If only the forces in several members are desired, method of section gives us a quick and direct way"]);
     /*
     b2.create(
       "text",

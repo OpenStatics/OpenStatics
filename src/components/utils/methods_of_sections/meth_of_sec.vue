@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="box1" class="jsx-graph mx-2"></div>
+    <div id="box1" class="box1" style="width:800px; height:600px;"></div>
   </div>
 </template>
 
@@ -29,6 +29,7 @@ export default {
       triangle: 0,
       roller: 0,
       pointF: 0,
+      line_angle: 0,
       line_a_b: 0,
       line_a_g: 0,
       line_b_g: 0,
@@ -75,9 +76,9 @@ export default {
     init() {
       const scale = this.scale;
 
-      this.b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
-      this.force = this.b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
-      this.angle = this.b2.create("slider", [[-3, -12], [3, -12], [19, 90, 198]], { name: "Angle(&Phi;)" });
+      this.b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 10, 15, -15], keepAspectRatio: true, showCopyright: false });
+      this.force = this.b2.create("slider", [[-4, -9], [2, -9], [1, 1, 2]], { name: "Load F_C" });
+      this.angle = this.b2.create("slider", [[-4, -10], [2, -10], [19, 90, 198]], { name: "Angle(&Phi;)" });
 
       const pointFill = "red";
       const pointStroke = "red";
@@ -277,22 +278,22 @@ export default {
       );
 
       this.label_top = this.b2.create("text", [
-        -5,
+        -6,
         -6,
         "Suppose forces in the members BC, GD, and GF are desired, so we choose a section passes these members"
       ]);
 
       this.label_middle = this.b2.create("text", [
-        -5,
-        -8,
+        -6,
+        -7,
         () => {
           return "";
         }
       ]);
 
       this.label_bottom = this.b2.create("text", [
-        -5,
-        -9,
+        -6,
+        -8,
         () => {
           return "";
         }
@@ -313,6 +314,23 @@ export default {
         this.tension_computed(this.force, this.angle, "GC"),
         this.tension_computed(this.force, this.angle, "GF")
       ];
+
+      this.point_angle = this.b2.create("point", [-4 * scale, 0], {
+        name: "point_angle",
+        fixed: true,
+        visible: false
+      });
+
+      this.line_angle = this.b2.create("line", [this.a, this.point_angle], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        strokeWidth: 2,
+        dash: 2,
+        strokeColor: "grey"
+      });
+
+      this.angleF = this.b2.create("angle", [this.point_angle, this.a, this.pointF], { orthoType: "sector", radius: this.scale * 0.5 });
 
       this.b2.fullUpdate();
     },

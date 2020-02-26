@@ -36,48 +36,11 @@
               </button>
             </div>
           </div>
-          <div class="col-lg-4 text-center">
-            <div>
-              <p>
-                <span>&Sigma;</span>
-                M = <span style="color:red">M<sub>A</sub></span> +
-                <span v-if="currentSelection === 0"
-                  ><span style="color:red">M<sub>B</sub></span> + </span
-                >F<sub>y</sub> &#215; L<sub>f</sub> +
-                <span v-if="currentSelection <= 1"
-                  ><span style="color:red">B<sub>y</sub></span> &#215; L +</span
-                >
-                M = 0
-              </p>
-              <p>
-                <span>&Sigma;</span>
-                F<sub>x</sub> = <span style="color:red">A<sub>x</sub></span> +
-                <span v-if="currentSelection <= 1"
-                  ><span style="color:red">B<sub>x</sub></span> +</span
-                >
-                F<sub>x</sub> = 0
-              </p>
-              <p>
-                <span>&Sigma;</span>
-                F<sub>y</sub> = <span style="color:red">A<sub>y</sub></span> +
-                <span v-if="currentSelection <= 2"
-                  ><span style="color:red">B<sub>y</sub></span> +</span
-                >
-                F<sub>y</sub> = 0
-              </p>
-            </div>
-            <ul>
-              <li>Reactive forces/moments: {{ 6 - currentSelection }}</li>
-              <li>
-                Equations of Equilibrium: 3
-              </li>
-              <li>
-                Status: Statically <span v-if="currentSelection <= 2">indeterminate</span> <span v-if="currentSelection === 3">determinate</span>
-              </li>
-            </ul>
-          </div>
+          <Fix v-if="currentSelection <= 3" :currentSelection="currentSelection"> </Fix>
+          <Pin v-if="currentSelection <= 5 && currentSelection > 3" :currentSelection="currentSelection"> </Pin>
+          <Roller v-if="currentSelection === 6"> </Roller>
         </div>
-        <div v-show="currentSelection === 3" id="control" style="height:500px;width:100%" class="mx-2"></div>
+        <div v-show="currentSelection === 3 || currentSelection === 5" id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
@@ -86,11 +49,17 @@
 
 <script>
 import DeterminacyText from "./determinacy_text";
+import Fix from "./fix_analysis";
+import Pin from "./pin_analysis";
+import Roller from "./roller_analysis";
 
 export default {
   name: "fixFix",
   components: {
-    DeterminacyText
+    DeterminacyText,
+    Fix,
+    Pin,
+    Roller
   },
   data() {
     return {
@@ -554,7 +523,7 @@ export default {
       [
         [
           () => {
-            if (this.currentSelection !== 3) return -1.25 + x_shift;
+            if (this.currentSelection !== 3 || this.currentSelection !== 5) return -1.25 + x_shift;
             let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
             return -2 * Math.abs(val) + x_shift - 1.25;
@@ -619,7 +588,7 @@ export default {
         [
           0 + x_shift,
           () => {
-            if (this.currentSelection !== 3) return -2.25 + y_react_shift + y_shift;
+            if (this.currentSelection !== 3 || this.currentSelection !== 5) return -2.25 + y_react_shift + y_shift;
             let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
             return -val - 1.25 + y_shift + y_react_shift;
@@ -633,7 +602,7 @@ export default {
         strokeWidth: 3,
         strokeColor: "red",
         visible: () => {
-          return component_visible([0,1,2,3,4,5,6]);
+          return component_visible([0, 1, 2, 3, 4, 5, 6]);
         }
       }
     );
@@ -641,22 +610,37 @@ export default {
     const Ay_Line_Label = board.create("text", [1, 0, "A_y"], {
       anchor: Ay_Line,
       visible: () => {
-        return component_visible([0,1,2,3,4,5,6]);
+        return component_visible([0, 1, 2, 3, 4, 5, 6]);
       },
       fixed: true
     });
 
     // make reactive force in y direction on the right
-    const By_Line = board.create("line", [[10 + x_shift, -1.25 + y_shift + y_react_shift], [10 + x_shift, -2.25 + y_react_shift + y_shift]], {
-      straightFirst: false,
-      straightLast: false,
-      firstArrow: true,
-      strokeWidth: 3,
-      strokeColor: "red",
-      visible: () => {
-        return component_visible([0, 1, 2, 4, 5, 6]);
+    const By_Line = board.create(
+      "line",
+      [
+        [10 + x_shift, -1.25 + y_shift + y_react_shift],
+        [
+          10 + x_shift,
+          () => {
+            if (this.currentSelection !== 5) return -2.25 + y_react_shift + y_shift;
+            let val =
+              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
+            return val - 1 + y_react_shift + y_shift;
+          }
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: () => {
+          return component_visible([0, 1, 2, 4, 5, 6]);
+        }
       }
-    });
+    );
 
     const By_Line_Label = board.create("text", [-0.5, 0, "B_y"], {
       anchor: By_Line,
@@ -725,7 +709,7 @@ export default {
         -10,
         6,
         () => {
-          if (this.currentSelection !== 3) return "";
+          if (this.currentSelection !== 3 && this.currentSelection !== 5) return "";
           let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
           return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
@@ -734,10 +718,7 @@ export default {
       {
         fontSize,
         strokeColor,
-        fixed: true,
-        visible: () => {
-          return component_visible([]);
-        }
+        fixed: true
       }
     );
     const Ay = board.create(
@@ -746,8 +727,13 @@ export default {
         -10,
         5,
         () => {
-          if (this.currentSelection !== 3) return "";
+          if (this.currentSelection !== 3 && this.currentSelection !== 5) return "";
           let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          if (this.currentSelection === 5) {
+            const By =
+              (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
+            val = -val - By;
+          }
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
           return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
         }
@@ -755,10 +741,7 @@ export default {
       {
         fontSize,
         strokeColor,
-        fixed: true,
-        visible: () => {
-          return component_visible([]);
-        }
+        fixed: true
       }
     );
     const MA = board.create(
@@ -777,10 +760,26 @@ export default {
       {
         fixed: true,
         fontSize,
-        strokeColor,
-        visible: () => {
-          return component_visible([]);
+        strokeColor
+      }
+    );
+    const By = board.create(
+      "text",
+      [
+        -10,
+        4,
+        () => {
+          if (this.currentSelection !== 5) return "";
+          let val =
+            (-this.momentMag.Value() - this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI)) / 1;
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
         }
+      ],
+      {
+        fixed: true,
+        fontSize,
+        strokeColor
       }
     );
   },
@@ -791,13 +790,21 @@ export default {
       this.updateVisibility(0, this.right_base);
     },
     smooth() {
-      this.currentSelection = 1;
-
+      if (this.currentSelection <= 3) {
+        this.currentSelection = 1;
+      } else {
+        this.currentSelection = 4;
+      }
       this.updateVisibility(1, this.right_base);
     },
     roller() {
-      this.currentSelection = 2;
-
+      if (this.currentSelection <= 3) {
+        this.currentSelection = 2;
+      } else if (this.currentSelection <= 5) {
+        this.currentSelection = 5;
+      } else {
+        this.currentSelection = 6;
+      }
       this.updateVisibility(2, this.right_base);
     },
     none() {

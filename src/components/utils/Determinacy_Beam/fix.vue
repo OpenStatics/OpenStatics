@@ -1,6 +1,7 @@
 <template>
   <div style="margin:20px">
     <!-- needs to figure out the moment A value -->
+    <!-- need to decide if the dummy value is good or not, and the direction cw and ccw -->
     <DeterminacyText></DeterminacyText>
 
     <div class="row">
@@ -87,15 +88,13 @@ export default {
       magnitude: undefined,
       direction: undefined,
       momentPos: undefined,
-      momentMag: undefined
+      momentMag: undefined,
+      showReactive: false,
+      dirMoment: true
     };
   },
-  props: {
-    globalData: {
-      type: Object
-    }
-  },
   mounted() {
+    // create style and global parameters
     const fixedDecimal = 3;
     const x_shift = -5;
     const y_shift = 6;
@@ -103,15 +102,22 @@ export default {
     const moment_radius = 1.5;
     const fontSize = 20;
     const strokeColor = "red";
+
     const component_visible = currentSelectionList => {
       return currentSelectionList.includes(this.currentSelection) && react_visible();
     };
     const react_visible = () => {
-      return this.globalData.showReactive;
+      return this.showReactive;
     };
 
+    // initial values
+    const posVal = 0.3;
+    const magVal = 1;
+    const dirVal = 90;
+    const posMoment = 0.6;
+    const magMoment = 1;
+
     // retrieve data
-    const { posVal, magVal, dirVal, posMoment, magMoment, dirMoment } = this.globalData;
     const board = JXG.JSXGraph.initBoard("fixFix", {
       boundingbox: [-15, 15, 15, -15],
       axis: true,
@@ -130,7 +136,7 @@ export default {
       4,
       "Show Reactive",
       () => {
-        this.globalData.showReactive = this.globalData.showReactive ? false : true;
+        this.showReactive = this.showReactive ? false : true;
       }
     ]);
 
@@ -250,7 +256,7 @@ export default {
       4,
       "CCW",
       () => {
-        this.globalData.dirMoment = true;
+        this.dirMoment = true;
       }
     ]);
     const CW = board_control.create("button", [
@@ -258,7 +264,7 @@ export default {
       4,
       "CW",
       () => {
-        this.globalData.dirMoment = false;
+        this.dirMoment = false;
       }
     ]);
 
@@ -355,10 +361,10 @@ export default {
       {
         strokeWidth: 3,
         lastArrow: () => {
-          return this.globalData.dirMoment;
+          return this.dirMoment;
         },
         firstArrow: () => {
-          return !this.globalData.dirMoment;
+          return !this.dirMoment;
         }
       }
     );
@@ -384,10 +390,10 @@ export default {
     const react_Moment_0 = board.create("curve", [Moment_0_Curve, react_trans], {
       strokeWidth: 3,
       lastArrow: () => {
-        return this.globalData.dirMoment;
+        return this.dirMoment;
       },
       firstArrow: () => {
-        return !this.globalData.dirMoment;
+        return !this.dirMoment;
       },
       visible: react_visible
     });
@@ -454,14 +460,14 @@ export default {
         () => {
           if (this.currentSelection !== 3) return ((-1 * 3) / 8 + 0.5) * Math.PI;
           let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          if (this.globalData.dirMoment === true) val = val - this.momentMag.Value();
+          if (this.dirMoment === true) val = val - this.momentMag.Value();
           else val = val + this.momentMag.Value();
           return ((val * 3) / 8 + 0.5) * Math.PI;
         },
         () => {
           if (this.currentSelection !== 3) return ((1 * 3) / 8 + 0.5) * Math.PI;
           let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+          if (this.dirMoment === true) val = val + this.momentMag.Value();
           else val = val - this.momentMag.Value();
           return ((val * 3) / 8 + 0.5) * Math.PI;
         }
@@ -752,7 +758,7 @@ export default {
         () => {
           if (this.currentSelection !== 3) return "";
           let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-          if (this.globalData.dirMoment === true) val = val + this.momentMag.Value();
+          if (this.dirMoment === true) val = val + this.momentMag.Value();
           else val = val - this.momentMag.Value();
           return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kN*m";
         }

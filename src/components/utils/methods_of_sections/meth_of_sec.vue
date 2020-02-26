@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="box1" class="box1" style="width:800px; height:600px;"></div>
+    <div id="box1" class="box1" style="width:700px; height:600px;"></div>
   </div>
 </template>
 
@@ -27,7 +27,13 @@ export default {
       T2: 0,
       R1: 0,
       triangle: 0,
+      triangle_borders: 0,
       roller: 0,
+      comb_top: 0,
+      comb_bottom: 0,
+      line_size_1: 0,
+      line_size_2: 0,
+      line_divide_1: 0,
       pointF: 0,
       line_angle: 0,
       line_a_b: 0,
@@ -78,7 +84,7 @@ export default {
 
       this.b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 10, 15, -15], keepAspectRatio: true, showCopyright: false });
       this.force = this.b2.create("slider", [[-4, -9], [2, -9], [1, 1, 2]], { name: "Load F_C" });
-      this.angle = this.b2.create("slider", [[-4, -10], [2, -10], [19, 90, 198]], { name: "Angle(&Phi;)" });
+      this.angle = this.b2.create("slider", [[-4, -10], [2, -10], [19, 90, 198]], { name: "Angle(\u03b1)" });
 
       const pointFill = "red";
       const pointStroke = "red";
@@ -159,8 +165,47 @@ export default {
       this.T2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale], { visible: false });
       this.R1 = this.b2.create("point", [3 * scale + 0.5 * triangleScale, 0], { visible: false });
 
-      this.triangle = this.b2.create("polygon", [this.d, this.T1, this.T2], { visible: true, fillColor: "green", strokeColor: "grey" });
+      this.triangle = this.b2.create("polygon", [this.d, this.T1, this.T2], {
+        visible: true,
+        fillColor: "green",
+        borders: {
+          strokeColor: "green",
+          strokeWidth: 2
+        }
+      });
       this.roller = this.b2.create("circle", [this.R1, 0.5 * triangleScale], { fillColor: "green", strokeColor: "grey" });
+
+      this.point_size_1 = this.b2.create("point", [-1 * scale + 0.05, -0.5 * scale], { visible: false });
+      this.point_size_2 = this.b2.create("point", [1 * scale - 0.05, -0.5 * scale], { visible: false });
+      this.line_size_1 = this.b2.create("line", [this.point_size_1, this.point_size_2], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        lastArrow: true,
+        firstArrow: true,
+        strokeWidth: 3
+      });
+
+      this.point_size_2_1 = this.b2.create("point", [-3 * scale + 0.05, -0.5 * scale], { visible: false });
+      this.point_size_2_2 = this.b2.create("point", [-1 * scale - 0.05, -0.5 * scale], { visible: false });
+      this.line_size_2 = this.b2.create("line", [this.point_size_2_1, this.point_size_2_2], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        lastArrow: true,
+        firstArrow: true,
+        strokeWidth: 3
+      });
+
+      this.point_divide_1 = this.b2.create("point", [-1 * scale, -0.25 * scale], { visible: false });
+      this.point_divide_2 = this.b2.create("point", [-1 * scale, -0.75 * scale], { visible: false });
+      this.line_divide_1 = this.b2.create("line", [this.point_divide_1, this.point_divide_2], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        lastArrow: false,
+        firstArrow: false
+      });
 
       // connect points
       this.line_a_b = this.b2.create("line", [this.a, this.b], {
@@ -277,27 +322,35 @@ export default {
         { anchor: this.Fgf, visible: true }
       );
 
-      this.label_top = this.b2.create("text", [
-        -6,
-        -6,
-        "Suppose forces in the members BC, GD, and GF are desired, so we choose a section passes these members"
-      ]);
+      this.label_top = this.b2.create(
+        "text",
+        [-6, -6, "Suppose forces in the members BC, GD, and GF are desired, so we choose a section passes these members"],
+        { fontSize: 14 }
+      );
 
-      this.label_middle = this.b2.create("text", [
-        -6,
-        -7,
-        () => {
-          return "";
-        }
-      ]);
+      this.label_middle = this.b2.create(
+        "text",
+        [
+          -6,
+          -7,
+          () => {
+            return "";
+          }
+        ],
+        { fontSize: 14 }
+      );
 
-      this.label_bottom = this.b2.create("text", [
-        -6,
-        -8,
-        () => {
-          return "";
-        }
-      ]);
+      this.label_bottom = this.b2.create(
+        "text",
+        [
+          -6,
+          -8,
+          () => {
+            return "";
+          }
+        ],
+        { fontSize: 14 }
+      );
 
       this.options_middle_text = [
         "",
@@ -330,7 +383,28 @@ export default {
         strokeColor: "grey"
       });
 
-      this.angleF = this.b2.create("angle", [this.point_angle, this.a, this.pointF], { orthoType: "sector", radius: this.scale * 0.5 });
+      this.angleF = this.b2.create("angle", [this.point_angle, this.a, this.pointF], {
+        orthoType: "sector",
+        radius: this.scale * 0.5,
+        name: "\u03b1"
+      });
+
+      this.point_comb_top_1 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale + triangleScale], { visible: false });
+      this.point_comb_top_2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale * 1.19], { visible: false });
+      this.comb_top = this.b2.create("comb", [this.point_comb_top_1, this.point_comb_top_2], { curve: { strokeWidth: 1, strokeColor: "green" } });
+
+      this.point_comb_bottom_1 = this.b2.create("point", [3 * scale + triangleScale, triangleScale], { visible: false });
+      this.point_comb_bottom_2 = this.b2.create("point", [3 * scale + triangleScale, -triangleScale * 1.19], { visible: false });
+      this.comb_bottom_line = this.b2.create("line", [this.point_comb_bottom_1, this.point_comb_bottom_2], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        strokeColor: "green",
+        strokeWidth: 2
+      });
+      this.comb_bottom = this.b2.create("comb", [this.point_comb_bottom_1, this.point_comb_bottom_2], {
+        curve: { strokeWidth: 1, strokeColor: "green" }
+      });
 
       this.b2.fullUpdate();
     },
@@ -348,15 +422,15 @@ export default {
           this.line_e_f,
           this.line_f_g,
           this.roller,
-          this.triangle
+          this.triangle,
+          this.comb_bottom,
+          this.comb_bottom_line,
+          this.comb_top,
+          this.line_size_1,
+          this.line_size_2,
+          this.line_divide_1
         ],
         invisible: [
-          this.bc,
-          this.gc,
-          this.gf,
-          this.Fbc,
-          this.Fgc,
-          this.Fgf,
           this.line_b_bc,
           this.line_g_gc,
           this.line_g_gf,
@@ -405,22 +479,22 @@ export default {
           this.line_d_f,
           this.line_e_f,
           this.line_f_g,
-          this.bc,
-          this.gc,
-          this.gf,
-          this.Fbc,
-          this.Fgc,
-          this.Fgf,
           this.label_middle,
           this.label_bottom,
           this.roller,
-          this.triangle
+          this.triangle,
+          this.comb_bottom,
+          this.comb_bottom_line,
+          this.comb_top,
+          this.line_size_1,
+          this.line_size_2,
+          this.line_divide_1
         ],
         aspects: [
           [this.line_bc_Fbc, { strokeColor: "blue" }],
           [this.line_gc_Fgc, { strokeColor: "blue" }],
-
-          [this.line_gf_Fgf, { strokeColor: "blue" }]
+          [this.line_gf_Fgf, { strokeColor: "blue" }],
+          [this.triangle, { borders: { strokeColor: "orange" } }]
         ]
       };
 
@@ -452,14 +526,14 @@ export default {
           this.line_d_f,
           this.line_e_f,
           this.line_f_g,
-          this.bc,
-          this.gc,
-          this.gf,
-          this.Fbc,
-          this.Fgc,
-          this.Fgf,
           this.roller,
-          this.triangle
+          this.triangle,
+          this.comb_bottom,
+          this.comb_bottom_line,
+          this.comb_top,
+          this.line_size_1,
+          this.line_size_2,
+          this.line_divide_1
         ],
         aspects: [
           [this.line_bc_Fbc, { strokeColor: "red" }],
@@ -496,14 +570,14 @@ export default {
           this.line_d_f,
           this.line_e_f,
           this.line_f_g,
-          this.bc,
-          this.gc,
-          this.gf,
-          this.Fbc,
-          this.Fgc,
-          this.Fgf,
           this.roller,
-          this.triangle
+          this.triangle,
+          this.comb_bottom,
+          this.comb_bottom_line,
+          this.comb_top,
+          this.line_size_1,
+          this.line_size_2,
+          this.line_divide_1
         ],
         aspects: [
           [this.line_bc_Fbc, { strokeColor: "blue" }],
@@ -540,14 +614,14 @@ export default {
           this.line_d_f,
           this.line_e_f,
           this.line_f_g,
-          this.bc,
-          this.gc,
-          this.gf,
-          this.Fbc,
-          this.Fgc,
-          this.Fgf,
           this.roller,
-          this.triangle
+          this.triangle,
+          this.comb_bottom,
+          this.comb_bottom_line,
+          this.comb_top,
+          this.line_size_1,
+          this.line_size_2,
+          this.line_divide_1
         ],
         aspects: [
           [this.line_bc_Fbc, { strokeColor: "blue" }],
@@ -565,6 +639,10 @@ export default {
           visible: true
         });
       }
+
+      if (state == 0) this.triangle.showElement();
+      else this.triangle.hideElement();
+
       for (let i = 0; i < what_to_do[state].invisible.length; i++) {
         what_to_do[state].invisible[i].setAttribute({
           visible: false

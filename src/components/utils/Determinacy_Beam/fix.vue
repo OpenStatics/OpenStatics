@@ -9,7 +9,7 @@
           <div class="col-lg-8">
             <div class="my-3">
               <span>Constraints at the left end of beam</span> <br />
-              <button class="btn btn-warning mx-3">Fixed</button>
+              <button class="btn btn-warning mx-3" @click="clickOnFixed">Fixed</button>
               <button class="btn btn-primary mx-3" @click="clickOnPin">Smooth pin</button>
               <button class="btn btn-primary mx-3" @click="clickOnRoller">Roller</button>
             </div>
@@ -89,7 +89,7 @@ export default {
        * 6: Roller, Roller
        */
       currentSelection: 0,
-      constraintObj: [
+      right_base: [
         { fix_line: undefined, fix_comb: undefined },
         { pin_circ: undefined, pin_body: undefined, pin_comb: undefined },
         { roller_circ: undefined, roller_line: undefined, roller_comb: undefined }
@@ -159,40 +159,34 @@ export default {
     const fixed_object = this.left_base[0];
     const fix_p1_left = board.create("point", [0 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
     const fix_p2_left = board.create("point", [0 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
-    fixed_object.fix_line_left = board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false, visible: false });
+    fixed_object.fix_line_left = board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false });
     fixed_object.fix_comb_left = board.create("comb", [fix_p2_left, fix_p1_left]);
-    fixed_object.fix_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
 
     const pin_object = this.left_base[1];
     const pin_p1_left = board.create("point", [-0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p2_left = board.create("point", [0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p3_left = board.create("point", [1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     const pin_p4_left = board.create("point", [-1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
-    pin_object.pin_circ_left = board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true, visible: false });
-    pin_object.pin_body_left = board.create("polygon", [pin_p1_left, pin_p2_left, pin_p3_left, pin_p4_left], { fillColor: "red", visible: false });
+    pin_object.pin_circ_left = board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], { fillColor: "red", fixed: true });
+    pin_object.pin_body_left = board.create("polygon", [pin_p1_left, pin_p2_left, pin_p3_left, pin_p4_left], { fillColor: "red" });
     pin_object.pin_comb_left = board.create("comb", [pin_p3_left, pin_p4_left]);
-    pin_object.pin_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
 
     const roller_object = this.left_base[2];
     const roller_p1_left = board.create("point", [-0.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
     const roller_p2_left = board.create("point", [0.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
-    roller_object.roller_circ_left = board.create("circle", [[0 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true, visible: false });
-    roller_object.roller_line_left = board.create("line", [roller_p1_left, roller_p2_left], {
-      straightFirst: false,
-      straightLast: false,
-      visible: false
-    });
-    roller_object.roller_comb_left = board.create("comb", [roller_p2_left, roller_p1_left], { visible: false });
-    roller_object.roller_comb_left.setAttribute({ visible: false }); // set visible during initialization is not possible at this moment
+    roller_object.roller_circ_left = board.create("circle", [[0 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true });
+    roller_object.roller_line_left = board.create("line", [roller_p1_left, roller_p2_left], { straightFirst: false, straightLast: false });
+    roller_object.roller_comb_left = board.create("comb", [roller_p2_left, roller_p1_left]);
+    this.updateVisibility(0, this.left_base);
 
     // create base fixed on the right side
-    const fix = this.constraintObj[0];
+    const fix = this.right_base[0];
     const fix_p1 = board.create("point", [10 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
     const fix_p2 = board.create("point", [10 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     fix.fix_line = board.create("line", [fix_p1, fix_p2], { straightFirst: false, straightLast: false });
     fix.fix_comb = board.create("comb", [fix_p1, fix_p2]);
 
-    const pin = this.constraintObj[1];
+    const pin = this.right_base[1];
     const pin_p1 = board.create("point", [9.7 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p2 = board.create("point", [10.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p3 = board.create("point", [11 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
@@ -201,13 +195,13 @@ export default {
     pin.pin_body = board.create("polygon", [pin_p1, pin_p2, pin_p3, pin_p4], { fillColor: "red" });
     pin.pin_comb = board.create("comb", [pin_p3, pin_p4]);
 
-    const roller = this.constraintObj[2];
+    const roller = this.right_base[2];
     const roller_p1 = board.create("point", [9.4 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
     const roller_p2 = board.create("point", [10.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
     roller.roller_circ = board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true });
     roller.roller_line = board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
     roller.roller_comb = board.create("comb", [roller_p2, roller_p1]);
-    this.setAllInvis(0);
+    this.updateVisibility(0, this.right_base);
 
     // reactive force and moment base
     const react_trans = board.create("transform", [0, y_react_shift], { type: "translate" });
@@ -731,65 +725,47 @@ export default {
   methods: {
     fixed() {
       this.currentSelection = 0;
-      this.setVis(0);
-      this.setAllInvis(0);
+
+      this.updateVisibility(0, this.right_base);
     },
     smooth() {
       this.currentSelection = 1;
-      this.setVis(1);
-      this.setAllInvis(1);
+
+      this.updateVisibility(1, this.right_base);
     },
     roller() {
       this.currentSelection = 2;
-      this.setVis(2);
-      this.setAllInvis(2);
+
+      this.updateVisibility(2, this.right_base);
     },
     none() {
       this.currentSelection = 3;
-      this.setAllInvis(-1);
+      this.updateVisibility(-1, this.right_base);
     },
-    setAllInvis(toBeExcluded) {
-      for (let i in this.constraintObj) {
+    updateVisibility(toBeExcluded, base) {
+      for (let i in base) {
         if (Number(i) === toBeExcluded) {
+          for (let j in base[i]) {
+            base[i][j].setAttribute({ visible: true });
+          }
           continue;
         }
-        for (let j in this.constraintObj[i]) {
-          this.constraintObj[i][j].setAttribute({ visible: false });
+        for (let j in base[i]) {
+          base[i][j].setAttribute({ visible: false });
         }
       }
     },
-    setVis(toBeSet) {
-      for (let j in this.constraintObj[toBeSet]) {
-        this.constraintObj[toBeSet][j].setAttribute({ visible: true });
-      }
+    clickOnFixed() {
+      this.currentSelection = 0;
+      this.updateVisibility(0, this.left_base);
     },
     clickOnPin() {
-      const toBeExcluded = 1;
-      for (let i in this.left_base) {
-        if (Number(i) === toBeExcluded) {
-          for (let j in this.left_base[i]) {
-            this.left_base[i][j].setAttribute({ visible: true });
-          }
-          continue;
-        }
-        for (let j in this.left_base[i]) {
-          this.left_base[i][j].setAttribute({ visible: false });
-        }
-      }
+      this.currentSelection = 4;
+      this.updateVisibility(1, this.left_base);
     },
     clickOnRoller() {
-      const toBeExcluded = 2;
-      for (let i in this.left_base) {
-        if (Number(i) === toBeExcluded) {
-          for (let j in this.left_base[i]) {
-            this.left_base[i][j].setAttribute({ visible: true });
-          }
-          continue;
-        }
-        for (let j in this.left_base[i]) {
-          this.left_base[i][j].setAttribute({ visible: false });
-        }
-      }
+      this.currentSelection = 6;
+      this.updateVisibility(2, this.left_base);
     }
   }
 };

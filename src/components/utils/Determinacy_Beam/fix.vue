@@ -1,5 +1,6 @@
 <template>
   <div style="margin:20px">
+    <!-- get rid of input/button to optimize -->
     <!-- needs to figure out the moment A value -->
     <!-- need to decide if the dummy value is good or not, and the direction cw and ccw -->
     <DeterminacyText></DeterminacyText>

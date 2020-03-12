@@ -909,7 +909,7 @@ export default {
       if (type == "GC")
         return function() {
           let radians = (angle.Value() * Math.PI) / 180;
-          let val = force.Value() * Math.sin(Math.PI / 4) * Math.sin(radians);
+          let val = (force.Value() / Math.sin(Math.PI / 4)) * Math.sin(radians);
           return "F_{GC} = " + Math.round(val * 100) / 100 + " N";
         };
       if (type == "BC")
@@ -932,7 +932,7 @@ export default {
       if (type == "GC")
         return function() {
           let radians = (angle.Value() * Math.PI) / 180;
-          let val = force.Value() * Math.sin(Math.PI / 4) * Math.sin(radians);
+          let val = (force.Value() / Math.sin(Math.PI / 4)) * Math.sin(radians);
           if (val >= 0) return "Member GC is in tension";
           else return "Member GC is in compression";
         };

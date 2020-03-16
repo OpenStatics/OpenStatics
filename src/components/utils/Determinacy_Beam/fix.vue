@@ -118,7 +118,7 @@ export default {
     const posMoment = 0.6;
     const magMoment = 1;
 
-    // retrieve data
+    // create board
     const board = JXG.JSXGraph.initBoard("fixFix", {
       boundingbox: [-15, 15, 15, -15],
       axis: true,
@@ -202,50 +202,50 @@ export default {
     const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
 
     // controller
-    this.magnitude = board_control.create("slider", [[2, 14], [12, 14], [0, magVal, 2]], { withLabel: false });
+    this.magnitude = board_control.create("slider", [[2, 13], [12, 13], [0, magVal, 2]], { withLabel: false });
     board_control.create("text", [
       3,
-      13,
+      14,
       () => {
         const value = parseFloat(this.magnitude.Value().toFixed(fixedDecimal));
         return "Magnitude of Loading [kN]:" + value;
       }
     ]);
 
-    this.position = board_control.create("slider", [[2, 12], [12, 12], [0, posVal, 1]], { withLabel: false });
+    this.position = board_control.create("slider", [[2, 11], [12, 11], [0, posVal, 1]], { withLabel: false });
     board_control.create("text", [
       3,
-      11,
+      12,
       () => {
         const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
         return "Position of Loading (m):" + value;
       }
     ]);
 
-    this.direction = board_control.create("slider", [[2, 10], [12, 10], [0, dirVal, 360]], { withLabel: false });
+    this.direction = board_control.create("slider", [[2, 9], [12, 9], [0, dirVal, 360]], { withLabel: false });
     board_control.create("text", [
       3,
-      9,
+      10,
       () => {
         const value = parseFloat(this.direction.Value().toFixed(fixedDecimal));
         return "Direction of Force [degree]:" + value;
       }
     ]);
 
-    this.momentMag = board_control.create("slider", [[2, 8], [12, 8], [0, magMoment, 2]], { withLabel: false });
+    this.momentMag = board_control.create("slider", [[2, 7], [12, 7], [0, magMoment, 2]], { withLabel: false });
     board_control.create("text", [
       3,
-      7,
+      8,
       () => {
         const value = parseFloat(this.momentMag.Value().toFixed(fixedDecimal));
         return "Magnitude of Moment[kN*m]:" + value;
       }
     ]);
 
-    this.momentPos = board_control.create("slider", [[2, 6], [12, 6], [0, posMoment, 1]], { withLabel: false });
+    this.momentPos = board_control.create("slider", [[2, 5], [12, 5], [0, posMoment, 1]], { withLabel: false });
     board_control.create("text", [
       3,
-      5,
+      6,
       () => {
         const value = parseFloat(this.momentPos.Value().toFixed(fixedDecimal));
         return "Position of Moment (m):" + value;
@@ -269,46 +269,46 @@ export default {
       }
     ]);
 
-    const inputMag = board_control.create("input", [7, 13, "", ""], { cssStyle: "width: 50px" });
+    const inputMag = board_control.create("input", [7, 14.25, "", ""], { cssStyle: "width: 50px" });
     const buttonMag = board_control.create("button", [
       8,
-      13,
+      14.25,
       "Update",
       () => {
         if (Number(inputMag.Value())) this.magnitude.setValue(Number(inputMag.Value()));
       }
     ]);
-    const inputPos = board_control.create("input", [7, 11, "", ""], { cssStyle: "width: 50px" });
+    const inputPos = board_control.create("input", [7, 12.25, "", ""], { cssStyle: "width: 50px" });
     const buttonPos = board_control.create("button", [
       8,
-      11,
+      12.25,
       "Update",
       () => {
         if (Number(inputPos.Value())) this.position.setValue(Number(inputPos.Value()));
       }
     ]);
-    const inputDir = board_control.create("input", [7, 9, "", ""], { cssStyle: "width: 50px" });
+    const inputDir = board_control.create("input", [7, 10.25, "", ""], { cssStyle: "width: 50px" });
     const buttonDir = board_control.create("button", [
       8,
-      9,
+      10.25,
       "Update",
       () => {
         if (Number(inputDir.Value())) this.direction.setValue(Number(inputDir.Value()));
       }
     ]);
-    const inputMagMoment = board_control.create("input", [7, 7, "", ""], { cssStyle: "width: 50px" });
+    const inputMagMoment = board_control.create("input", [7, 8.25, "", ""], { cssStyle: "width: 50px" });
     const buttonMagMoment = board_control.create("button", [
       8,
-      7,
+      8.25,
       "Update",
       () => {
         if (Number(inputMagMoment.Value())) this.momentMag.setValue(Number(inputMagMoment.Value()));
       }
     ]);
-    const inputPosMoment = board_control.create("input", [7, 5, "", ""], { cssStyle: "width: 50px" });
+    const inputPosMoment = board_control.create("input", [7, 6.25, "", ""], { cssStyle: "width: 50px" });
     const buttonPosMoment = board_control.create("button", [
       8,
-      5,
+      6.25,
       "Update",
       () => {
         if (Number(inputPosMoment.Value())) this.momentPos.setValue(Number(inputPosMoment.Value()));

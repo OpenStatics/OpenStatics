@@ -1,11 +1,17 @@
 <template>
-  <div>
+  <div style="margin:20px">
     <h1 class="text-danger text-center my-4">Vector Addition of Forces</h1>
+    <VecAddText></VecAddText>
     <div class="row">
-      <div id="vecaddition" class="jsx-graph col-xl mx-2"></div>
-      <div class="col-xl mx-2">
-        <VecAddText></VecAddText>
+      <div class="col-xl-6 mx-2">
+        <div class="ml-5 my-4">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.visibility[0][0] }" @click="() => Toggle(0)">F1 Visibility</button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.visibility[1][0] }" @click="() => Toggle(1)">F2 Visibility</button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.visibility[2][0] }" @click="() => Toggle(2)">Resultant</button>
+        </div>
+        <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
+      <div id="vecaddition" class="jsx-graph col-xl mx-2"></div>
     </div>
   </div>
 </template>
@@ -13,57 +19,115 @@
 <script>
 import VecAddText from "../../utils/ForceVectorAddition/VecAddText";
 export default {
+  name: "ForceAddiction",
   components: { VecAddText },
   data() {
     return {
-      board: null,
-      lol: 10
+      // [[F1,vec_a],[F2,vec_b],[Res,vec_r]]
+      visibility: [[true, undefined], [true, undefined], [false, undefined]],
     };
   },
   mounted() {
+    // initial values
     const multiplier = 2.5;
+    const fixedDecimal = 3;
+    const fontSize = 20;
 
+    // create board
     const board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
+    const board_control = JXG.JSXGraph.initBoard("control", {
+      boundingbox: [0, 15, 15, 0],
+      showCopyright: false
+    });
+    board_control.addChild(board);
 
-    // set slider for force and angle
-    const force_a = board.create("slider", [[-12, -6], [-6, -6], [0, 1, 5]], { name: "Force 1" });
-    const inputA = board.create("input", [-12, -4, "", "F1(N): "], { cssStyle: "width: 100px" });
-    const buttonA = board.create("button", [
-      -6,
-      -4,
+    // controller
+    const force_a = board_control.create("slider", [[2, 13], [12, 13], [0, 1.5, 5]], { withLabel: false });
+    board_control.create(
+      "text",
+      [
+        3,
+        14,
+        () => {
+          const value = parseFloat(force_a.Value().toFixed(fixedDecimal));
+          return "F1:" + value;
+        }
+      ],
+      { fontSize }
+    );
+    const inputA = board_control.create("input", [7, 14, "", ""], { cssStyle: "width: 50px" });
+    const buttonA = board_control.create("button", [
+      8,
+      14,
       "Update",
       () => {
         if (Number(inputA.Value())) force_a.setValue(Number(inputA.Value()));
       }
     ]);
 
-    const angle_a = board.create("slider", [[-12, -10], [-6, -10], [0, 60, 360]], { name: "Angle 1" });
-    const inputAA = board.create("input", [-12, -8, "", "&Theta;1 (degree): "], { cssStyle: "width: 100px" });
-    const buttonAA = board.create("button", [
-      -6,
-      -8,
+    const angle_a = board_control.create("slider", [[2, 11], [12, 11], [0, 30, 360]], { withLabel: false });
+    board_control.create(
+      "text",
+      [
+        3,
+        12,
+        () => {
+          const value = parseFloat(angle_a.Value().toFixed(fixedDecimal));
+          return "&Theta; 1:" + value;
+        }
+      ],
+      { fontSize }
+    );
+    const inputAA = board_control.create("input", [7, 12, "", ""], { cssStyle: "width: 50px" });
+    const buttonAA = board_control.create("button", [
+      8,
+      12,
       "Update",
       () => {
         if (Number(inputAA.Value())) angle_a.setValue(Number(inputAA.Value()));
       }
     ]);
 
-    const force_b = board.create("slider", [[1, -6], [7, -6], [0, 1, 5]], { name: "Force 2" });
-    const inputB = board.create("input", [1, -4, "", "F2 (N): "], { cssStyle: "width: 100px" });
-    const buttonB = board.create("button", [
+    const force_b = board_control.create("slider", [[2, 9], [12, 9], [0, 1, 5]], { withLabel: false });
+    board_control.create(
+      "text",
+      [
+        3,
+        10,
+        () => {
+          const value = parseFloat(force_b.Value().toFixed(fixedDecimal));
+          return "F2:" + value;
+        }
+      ],
+      { fontSize }
+    );
+    const inputB = board_control.create("input", [7, 10, "", ""], { cssStyle: "width: 50px" });
+    const buttonB = board_control.create("button", [
       8,
-      -4,
+      10,
       "Update",
       () => {
         if (Number(inputB.Value())) angle_a.setValue(Number(inputB.Value()));
       }
     ]);
 
-    const angle_b = board.create("slider", [[1, -10], [6, -10], [0, 0, 360]], { name: "Angle 2" });
-    const inputBB = board.create("input", [1, -8, "", "&Theta;2 (degree): "], { cssStyle: "width: 100px" });
-    const buttonBB = board.create("button", [
+    const angle_b = board_control.create("slider", [[2, 7], [12, 7], [0, 120, 360]], { withLabel: false });
+    board_control.create(
+      "text",
+      [
+        3,
+        8,
+        () => {
+          const value = parseFloat(angle_b.Value().toFixed(fixedDecimal));
+          return "&Theta; 2:" + value;
+        }
+      ],
+      { fontSize }
+    );
+    const inputBB = board_control.create("input", [7, 8, "", ""], { cssStyle: "width: 50px" });
+    const buttonBB = board_control.create("button", [
       8,
-      -8,
+      8,
       "Update",
       () => {
         if (Number(inputBB.Value())) angle_a.setValue(Number(inputBB.Value()));
@@ -71,7 +135,7 @@ export default {
     ]);
 
     // create two points for reference
-    const origin_point = board.create("point", [0, 0], { fixed: true, name: "O" });
+    const origin_point = board.create("point", [0, 0], { fixed: true, visible: false });
     const end_point_a = board.create(
       "point",
       [
@@ -117,10 +181,26 @@ export default {
     );
 
     // create vectors
-    const vector_a = board.create("line", [origin_point, end_point_a], { straightFirst: false, straightLast: false, lastArrow: true });
-    const vector_b = board.create("line", [origin_point, end_point_b], { straightFirst: false, straightLast: false, lastArrow: true });
-    const vector_r = board.create("line", [origin_point, end_point_r], { straightFirst: false, straightLast: false, lastArrow: true });
+    this.visibility[0][1] = board.create("line", [origin_point, end_point_a], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: true
+    });
+    this.visibility[1][1] = board.create("line", [origin_point, end_point_b], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: true
+    });
+    this.visibility[2][1] = board.create("line", [origin_point, end_point_r], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: false
+    });
     var show_parallolegram = board.create("checkbox", [-10, 3, "Show Parallolegram"], {});
+
     const line_a = board.create("line", [end_point_a, end_point_r], {
       straightFirst: false,
       straightLast: false,
@@ -137,6 +217,12 @@ export default {
         return show_parallolegram.Value();
       }
     });
+  },
+  methods: {
+    Toggle(index) {
+      this.visibility[index][0] = this.visibility[index][0] ? false : true;
+      this.visibility[index][1].setAttribute({ visible: this.visibility[index][0] });
+    }
   }
 };
 export const meta = {

@@ -74,6 +74,5 @@
 
 <script>
 export default {
-  name: "Force Vector Addition"
 };
 </script>

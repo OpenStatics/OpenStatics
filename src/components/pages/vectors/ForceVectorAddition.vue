@@ -5,9 +5,19 @@
     <div class="row">
       <div class="col-xl-6 mx-2">
         <div class="ml-5 my-4">
-          <button class="btn btn-primary mx-2" @click="() => this.Toggle([0])">F1 Visibility</button>
-          <button class="btn btn-primary mx-2" @click="() => this.Toggle([1])">F2 Visibility</button>
-          <button class="btn btn-primary mx-2" @click="() => this.Toggle([2])">Resultant</button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[0] }" @click="() => this.Toggle([0])">
+            F1 Visibility
+          </button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[1] }" @click="() => this.Toggle([1])">
+            F2 Visibility
+          </button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[2] }" @click="() => this.Toggle([2])">
+            Resultant
+          </button>
+        </div>
+        <div class="ml-5 my-4" v-if="this.componentVisibility[2]">
+          <button class="btn btn-primary mx-2" @click="() => this.Toggle([2])">Parallolegram</button>
+          <button class="btn btn-primary mx-2" @click="() => this.Toggle([2])">Head-to-Tail</button>
         </div>
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
@@ -23,7 +33,7 @@ export default {
   components: { VecAddText },
   data() {
     return {
-      // [F1, F2, Result Line, Result Point]
+      // [F1, F2, Result Line]
       componentVisibility: [true, true, true],
       board: undefined
     };
@@ -252,7 +262,6 @@ export default {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      visible: true,
       strokeColor: "red",
       strokeWidth,
       visible: () => {
@@ -265,7 +274,6 @@ export default {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      visible: true,
       strokeWidth,
       visible: () => {
         return this.componentVisibility[1];
@@ -277,7 +285,6 @@ export default {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      visible: false,
       strokeColor: "orange",
       strokeWidth,
       visible: () => {
@@ -359,13 +366,14 @@ export default {
     );
 
     // rerender the screen
-    this.componentVisibility[2] = false;
+    this.$set(this.componentVisibility, 2, false);
     this.board.fullUpdate();
   },
   methods: {
     Toggle(index_list) {
       for (let index of index_list) {
-        this.componentVisibility[index] = this.componentVisibility[index] ? false : true;
+        const bool = this.componentVisibility[index] ? false : true;
+        this.$set(this.componentVisibility, index, bool);
       }
       this.board.fullUpdate();
     }

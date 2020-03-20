@@ -452,7 +452,7 @@ export default {
     async runParallolegram() {
       let step = 0;
       while (step <= 1) {
-        // needs optimization and fix multiple click problem
+        // needs optimization and fix multiple click problem, melt transformation does not work yet
         this.scale_a.setMatrix(this.board, "scale", [step, step]);
         this.scale_b.setMatrix(this.board, "scale", [step, step]);
         this.scale_r.setMatrix(this.board, "scale", [step, step]);

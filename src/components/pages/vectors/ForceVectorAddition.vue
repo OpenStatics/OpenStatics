@@ -47,7 +47,9 @@ export default {
       componentVisibility: [true, true, true],
       board: undefined,
       isParallolegram: true,
-      endpoints: { end_point_a: undefined, end_point_b: undefined, end_point_r: undefined }
+      scale_a: undefined,
+      scale_b: undefined,
+      process: 0
     };
   },
   mounted() {
@@ -173,6 +175,7 @@ export default {
       ],
       { name: "F1", face: "cross", strokeColor: "green" }
     );
+
     const end_point_b = this.board.create(
       "point",
       [
@@ -210,14 +213,8 @@ export default {
       }
     );
 
-    // create animation fixed points
-    const t = this.board.create('transform', [2,2], {type: 'scale'})
-
-    this.endpoints.end_point_r = this.board.create('point', [end_point_r, t], {color: 'blue'});
-    t.setMatrix(this.board,'scale',[1,1])
-
     // create curve
-    // F1
+    // line a
     this.board.create(
       "curve",
       [
@@ -246,7 +243,7 @@ export default {
       "&Theta;1"
     ]);
 
-    // F2
+    // line b
     this.board.create(
       "curve",
       [
@@ -275,9 +272,9 @@ export default {
       "&Theta;2"
     ]);
 
-    // create vectors
-    // F1
-    this.board.create("line", [origin_point, end_point_a], {
+    // create fixed vectors
+    // line a
+    const line_a = this.board.create("line", [origin_point, end_point_a], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -288,8 +285,8 @@ export default {
       }
     });
 
-    // F2
-    this.board.create("line", [origin_point, end_point_b], {
+    // line b
+    const line_b = this.board.create("line", [origin_point, end_point_b], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -300,7 +297,78 @@ export default {
     });
 
     // Result
-    this.board.create("line", [origin_point, end_point_r], {
+    const result = this.board.create("line", [origin_point, end_point_r], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeColor: "orange",
+      strokeWidth,
+      visible: false
+    });
+
+    // parallolegram a
+    const trans_a = this.board.create(
+      "transform",
+      [
+        () => {
+          return end_point_b.X();
+        },
+        () => {
+          return end_point_b.Y();
+        }
+      ],
+      { type: "translate" }
+    );
+
+    this.scale_a = this.board.create("transform", [1, 1], { type: "scale" });
+
+    const parallolegram_a = this.scale_a.melt(trans_a);
+
+    this.board.create("line", [line_a, parallolegram_a], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: () => {
+        return this.isParallolegram && this.componentVisibility[2];
+      },
+      strokeWidth,
+      strokeColor: "red",
+      dash
+    });
+
+    // parallolegram b
+    const trans_b = this.board.create(
+      "transform",
+      [
+        () => {
+          return end_point_a.X();
+        },
+        () => {
+          return end_point_a.Y();
+        }
+      ],
+      { type: "translate" }
+    );
+
+    this.scale_b = this.board.create("transform", [1, 1], { type: "scale" });
+
+    const parallolegram_b = this.scale_b.melt(trans_b);
+
+    this.board.create("line", [line_b, parallolegram_b], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: () => {
+        return this.isParallolegram && this.componentVisibility[2];
+      },
+      strokeWidth,
+      dash
+    });
+
+    // parallolegram r
+    this.scale_r = this.board.create("transform", [1, 1], { type: "scale" });
+
+    this.board.create("line", [result, this.scale_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -309,29 +377,6 @@ export default {
       visible: () => {
         return this.componentVisibility[2];
       }
-    });
-
-    // parallolegram
-    const line_a = this.board.create("line", [end_point_a, end_point_r], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      visible: () => {
-        return this.isParallolegram && this.componentVisibility[2];
-      },
-      strokeWidth,
-      dash
-    });
-    const line_b = this.board.create("line", [end_point_b, end_point_r], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      visible: () => {
-        return this.isParallolegram && this.componentVisibility[2];
-      },
-      strokeColor: "red",
-      strokeWidth,
-      dash
     });
 
     // Analysis Text
@@ -404,8 +449,20 @@ export default {
       this.isParallolegram = this.isParallolegram ? false : true;
       this.board.fullUpdate();
     },
-    runParallolegram() {
-      this.board.fullUpdate();
+    async runParallolegram() {
+      let step = 0;
+      while (step <= 1) {
+        // needs optimization and fix multiple click problem
+        this.scale_a.setMatrix(this.board, "scale", [step, step]);
+        this.scale_b.setMatrix(this.board, "scale", [step, step]);
+        this.scale_r.setMatrix(this.board, "scale", [step, step]);
+        this.board.fullUpdate();
+        step += 0.05;
+        await this.sleep(100);
+      }
+    },
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
 };

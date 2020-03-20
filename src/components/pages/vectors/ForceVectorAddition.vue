@@ -47,7 +47,7 @@ export default {
       componentVisibility: [true, true, true],
       board: undefined,
       isParallolegram: true,
-      endpoints: { end_point_a: undefined, end_point_b: undefined, end_point_r: undefined },
+      endpoints: { end_point_a: undefined, end_point_b: undefined, end_point_r: undefined }
     };
   },
   mounted() {
@@ -159,47 +159,46 @@ export default {
       }
     ]);
 
-    // create endpoints and origin
+    // create fixed endpoints and origin
     const origin_point = this.board.create("point", [0, 0], { fixed: true, visible: false });
-    this.endpoints.end_point_a = this.board.create(
+    const end_point_a = this.board.create(
       "point",
       [
-        ()=> {
+        () => {
           return Math.cos((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         },
-        ()=> {
+        () => {
           return Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         }
       ],
       { name: "F1", face: "cross", strokeColor: "green" }
     );
-    this.endpoints.end_point_b = this.board.create(
+    const end_point_b = this.board.create(
       "point",
       [
-        ()=> {
+        () => {
           return Math.cos((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         },
-        ()=> {
+        () => {
           return Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         }
       ],
       { name: "F2", face: "cross", strokeColor: "green" }
     );
 
-    this.endpoints.end_point_r = this.board.create(
+    const end_point_r = this.board.create(
       "point",
       [
-        ()=> {
+        () => {
           var a_x = Math.cos((angle_a.Value() / 180) * Math.PI) * force_a.Value();
           var b_x = Math.cos((angle_b.Value() / 180) * Math.PI) * force_b.Value();
           return (a_x + b_x) * multiplier;
         },
-        ()=> {
+        () => {
           var a_y = Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value();
           var b_y = Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value();
           return (a_y + b_y) * multiplier;
         }
-        // [5,5
       ],
       {
         name: "FR",
@@ -210,6 +209,12 @@ export default {
         }
       }
     );
+
+    // create animation fixed points
+    const t = this.board.create('transform', [2,2], {type: 'scale'})
+
+    this.endpoints.end_point_r = this.board.create('point', [end_point_r, t], {color: 'blue'});
+    t.setMatrix(this.board,'scale',[1,1])
 
     // create curve
     // F1
@@ -232,10 +237,10 @@ export default {
       { strokeColor: "red", strokeWidth }
     );
     this.board.create("text", [
-      ()=> {
+      () => {
         return (Math.cos((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
-      ()=> {
+      () => {
         return (Math.sin((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
       "&Theta;1"
@@ -261,10 +266,10 @@ export default {
       { strokeWidth }
     );
     this.board.create("text", [
-      ()=> {
+      () => {
         return (Math.cos((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
-      ()=> {
+      () => {
         return (Math.sin((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
       "&Theta;2"
@@ -272,7 +277,7 @@ export default {
 
     // create vectors
     // F1
-    this.board.create("line", [origin_point, this.endpoints.end_point_a], {
+    this.board.create("line", [origin_point, end_point_a], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -284,7 +289,7 @@ export default {
     });
 
     // F2
-    this.board.create("line", [origin_point, this.endpoints.end_point_b], {
+    this.board.create("line", [origin_point, end_point_b], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -295,7 +300,7 @@ export default {
     });
 
     // Result
-    this.board.create("line", [origin_point, this.endpoints.end_point_r], {
+    this.board.create("line", [origin_point, end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -307,7 +312,7 @@ export default {
     });
 
     // parallolegram
-    const line_a = this.board.create("line", [this.endpoints.end_point_a, this.endpoints.end_point_r], {
+    const line_a = this.board.create("line", [end_point_a, end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -317,7 +322,7 @@ export default {
       strokeWidth,
       dash
     });
-    const line_b = this.board.create("line", [this.endpoints.end_point_b, this.endpoints.end_point_r], {
+    const line_b = this.board.create("line", [end_point_b, end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,

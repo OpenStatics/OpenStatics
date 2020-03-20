@@ -16,8 +16,18 @@
           </button>
         </div>
         <div class="ml-5 my-4" v-if="this.componentVisibility[2]">
-          <button class="btn btn-primary mx-2" @click="() => this.Toggle([2])">Parallolegram</button>
-          <button class="btn btn-primary mx-2" @click="() => this.Toggle([2])">Head-to-Tail</button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.isParallolegram }" @click="() => this.ToggleAnimation()">
+            Parallolegram
+          </button>
+          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': !this.isParallolegram }" @click="() => this.ToggleAnimation()">
+            Head-to-Tail
+          </button>
+        </div>
+        <div class="ml-5 my-4" v-if="this.isParallolegram && this.componentVisibility[2]">
+          Run<button class="btn" @click="runParallolegram"><i class="fas fa-play"></i></button>
+        </div>
+        <div class="ml-5 my-4" v-else-if="this.componentVisibility[2]">
+          Run1<button class="btn"><i class="fas fa-play"></i></button> Run2<button class="btn"><i class="fas fa-play"></i></button>
         </div>
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
@@ -35,15 +45,18 @@ export default {
     return {
       // [F1, F2, Result Line]
       componentVisibility: [true, true, true],
-      board: undefined
+      board: undefined,
+      isParallolegram: true,
+      endpoints: { end_point_a: undefined, end_point_b: undefined, end_point_r: undefined },
     };
   },
   mounted() {
     // initial values
-    const multiplier = 5;
+    const multiplier = 4;
     const fixedDecimal = 3;
     const fontSize = 20;
     const strokeWidth = 3;
+    const dash = 3;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
@@ -146,46 +159,47 @@ export default {
       }
     ]);
 
-    // create two points for reference
+    // create endpoints and origin
     const origin_point = this.board.create("point", [0, 0], { fixed: true, visible: false });
-    const end_point_a = this.board.create(
+    this.endpoints.end_point_a = this.board.create(
       "point",
       [
-        function() {
+        ()=> {
           return Math.cos((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         },
-        function() {
+        ()=> {
           return Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         }
       ],
       { name: "F1", face: "cross", strokeColor: "green" }
     );
-    const end_point_b = this.board.create(
+    this.endpoints.end_point_b = this.board.create(
       "point",
       [
-        function() {
+        ()=> {
           return Math.cos((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         },
-        function() {
+        ()=> {
           return Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         }
       ],
       { name: "F2", face: "cross", strokeColor: "green" }
     );
 
-    const end_point_r = this.board.create(
+    this.endpoints.end_point_r = this.board.create(
       "point",
       [
-        function() {
+        ()=> {
           var a_x = Math.cos((angle_a.Value() / 180) * Math.PI) * force_a.Value();
           var b_x = Math.cos((angle_b.Value() / 180) * Math.PI) * force_b.Value();
           return (a_x + b_x) * multiplier;
         },
-        function() {
+        ()=> {
           var a_y = Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value();
           var b_y = Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value();
           return (a_y + b_y) * multiplier;
         }
+        // [5,5
       ],
       {
         name: "FR",
@@ -218,10 +232,10 @@ export default {
       { strokeColor: "red", strokeWidth }
     );
     this.board.create("text", [
-      function() {
+      ()=> {
         return (Math.cos((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
-      function() {
+      ()=> {
         return (Math.sin((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
       "&Theta;1"
@@ -247,10 +261,10 @@ export default {
       { strokeWidth }
     );
     this.board.create("text", [
-      function() {
+      ()=> {
         return (Math.cos((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
-      function() {
+      ()=> {
         return (Math.sin((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
       "&Theta;2"
@@ -258,7 +272,7 @@ export default {
 
     // create vectors
     // F1
-    this.board.create("line", [origin_point, end_point_a], {
+    this.board.create("line", [origin_point, this.endpoints.end_point_a], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -270,7 +284,7 @@ export default {
     });
 
     // F2
-    this.board.create("line", [origin_point, end_point_b], {
+    this.board.create("line", [origin_point, this.endpoints.end_point_b], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -281,7 +295,7 @@ export default {
     });
 
     // Result
-    this.board.create("line", [origin_point, end_point_r], {
+    this.board.create("line", [origin_point, this.endpoints.end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -291,24 +305,28 @@ export default {
         return this.componentVisibility[2];
       }
     });
-    var show_parallolegram = this.board.create("checkbox", [-10, 3, "Show Parallolegram"], {});
 
     // parallolegram
-    const line_a = this.board.create("line", [end_point_a, end_point_r], {
+    const line_a = this.board.create("line", [this.endpoints.end_point_a, this.endpoints.end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      visible: function() {
-        return show_parallolegram.Value();
-      }
+      visible: () => {
+        return this.isParallolegram && this.componentVisibility[2];
+      },
+      strokeWidth,
+      dash
     });
-    const line_b = this.board.create("line", [end_point_b, end_point_r], {
+    const line_b = this.board.create("line", [this.endpoints.end_point_b, this.endpoints.end_point_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      visible: function() {
-        return show_parallolegram.Value();
-      }
+      visible: () => {
+        return this.isParallolegram && this.componentVisibility[2];
+      },
+      strokeColor: "red",
+      strokeWidth,
+      dash
     });
 
     // Analysis Text
@@ -350,10 +368,10 @@ export default {
           const beta = Math.asin((force_b.Value() / FR) * Math.sin(gamma));
           if (angle_a.Value() > angle_b.Value()) {
             const ans = angle_b.Value() + (alpha * 180) / Math.PI;
-            return "&Theta;" + parseFloat(ans.toFixed(fixedDecimal));
+            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
           } else {
             const ans = angle_a.Value() + (beta * 180) / Math.PI;
-            return "&Theta;" + parseFloat(ans.toFixed(fixedDecimal));
+            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
           }
         }
       ],
@@ -375,6 +393,13 @@ export default {
         const bool = this.componentVisibility[index] ? false : true;
         this.$set(this.componentVisibility, index, bool);
       }
+      this.board.fullUpdate();
+    },
+    ToggleAnimation() {
+      this.isParallolegram = this.isParallolegram ? false : true;
+      this.board.fullUpdate();
+    },
+    runParallolegram() {
       this.board.fullUpdate();
     }
   }

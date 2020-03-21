@@ -57,7 +57,7 @@ export default {
       isParallolegram: true,
       parallolegram_len: 1,
       head_move: [0, 0],
-      terminationFlag: false
+      terminationFlag: [false, false]
     };
   },
   mounted() {
@@ -482,19 +482,19 @@ export default {
       this.parallolegram_len = 1;
     },
     async runHeadTail(index) {
-      this.terminationFlag = false;
+      this.terminationFlag[index] = false;
 
       this.head_move[index] = 0;
 
-      while (this.head_move[index] < 0.99 && !this.terminationFlag) {
+      while (this.head_move[index] < 0.99 && !this.terminationFlag[index]) {
         this.head_move[index] += 0.1;
         this.board.fullUpdate();
         await this.sleep(100);
       }
-      this.head_move[index] = 1;
+      if (!this.terminationFlag[index]) this.head_move[index] = 1;
     },
     resetHeadTail(index) {
-      this.terminationFlag = true;
+      this.terminationFlag[index] = true;
       this.head_move[index] = 0;
       this.board.fullUpdate();
     },

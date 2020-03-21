@@ -27,7 +27,15 @@
           Run<button class="btn" @click="runParallolegram"><i class="fas fa-play"></i></button>
         </div>
         <div class="ml-5 my-4" v-else-if="this.componentVisibility[2]">
-          Run1<button class="btn"><i class="fas fa-play"></i></button> Run2<button class="btn"><i class="fas fa-play"></i></button>
+          Move Force 1
+          <button class="btn" @click="() => this.runHeadTail(0)"><i class="fas fa-play"></i></button>
+          Reset Force 1
+          <button class="btn" @click="() => this.resetHeadTail(0)"><i class="fas fa-redo"></i></button>
+          <br />
+          Move Force 2
+          <button class="btn" @click="() => this.runHeadTail(1)"><i class="fas fa-play"></i></button>
+          Reset Force 2
+          <button class="btn" @click="() => this.resetHeadTail(1)"><i class="fas fa-redo"></i></button>
         </div>
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
@@ -47,7 +55,9 @@ export default {
       componentVisibility: [true, true, true],
       board: undefined,
       isParallolegram: true,
-      parallolegram_len: 1
+      parallolegram_len: 1,
+      head_move: [0, 0],
+      terminationFlag: false
     };
   },
   mounted() {
@@ -272,35 +282,13 @@ export default {
 
     // create fixed vectors
     // line a
-    const line_a = this.board.create("line", [origin_point, end_point_a], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeColor: "red",
-      strokeWidth,
-      visible: () => {
-        return this.componentVisibility[0];
-      }
-    });
+    const line_a = this.board.create("line", [origin_point, end_point_a], { visible: false });
 
     // line b
-    const line_b = this.board.create("line", [origin_point, end_point_b], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeWidth,
-      visible: () => {
-        return this.componentVisibility[1];
-      }
-    });
+    const line_b = this.board.create("line", [origin_point, end_point_b], { visible: false });
 
     // Result
     const result = this.board.create("line", [origin_point, end_point_r], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeColor: "orange",
-      strokeWidth,
       visible: false
     });
 
@@ -313,19 +301,25 @@ export default {
         () => {
           if (trans_type === 0) return end_point_a.X();
           if (trans_type === 1) return end_point_b.X();
+          if (trans_type === 2) return end_point_a.X() * this.head_move[0];
+          if (trans_type === 3) return end_point_b.X() * this.head_move[1];
           return 0;
         },
         () => {
+          if (trans_type >= 2) return 1;
           return this.parallolegram_len;
         },
         0,
         () => {
           if (trans_type === 0) return end_point_a.Y();
           if (trans_type === 1) return end_point_b.Y();
+          if (trans_type === 2) return end_point_a.Y() * this.head_move[0];
+          if (trans_type === 3) return end_point_b.Y() * this.head_move[1];
           return 0;
         },
         0,
         () => {
+          if (trans_type >= 2) return 1;
           return this.parallolegram_len;
         }
       ];
@@ -375,6 +369,34 @@ export default {
       visible: () => {
         return this.componentVisibility[2];
       }
+    });
+
+    // head to tail
+    // line a
+    const constraint_head_a = transformation(3);
+    const trans_head_a = this.board.create("transform", constraint_head_a, { type: "generic" });
+    this.board.create("line", [line_a, trans_head_a], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: () => {
+        return this.componentVisibility[0];
+      },
+      strokeWidth,
+      strokeColor: "red"
+    });
+
+    // line b
+    const constraint_head_b = transformation(2);
+    const trans_head_b = this.board.create("transform", constraint_head_b, { type: "generic" });
+    this.board.create("line", [line_b, trans_head_b], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      visible: () => {
+        return this.componentVisibility[1];
+      },
+      strokeWidth
     });
 
     // Analysis Text
@@ -445,7 +467,8 @@ export default {
     },
     ToggleAnimation() {
       this.isParallolegram = this.isParallolegram ? false : true;
-      this.board.fullUpdate();
+      this.resetHeadTail(0);
+      this.resetHeadTail(1);
     },
     async runParallolegram() {
       this.parallolegram_len = 0;
@@ -457,6 +480,23 @@ export default {
         await this.sleep(100);
       }
       this.parallolegram_len = 1;
+    },
+    async runHeadTail(index) {
+      this.terminationFlag = false;
+
+      this.head_move[index] = 0;
+
+      while (this.head_move[index] < 0.99 && !this.terminationFlag) {
+        this.head_move[index] += 0.1;
+        this.board.fullUpdate();
+        await this.sleep(100);
+      }
+      this.head_move[index] = 1;
+    },
+    resetHeadTail(index) {
+      this.terminationFlag = true;
+      this.head_move[index] = 0;
+      this.board.fullUpdate();
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));

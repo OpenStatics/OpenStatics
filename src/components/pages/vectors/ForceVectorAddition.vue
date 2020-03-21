@@ -288,9 +288,7 @@ export default {
     const line_b = this.board.create("line", [origin_point, end_point_b], { visible: false });
 
     // Result
-    const result = this.board.create("line", [origin_point, end_point_r], {
-      visible: false
-    });
+    const result = this.board.create("line", [origin_point, end_point_r], { visible: false });
 
     // parallolegram
     const transformation = trans_type => {

@@ -304,30 +304,36 @@ export default {
       visible: false
     });
 
-    // parallolegram a
-    const trans_a = this.board.create(
-      "transform",
-      [
+    // parallolegram
+    const transformation = trans_type => {
+      return [
         1,
         0,
         0,
         () => {
-          return end_point_b.X();
+          if (trans_type === 0) return end_point_a.X();
+          if (trans_type === 1) return end_point_b.X();
+          return 0;
         },
         () => {
           return this.parallolegram_len;
         },
         0,
         () => {
-          return end_point_b.Y();
+          if (trans_type === 0) return end_point_a.Y();
+          if (trans_type === 1) return end_point_b.Y();
+          return 0;
         },
         0,
         () => {
           return this.parallolegram_len;
         }
-      ],
-      { type: "generic" }
-    );
+      ];
+    };
+
+    // parallolegram a
+    const constraint_a = transformation(1);
+    const trans_a = this.board.create("transform", constraint_a, { type: "generic" });
 
     this.board.create("line", [line_a, trans_a], {
       straightFirst: false,
@@ -342,29 +348,8 @@ export default {
     });
 
     // parallolegram b
-    const trans_b = this.board.create(
-      "transform",
-      [
-        1,
-        0,
-        0,
-        () => {
-          return end_point_a.X();
-        },
-        () => {
-          return this.parallolegram_len;
-        },
-        0,
-        () => {
-          return end_point_a.Y();
-        },
-        0,
-        () => {
-          return this.parallolegram_len;
-        }
-      ],
-      { type: "generic" }
-    );
+    const constraint_b = transformation(0);
+    const trans_b = this.board.create("transform", constraint_b, { type: "generic" });
 
     this.board.create("line", [line_b, trans_b], {
       straightFirst: false,
@@ -378,25 +363,9 @@ export default {
     });
 
     // parallolegram r
-    const trans_r = this.board.create(
-      "transform",
-      [
-        1,
-        0,
-        0,
-        0,
-        () => {
-          return this.parallolegram_len;
-        },
-        0,
-        0,
-        0,
-        () => {
-          return this.parallolegram_len;
-        }
-      ],
-      { type: "generic" }
-    );
+    const constraint_r = transformation(-1);
+    const trans_r = this.board.create("transform", constraint_r, { type: "generic" });
+
     this.board.create("line", [result, trans_r], {
       straightFirst: false,
       straightLast: false,

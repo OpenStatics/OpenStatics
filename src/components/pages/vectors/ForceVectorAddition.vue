@@ -47,9 +47,7 @@ export default {
       componentVisibility: [true, true, true],
       board: undefined,
       isParallolegram: true,
-      scale_a: undefined,
-      scale_b: undefined,
-      process: 0
+      parallolegram_len: 1
     };
   },
   mounted() {
@@ -310,21 +308,28 @@ export default {
     const trans_a = this.board.create(
       "transform",
       [
+        1,
+        0,
+        0,
         () => {
           return end_point_b.X();
         },
         () => {
+          return this.parallolegram_len;
+        },
+        0,
+        () => {
           return end_point_b.Y();
+        },
+        0,
+        () => {
+          return this.parallolegram_len;
         }
       ],
-      { type: "translate" }
+      { type: "generic" }
     );
 
-    this.scale_a = this.board.create("transform", [1, 1], { type: "scale" });
-
-    const parallolegram_a = this.scale_a.melt(trans_a);
-
-    this.board.create("line", [line_a, parallolegram_a], {
+    this.board.create("line", [line_a, trans_a], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -340,21 +345,28 @@ export default {
     const trans_b = this.board.create(
       "transform",
       [
+        1,
+        0,
+        0,
         () => {
           return end_point_a.X();
         },
         () => {
+          return this.parallolegram_len;
+        },
+        0,
+        () => {
           return end_point_a.Y();
+        },
+        0,
+        () => {
+          return this.parallolegram_len;
         }
       ],
-      { type: "translate" }
+      { type: "generic" }
     );
 
-    this.scale_b = this.board.create("transform", [1, 1], { type: "scale" });
-
-    const parallolegram_b = this.scale_b.melt(trans_b);
-
-    this.board.create("line", [line_b, parallolegram_b], {
+    this.board.create("line", [line_b, trans_b], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -366,9 +378,26 @@ export default {
     });
 
     // parallolegram r
-    this.scale_r = this.board.create("transform", [1, 1], { type: "scale" });
-
-    this.board.create("line", [result, this.scale_r], {
+    const trans_r = this.board.create(
+      "transform",
+      [
+        1,
+        0,
+        0,
+        0,
+        () => {
+          return this.parallolegram_len;
+        },
+        0,
+        0,
+        0,
+        () => {
+          return this.parallolegram_len;
+        }
+      ],
+      { type: "generic" }
+    );
+    this.board.create("line", [result, trans_r], {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
@@ -450,16 +479,15 @@ export default {
       this.board.fullUpdate();
     },
     async runParallolegram() {
-      let step = 0;
-      while (step <= 1) {
+      this.parallolegram_len = 0;
+
+      while (this.parallolegram_len < 0.99) {
         // needs optimization and fix multiple click problem, melt transformation does not work yet
-        this.scale_a.setMatrix(this.board, "scale", [step, step]);
-        this.scale_b.setMatrix(this.board, "scale", [step, step]);
-        this.scale_r.setMatrix(this.board, "scale", [step, step]);
+        this.parallolegram_len += 0.1;
         this.board.fullUpdate();
-        step += 0.05;
         await this.sleep(100);
       }
+      this.parallolegram_len = 1;
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));

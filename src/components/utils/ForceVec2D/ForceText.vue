@@ -11,6 +11,5 @@
 
 <script>
 export default {
-  name: "Force Vector 2D"
 };
 </script>

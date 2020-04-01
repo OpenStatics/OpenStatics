@@ -8,8 +8,12 @@
           <strong>Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">[value here]</span></strong>
         </div>
         <div class="ml-5 my-4">
+          <button class="btn"><i class="fas fa-play"></i></button>
+          <button class="btn"><i class="fas fa-redo"></i></button>
+        </div>
+        <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
-          <input type="radio" class="mx-3" />on <input type="radio" class="mx-3" />off
+          <input type="radio" class="mx-3" @click="toggleFBD" />on <input type="radio" class="mx-3" />off
         </div>
 
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
@@ -33,7 +37,9 @@ export default {
       mu: undefined,
       playButton: undefined,
       resetButton: undefined,
-      toggle: false
+      toggle: false,
+      showFBD: false,
+      board: undefined
     };
   },
 
@@ -50,7 +56,8 @@ export default {
     const withLabel = false;
 
     // create board
-    const board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
+    const board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
+    this.board = board;
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
@@ -121,7 +128,6 @@ export default {
     ]);
 
     // actual content
-
     this.dummy = board.create("point", [5, 5], { visible: false });
 
     const x_axis_point = board.create("point", [8, 0], { visible: false });
@@ -211,6 +217,134 @@ export default {
         return "&Theta;: " + this.angle;
       }
     });
+
+    // Show FBD
+    board.create(
+      "text",
+      [
+        -13,
+        11,
+        () => {
+          const value = this.m.Value() * 9.8;
+
+          return "mg: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
+    board.create(
+      "text",
+      [
+        -13,
+        10,
+        () => {
+          // need to find current theta
+          const angle = 0;
+          const value = this.m.Value() * 9.8 * Math.sin((angle * Math.PI) / 180);
+
+          return "mgsin(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
+    board.create(
+      "text",
+      [
+        -13,
+        9,
+        () => {
+          // need to find current theta
+          const angle = 1;
+          const value = this.m.Value() * 9.8 * Math.sin((angle * Math.PI) / 180);
+
+          return "mgcos(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
+    board.create(
+      "text",
+      [
+        -13,
+        8,
+        () => {
+          // need to find friction
+          const value = 1;
+
+          return "f: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
+    board.create(
+      "text",
+      [
+        -13,
+        7,
+        () => {
+          // need to find normal force
+          const value = 1;
+
+          return "N: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
+    board.create(
+      "text",
+      [
+        -13,
+        6,
+        () => {
+          const value = this.findAngle();
+
+          return "\u03B8_0: " + parseFloat(value.toFixed(fixedDecimal)) + "\u00B0";
+        }
+      ],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        fontSize,
+        fixed,
+        cssStyle: "font-weight: bold"
+      }
+    );
   },
   methods: {
     async playAnimation() {
@@ -241,6 +375,10 @@ export default {
     },
     findAngle() {
       return (Math.atan(this.mu.Value()) * 180) / Math.PI;
+    },
+    toggleFBD() {
+      this.showFBD = true;
+      this.board.fullUpdate();
     }
   }
 };

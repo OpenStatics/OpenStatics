@@ -49,51 +49,135 @@ export default {
       });
 
       const incr = 5;
-      const start = 0;
+      const start = 5;
       const left = -13;
       const right = -2;
 
-      this.sliders.f1_force = this.box_sliders.create("slider", [[left, start - incr * 0], [right, start - incr * 0], [0, 0, 10]], {
-        name: "F_1 (N)",
-        label: { color: "red" }
+      this.sliders.time = this.box_sliders.create(
+        "slider",
+        [
+          [left, start + incr],
+          [right, start + incr],
+          [0, 0, 15]
+        ],
+        { name: "Time (s)", label: { size: 16 } }
+      );
+      this.sliders.f1_force = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 2],
+          [right, start - incr * 2],
+          [0, 0, 10]
+        ],
+        {
+          name: "F_1 (N)",
+          label: { color: "red" }
+        }
+      );
+      this.sliders.f1_angle = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 3],
+          [right, start - incr * 3],
+          [0, 0, 360]
+        ],
+        {
+          name: "\u03B8_1 (\u00B0)",
+          label: { color: "red" }
+        }
+      );
+      this.sliders.f2_force = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 4],
+          [right, start - incr * 4],
+          [0, 0, 10]
+        ],
+        {
+          name: "F_2 (N)",
+          label: { color: "blue" }
+        }
+      );
+      this.sliders.f2_angle = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 5],
+          [right, start - incr * 5],
+          [0, 0, 360]
+        ],
+        {
+          name: "\u03B8_2 (\u00B0)",
+          label: { color: "blue" }
+        }
+      );
+      this.sliders.f3_force = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 6],
+          [right, start - incr * 6],
+          [0, 0, 10]
+        ],
+        {
+          name: "F_3 (N)",
+          label: { color: "green" }
+        }
+      );
+      this.sliders.f3_angle = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 7],
+          [right, start - incr * 7],
+          [0, 0, 360]
+        ],
+        {
+          name: "\u03B8_3 (\u00B0)",
+          label: { color: "green" }
+        }
+      );
+      this.sliders.mass = this.box_sliders.create(
+        "slider",
+        [
+          [left, start - incr * 8],
+          [right, start - incr * 8],
+          [1, 1, 3]
+        ],
+        { name: "Mass (kg)" }
+      );
+
+      this.sliders.f1_force.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.f1_angle = this.box_sliders.create("slider", [[left, start - incr * 1], [right, start - incr * 1], [0, 0, 360]], {
-        name: "\u03B8_1 (\u00B0)",
-        label: { color: "red" }
+      this.sliders.f1_angle.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.f2_force = this.box_sliders.create("slider", [[left, start - incr * 2], [right, start - incr * 2], [0, 0, 10]], {
-        name: "F_2 (N)",
-        label: { color: "blue" }
+      this.sliders.f2_force.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.f2_angle = this.box_sliders.create("slider", [[left, start - incr * 3], [right, start - incr * 3], [0, 0, 360]], {
-        name: "\u03B8_2 (\u00B0)",
-        label: { color: "blue" }
+      this.sliders.f2_angle.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.f3_force = this.box_sliders.create("slider", [[left, start - incr * 4], [right, start - incr * 4], [0, 0, 10]], {
-        name: "F_3 (N)",
-        label: { color: "green" }
+      this.sliders.f3_force.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.f3_angle = this.box_sliders.create("slider", [[left, start - incr * 5], [right, start - incr * 5], [0, 0, 360]], {
-        name: "\u03B8_3 (\u00B0)",
-        label: { color: "green" }
+      this.sliders.f3_angle.on("drag", () => {
+        this.sliders.time.setValue(0);
       });
-      this.sliders.mass = this.box_sliders.create("slider", [[left, start - incr * 6], [right, start - incr * 6], [1, 1, 3]], { name: "Mass (kg)" });
-      this.sliders.time = this.box_sliders.create("slider", [[left, start - incr * 7], [right, start - incr * 7], [0, 0, 15]], { name: "Time (s)" });
+      this.sliders.mass.on("drag", () => {
+        this.sliders.time.setValue(0);
+      });
 
       this.box_sliders.fullUpdate();
 
+      const boundingSize = 200;
       this.box_simulator = JXG.JSXGraph.initBoard("box_particle_simulator", {
-        boundingbox: [-15, 15, 15, -15],
+        boundingbox: [-boundingSize, boundingSize, boundingSize, -boundingSize],
         keepAspectRatio: true,
-        showCopyright: false
+        showCopyright: false,
+        axis: true
       });
 
       this.box_sliders.addChild(this.box_simulator);
       this.box_simulator.addChild(this.box_sliders);
-
-      //   this.sliders.time = this.box_simulator.create("slider", [[-5, 5], [5, 5], [0, 0, 10]], {
-      //     name: "Time (s)"
-      //   });
 
       function totalForce(sliders) {
         return function() {
@@ -112,55 +196,42 @@ export default {
       function mainLocation(sliders, code) {
         if (code == "x")
           return function() {
-            return (0.5 * totalForce(sliders)().x * sliders.time.Value() * sliders.time.Value()) / sliders.mass.Value() / scale;
+            return (0.5 * totalForce(sliders)().x * sliders.time.Value() * sliders.time.Value()) / sliders.mass.Value();
           };
         else if (code == "y")
           return function() {
-            return (0.5 * totalForce(sliders)().y * sliders.time.Value() * sliders.time.Value()) / sliders.mass.Value() / scale;
+            return (0.5 * totalForce(sliders)().y * sliders.time.Value() * sliders.time.Value()) / sliders.mass.Value();
           };
       }
       function offsetLocation(sliders, code) {
         if (code == "x1")
           return function() {
-            return mainLocation(sliders, "x")() + sliders.f1_force.Value() * Math.cos((sliders.f1_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "x")() + sliders.f1_force.Value() * Math.cos((sliders.f1_angle.Value() * Math.PI) / 180) * scale;
           };
         else if (code == "y1")
           return function() {
-            return mainLocation(sliders, "y")() + sliders.f1_force.Value() * Math.sin((sliders.f1_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "y")() + sliders.f1_force.Value() * Math.sin((sliders.f1_angle.Value() * Math.PI) / 180) * scale;
           };
         else if (code == "x2")
           return function() {
-            return mainLocation(sliders, "x")() + sliders.f2_force.Value() * Math.cos((sliders.f2_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "x")() + sliders.f2_force.Value() * Math.cos((sliders.f2_angle.Value() * Math.PI) / 180) * scale;
           };
         else if (code == "y2")
           return function() {
-            return mainLocation(sliders, "y")() + sliders.f2_force.Value() * Math.sin((sliders.f2_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "y")() + sliders.f2_force.Value() * Math.sin((sliders.f2_angle.Value() * Math.PI) / 180) * scale;
           };
         else if (code == "x3")
           return function() {
-            return mainLocation(sliders, "x")() + sliders.f3_force.Value() * Math.cos((sliders.f3_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "x")() + sliders.f3_force.Value() * Math.cos((sliders.f3_angle.Value() * Math.PI) / 180) * scale;
           };
         else if (code == "y3")
           return function() {
-            return mainLocation(sliders, "y")() + sliders.f3_force.Value() * Math.sin((sliders.f3_angle.Value() * Math.PI) / 180);
+            return mainLocation(sliders, "y")() + sliders.f3_force.Value() * Math.sin((sliders.f3_angle.Value() * Math.PI) / 180) * scale;
           };
       }
 
       this.point_main = this.box_simulator.create("point", [mainLocation(this.sliders, "x"), mainLocation(this.sliders, "y")], { visible: false });
 
-      //   this.point_1 = this.box_simulator.create(
-      //     "point",
-      //     [
-      //       () => {
-      //         return mainLocation(this.sliders, "x") + this.sliders.f1_force.Value() * Math.cos((this.sliders.f1_angle.Value() * Math.PI) / 180);
-      //       },
-      //       () => {
-      //         return mainLocation(this.sliders, "y") + this.sliders.f1_force.Value() * Math.sin((this.sliders.f1_angle.Value() * Math.PI) / 180);
-      //       }
-      //     ],
-      //     { visible: true }
-      //   );
-      //console.log(offsetLocation(this.sliders, "x1")());
       this.point_1 = this.box_simulator.create("point", [offsetLocation(this.sliders, "x1"), offsetLocation(this.sliders, "y1")], { visible: false });
       this.point_2 = this.box_simulator.create("point", [offsetLocation(this.sliders, "x2"), offsetLocation(this.sliders, "y2")], { visible: false });
       this.point_3 = this.box_simulator.create("point", [offsetLocation(this.sliders, "x3"), offsetLocation(this.sliders, "y3")], { visible: false });
@@ -170,21 +241,33 @@ export default {
         lastArrow: true,
         straightFirst: false,
         straightLast: false,
-        strokeColor: "red"
+        strokeColor: "red",
+        strokeWidth: 4
       });
       this.line_2 = this.box_simulator.create("line", [this.point_main, this.point_2], {
         firstArrow: false,
         lastArrow: true,
         straightFirst: false,
         straightLast: false,
-        strokeColor: "blue"
+        strokeColor: "blue",
+        strokeWidth: 4
       });
       this.line_3 = this.box_simulator.create("line", [this.point_main, this.point_3], {
         firstArrow: false,
         lastArrow: true,
         straightFirst: false,
         straightLast: false,
-        strokeColor: "green"
+        strokeColor: "green",
+        strokeWidth: 4
+      });
+
+      this.line_dotted = this.box_simulator.create("line", [this.box_simulator.create("point", [0, 0], { visible: false }), this.point_main], {
+        straightFirst: false,
+        straightLast: false,
+        visible: true,
+        strokeWidth: 2,
+        dash: 2,
+        strokeColor: "black"
       });
 
       this.circle_mass = this.box_simulator.create(
@@ -192,7 +275,7 @@ export default {
         [
           this.point_main,
           () => {
-            return this.sliders.mass.Value() / 5;
+            return (this.sliders.mass.Value() / 4) * scale;
           }
         ],
         {
@@ -200,6 +283,18 @@ export default {
           strokeColor: "black"
         }
       );
+
+      const edge = boundingSize;
+
+      const q1 = this.box_simulator.create("point", [edge, edge], { visible: false });
+      const q2 = this.box_simulator.create("point", [-edge, edge], { visible: false });
+      const q3 = this.box_simulator.create("point", [-edge, -edge], { visible: false });
+      const q4 = this.box_simulator.create("point", [edge, -edge], { visible: false });
+
+      this.box_simulator.create("line", [q1, q2], { strokeColor: "black", strokeWidth: 4 });
+      this.box_simulator.create("line", [q2, q3], { strokeColor: "black", strokeWidth: 4 });
+      this.box_simulator.create("line", [q3, q4], { strokeColor: "black", strokeWidth: 4 });
+      this.box_simulator.create("line", [q4, q1], { strokeColor: "black", strokeWidth: 4 });
 
       this.box_simulator.fullUpdate();
     }

@@ -1,14 +1,22 @@
 <template>
   <div>
-    Particle Equilibrium
+    <h1 class="text-danger text-center my-4">Particle Equilibrium</h1>
+    <particleEquilibrium />
   </div>
 </template>
 
 <script>
-export default {};
+import particule_equilibrium from "../../utils/particle_equilibrium/particle_equilibrium";
+
+export default {
+  components: {
+    particleEquilibrium: particule_equilibrium
+  }
+};
+
 export const meta = {
   title: "Particle Equilibrium",
-  description: "Non sense"
+  description: "In Progress - Watkins"
 };
 </script>
 

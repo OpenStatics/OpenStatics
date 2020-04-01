@@ -93,7 +93,7 @@ export default {
         14,
         () => {
           const value = parseFloat(force_a.Value().toFixed(fixedDecimal));
-          return "F_1:" + value;
+          return "F_1: " + value + "N";
         }
       ],
       { fontSize }
@@ -124,7 +124,7 @@ export default {
         12,
         () => {
           const value = parseFloat(angle_a.Value().toFixed(fixedDecimal));
-          return "&Theta;_1:" + value;
+          return "\u03B8_1: " + value + "\u00B0";
         }
       ],
       { fontSize }
@@ -155,7 +155,7 @@ export default {
         10,
         () => {
           const value = parseFloat(force_b.Value().toFixed(fixedDecimal));
-          return "F_2:" + value;
+          return "F_2: " + value + "N";
         }
       ],
       { fontSize }
@@ -186,7 +186,7 @@ export default {
         8,
         () => {
           const value = parseFloat(angle_b.Value().toFixed(fixedDecimal));
-          return "&Theta;_2:" + value;
+          return "\u03B8_2: " + value + "\u00B0";
         }
       ],
       { fontSize }
@@ -280,7 +280,7 @@ export default {
       () => {
         return (Math.sin((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
-      "&Theta;_1"
+      "\u03B8_1"
     ]);
 
     // line b
@@ -309,7 +309,7 @@ export default {
       () => {
         return (Math.sin((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
-      "&Theta;_2"
+      "\u03B8_2"
     ]);
 
     // create fixed vectors
@@ -442,7 +442,7 @@ export default {
               2 * force_a.Value() * force_b.Value() * Math.cos(((angle_a.Value() - angle_b.Value()) / 180) * Math.PI)
           );
           const value = parseFloat(FR.toFixed(fixedDecimal));
-          return "F_R: " + value;
+          return "F_R: " + value + "N";
         }
       ],
       {
@@ -469,10 +469,10 @@ export default {
           const beta = Math.asin((force_b.Value() / FR) * Math.sin(gamma));
           if (angle_a.Value() > angle_b.Value()) {
             const ans = angle_b.Value() + (alpha * 180) / Math.PI;
-            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
+            return "\u03B8_1: " + parseFloat(ans.toFixed(fixedDecimal)) + "\u00B0";
           } else {
             const ans = angle_a.Value() + (beta * 180) / Math.PI;
-            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
+            return "\u03B8_1: " + parseFloat(ans.toFixed(fixedDecimal)) + "\u00B0";
           }
         }
       ],

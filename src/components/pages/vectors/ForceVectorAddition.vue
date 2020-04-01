@@ -63,10 +63,11 @@ export default {
   mounted() {
     // initial values
     const multiplier = 4;
-    const fixedDecimal = 3;
+    const fixedDecimal = 2;
     const fontSize = 20;
     const strokeWidth = 3;
     const dash = 3;
+    const fixed = true;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
@@ -77,7 +78,15 @@ export default {
     board_control.addChild(this.board);
 
     // controller
-    const force_a = board_control.create("slider", [[2, 13], [12, 13], [0, 1.5, 3]], { withLabel: false });
+    const force_a = board_control.create(
+      "slider",
+      [
+        [2, 13],
+        [12, 13],
+        [0, 1.5, 3]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -85,13 +94,13 @@ export default {
         14,
         () => {
           const value = parseFloat(force_a.Value().toFixed(fixedDecimal));
-          return "F1:" + value;
+          return "F_1: " + value + "N";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputA = board_control.create("input", [7, 14, "", ""], { cssStyle: "width: 50px" });
-    const buttonA = board_control.create("button", [
+    board_control.create("button", [
       8,
       14,
       "Update",
@@ -100,7 +109,15 @@ export default {
       }
     ]);
 
-    const angle_a = board_control.create("slider", [[2, 11], [12, 11], [0, 30, 360]], { withLabel: false });
+    const angle_a = board_control.create(
+      "slider",
+      [
+        [2, 11],
+        [12, 11],
+        [0, 30, 360]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -108,13 +125,13 @@ export default {
         12,
         () => {
           const value = parseFloat(angle_a.Value().toFixed(fixedDecimal));
-          return "&Theta;_1:" + value;
+          return "\u03B8_1: " + value + "\u00B0";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputAA = board_control.create("input", [7, 12, "", ""], { cssStyle: "width: 50px" });
-    const buttonAA = board_control.create("button", [
+    board_control.create("button", [
       8,
       12,
       "Update",
@@ -123,7 +140,15 @@ export default {
       }
     ]);
 
-    const force_b = board_control.create("slider", [[2, 9], [12, 9], [0, 1, 3]], { withLabel: false });
+    const force_b = board_control.create(
+      "slider",
+      [
+        [2, 9],
+        [12, 9],
+        [0, 1, 3]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -131,13 +156,13 @@ export default {
         10,
         () => {
           const value = parseFloat(force_b.Value().toFixed(fixedDecimal));
-          return "F2:" + value;
+          return "F_2: " + value + "N";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputB = board_control.create("input", [7, 10, "", ""], { cssStyle: "width: 50px" });
-    const buttonB = board_control.create("button", [
+    board_control.create("button", [
       8,
       10,
       "Update",
@@ -146,7 +171,15 @@ export default {
       }
     ]);
 
-    const angle_b = board_control.create("slider", [[2, 7], [12, 7], [0, 120, 360]], { withLabel: false });
+    const angle_b = board_control.create(
+      "slider",
+      [
+        [2, 7],
+        [12, 7],
+        [0, 120, 360]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -154,10 +187,10 @@ export default {
         8,
         () => {
           const value = parseFloat(angle_b.Value().toFixed(fixedDecimal));
-          return "&Theta;_2:" + value;
+          return "\u03B8_2: " + value + "\u00B0";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputBB = board_control.create("input", [7, 8, "", ""], { cssStyle: "width: 50px" });
     const buttonBB = board_control.create("button", [
@@ -181,7 +214,7 @@ export default {
           return Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         }
       ],
-      { name: "F1", face: "cross", strokeColor: "green" }
+      { name: "F_1", face: "cross", strokeColor: "green" }
     );
 
     const end_point_b = this.board.create(
@@ -194,7 +227,7 @@ export default {
           return Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         }
       ],
-      { name: "F2", face: "cross", strokeColor: "green" }
+      { name: "F_2", face: "cross", strokeColor: "green" }
     );
 
     const end_point_r = this.board.create(
@@ -212,7 +245,7 @@ export default {
         }
       ],
       {
-        name: "FR",
+        name: "F_R",
         face: "cross",
         strokeColor: "green",
         visible: () => {
@@ -248,7 +281,7 @@ export default {
       () => {
         return (Math.sin((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
-      "&Theta;1"
+      "\u03B8_1"
     ]);
 
     // line b
@@ -277,7 +310,7 @@ export default {
       () => {
         return (Math.sin((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
-      "&Theta;2"
+      "\u03B8_2"
     ]);
 
     // create fixed vectors
@@ -410,14 +443,15 @@ export default {
               2 * force_a.Value() * force_b.Value() * Math.cos(((angle_a.Value() - angle_b.Value()) / 180) * Math.PI)
           );
           const value = parseFloat(FR.toFixed(fixedDecimal));
-          return "F_R: " + value;
+          return "F_R: " + value + "N";
         }
       ],
       {
         fontSize,
         visible: () => {
           return this.componentVisibility[2];
-        }
+        },
+        fixed: true
       }
     );
     this.board.create(
@@ -436,10 +470,10 @@ export default {
           const beta = Math.asin((force_b.Value() / FR) * Math.sin(gamma));
           if (angle_a.Value() > angle_b.Value()) {
             const ans = angle_b.Value() + (alpha * 180) / Math.PI;
-            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
+            return "\u03B8_1: " + parseFloat(ans.toFixed(fixedDecimal)) + "\u00B0";
           } else {
             const ans = angle_a.Value() + (beta * 180) / Math.PI;
-            return "&Theta;: " + parseFloat(ans.toFixed(fixedDecimal));
+            return "\u03B8_1: " + parseFloat(ans.toFixed(fixedDecimal)) + "\u00B0";
           }
         }
       ],
@@ -447,7 +481,8 @@ export default {
         fontSize,
         visible: () => {
           return this.componentVisibility[2];
-        }
+        },
+        fixed: true
       }
     );
 

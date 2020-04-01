@@ -77,7 +77,15 @@ export default {
     board_control.addChild(this.board);
 
     // controller
-    const force_a = board_control.create("slider", [[2, 13], [12, 13], [0, 1.5, 3]], { withLabel: false });
+    const force_a = board_control.create(
+      "slider",
+      [
+        [2, 13],
+        [12, 13],
+        [0, 1.5, 3]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -85,7 +93,7 @@ export default {
         14,
         () => {
           const value = parseFloat(force_a.Value().toFixed(fixedDecimal));
-          return "F1:" + value;
+          return "F_1:" + value;
         }
       ],
       { fontSize }
@@ -100,7 +108,15 @@ export default {
       }
     ]);
 
-    const angle_a = board_control.create("slider", [[2, 11], [12, 11], [0, 30, 360]], { withLabel: false });
+    const angle_a = board_control.create(
+      "slider",
+      [
+        [2, 11],
+        [12, 11],
+        [0, 30, 360]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -123,7 +139,15 @@ export default {
       }
     ]);
 
-    const force_b = board_control.create("slider", [[2, 9], [12, 9], [0, 1, 3]], { withLabel: false });
+    const force_b = board_control.create(
+      "slider",
+      [
+        [2, 9],
+        [12, 9],
+        [0, 1, 3]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -131,7 +155,7 @@ export default {
         10,
         () => {
           const value = parseFloat(force_b.Value().toFixed(fixedDecimal));
-          return "F2:" + value;
+          return "F_2:" + value;
         }
       ],
       { fontSize }
@@ -146,7 +170,15 @@ export default {
       }
     ]);
 
-    const angle_b = board_control.create("slider", [[2, 7], [12, 7], [0, 120, 360]], { withLabel: false });
+    const angle_b = board_control.create(
+      "slider",
+      [
+        [2, 7],
+        [12, 7],
+        [0, 120, 360]
+      ],
+      { withLabel: false }
+    );
     board_control.create(
       "text",
       [
@@ -181,7 +213,7 @@ export default {
           return Math.sin((angle_a.Value() / 180) * Math.PI) * force_a.Value() * multiplier;
         }
       ],
-      { name: "F1", face: "cross", strokeColor: "green" }
+      { name: "F_1", face: "cross", strokeColor: "green" }
     );
 
     const end_point_b = this.board.create(
@@ -194,7 +226,7 @@ export default {
           return Math.sin((angle_b.Value() / 180) * Math.PI) * force_b.Value() * multiplier;
         }
       ],
-      { name: "F2", face: "cross", strokeColor: "green" }
+      { name: "F_2", face: "cross", strokeColor: "green" }
     );
 
     const end_point_r = this.board.create(
@@ -212,7 +244,7 @@ export default {
         }
       ],
       {
-        name: "FR",
+        name: "F_R",
         face: "cross",
         strokeColor: "green",
         visible: () => {
@@ -248,7 +280,7 @@ export default {
       () => {
         return (Math.sin((angle_a.Value() / 360) * Math.PI) * force_a.Value() * multiplier) / 1.1;
       },
-      "&Theta;1"
+      "&Theta;_1"
     ]);
 
     // line b
@@ -277,7 +309,7 @@ export default {
       () => {
         return (Math.sin((angle_b.Value() / 360) * Math.PI) * force_b.Value() * multiplier) / 1.1;
       },
-      "&Theta;2"
+      "&Theta;_2"
     ]);
 
     // create fixed vectors
@@ -417,7 +449,8 @@ export default {
         fontSize,
         visible: () => {
           return this.componentVisibility[2];
-        }
+        },
+        fixed: true
       }
     );
     this.board.create(
@@ -447,7 +480,8 @@ export default {
         fontSize,
         visible: () => {
           return this.componentVisibility[2];
-        }
+        },
+        fixed: true
       }
     );
 

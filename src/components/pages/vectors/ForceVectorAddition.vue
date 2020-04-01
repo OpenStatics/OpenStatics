@@ -63,10 +63,11 @@ export default {
   mounted() {
     // initial values
     const multiplier = 4;
-    const fixedDecimal = 3;
+    const fixedDecimal = 2;
     const fontSize = 20;
     const strokeWidth = 3;
     const dash = 3;
+    const fixed = true;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
@@ -96,10 +97,10 @@ export default {
           return "F_1: " + value + "N";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputA = board_control.create("input", [7, 14, "", ""], { cssStyle: "width: 50px" });
-    const buttonA = board_control.create("button", [
+    board_control.create("button", [
       8,
       14,
       "Update",
@@ -127,10 +128,10 @@ export default {
           return "\u03B8_1: " + value + "\u00B0";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputAA = board_control.create("input", [7, 12, "", ""], { cssStyle: "width: 50px" });
-    const buttonAA = board_control.create("button", [
+    board_control.create("button", [
       8,
       12,
       "Update",
@@ -158,10 +159,10 @@ export default {
           return "F_2: " + value + "N";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputB = board_control.create("input", [7, 10, "", ""], { cssStyle: "width: 50px" });
-    const buttonB = board_control.create("button", [
+    board_control.create("button", [
       8,
       10,
       "Update",
@@ -189,7 +190,7 @@ export default {
           return "\u03B8_2: " + value + "\u00B0";
         }
       ],
-      { fontSize }
+      { fontSize, fixed }
     );
     const inputBB = board_control.create("input", [7, 8, "", ""], { cssStyle: "width: 50px" });
     const buttonBB = board_control.create("button", [

@@ -1,37 +1,202 @@
 <template>
-  <div>
+  <div style="margin:20px">
     <h1 class="text-danger text-center my-4">Moving downward or upward</h1>
+    <MovingText></MovingText>
     <div class="row">
-      <div id="MovingDownUp" class="jsx-graph col-xl mx-2"></div>
-      <div class="col-xl mx-2">
-        Two blocks, M on the slope and W hanged, are connected by rope crossing through a drum. The slope has an inclination of angle \(\Theta\), the
-        coefficient of static friction between M and slope is \(\mu_1\), and that between rope and drum is \(\mu_2\). Try to determine the critical
-        values of W which lead to the break of equilibrium under different conditions, and compare with the given solution. Note that two critical
-        values of W are involved which cause W move up or move down separately.
+      <div class="col-xl-6 mx-2">
+        <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
+      <div id="MovingDownUp" class="jsx-graph col-xl mx-2"></div>
     </div>
   </div>
 </template>
 <script>
+import MovingText from "../../utils/Moving_Down_Up/MovingText";
+
 export default {
   name: "Moving",
   data() {
     return { initBoxPos: 10 };
   },
+  components: { MovingText },
   mounted() {
+    // initial values
+    const multiplier = 4;
+    const fixedDecimal = 2;
+    const fontSize = 20;
+    const strokeWidth = 3;
+    const dash = 3;
+    const fixed = true;
+    const withLabel = false;
+
+    // create board
     const board = JXG.JSXGraph.initBoard("MovingDownUp", {
       boundingbox: [-15, 15, 15, -15],
       axis: true,
       keepAspectRatio: true,
       showCopyright: false
     });
+    const board_control = JXG.JSXGraph.initBoard("control", {
+      boundingbox: [0, 15, 15, 0],
+      showCopyright: false
+    });
+    board_control.addChild(board);
 
     // create sliders
-    const u1 = board.create("slider", [[-13, 12], [-2, 12], [0, 0.2, 1]], { name: "&mu;_1" });
-    const u2 = board.create("slider", [[-13, 10], [-2, 10], [0, 0.3, 1]], { name: "&mu;_2" });
-    const theta = board.create("slider", [[-13, 8], [-2, 8], [15, 45, 60]], { name: "&Theta;" });
-    const M = board.create("slider", [[-13, 6], [-2, 6], [1, 1, 10]], { name: "M" });
-    const W = board.create("slider", [[-13, 4], [-2, 4], [0, 1, 10]], { name: "W" });
+    const u1 = board_control.create(
+      "slider",
+      [
+        [2, 13],
+        [12, 13],
+        [0, 0.2, 1]
+      ],
+      { withLabel }
+    );
+    board_control.create(
+      "text",
+      [
+        3,
+        14,
+        () => {
+          const value = parseFloat(u1.Value().toFixed(fixedDecimal));
+          return "&mu;_1: " + value;
+        }
+      ],
+      { fontSize, fixed }
+    );
+    const input1 = board_control.create("input", [7, 14, "", ""], { cssStyle: "width: 50px" });
+    board_control.create("button", [
+      8,
+      14,
+      "Update",
+      () => {
+        if (Number(input1.Value())) force_a.setValue(Number(input1.Value()));
+      }
+    ]);
+
+    const u2 = board_control.create(
+      "slider",
+      [
+        [2, 11],
+        [12, 11],
+        [0, 0.3, 1]
+      ],
+      { withLabel }
+    );
+    board_control.create(
+      "text",
+      [
+        3,
+        12,
+        () => {
+          const value = parseFloat(u2.Value().toFixed(fixedDecimal));
+          return "&mu;_2: " + value;
+        }
+      ],
+      { fontSize, fixed }
+    );
+    const input2 = board_control.create("input", [7, 12, "", ""], { cssStyle: "width: 50px" });
+    board_control.create("button", [
+      8,
+      12,
+      "Update",
+      () => {
+        if (Number(input2.Value())) u2.setValue(Number(input2.Value()));
+      }
+    ]);
+
+    const theta = board_control.create(
+      "slider",
+      [
+        [2, 9],
+        [12, 9],
+        [15, 45, 60]
+      ],
+      { withLabel }
+    );
+    board_control.create(
+      "text",
+      [
+        3,
+        10,
+        () => {
+          const value = parseFloat(theta.Value().toFixed(fixedDecimal));
+          return "\u03B8: " + value + "\u00B0";
+        }
+      ],
+      { fontSize, fixed }
+    );
+    const input3 = board_control.create("input", [7, 10, "", ""], { cssStyle: "width: 50px" });
+    board_control.create("button", [
+      8,
+      10,
+      "Update",
+      () => {
+        if (Number(input3.Value())) theta.setValue(Number(input3.Value()));
+      }
+    ]);
+
+    const M = board_control.create(
+      "slider",
+      [
+        [2, 7],
+        [12, 7],
+        [1, 1, 10]
+      ],
+      { withLabel }
+    );
+    board_control.create(
+      "text",
+      [
+        3,
+        8,
+        () => {
+          const value = parseFloat(M.Value().toFixed(fixedDecimal));
+          return "M: " + value;
+        }
+      ],
+      { fontSize, fixed }
+    );
+    const input4 = board_control.create("input", [7, 8, "", ""], { cssStyle: "width: 50px" });
+    board_control.create("button", [
+      8,
+      8,
+      "Update",
+      () => {
+        if (Number(input4.Value())) M.setValue(Number(input4.Value()));
+      }
+    ]);
+
+    const W = board_control.create(
+      "slider",
+      [
+        [2, 5],
+        [12, 5],
+        [0, 1, 10]
+      ],
+      { withLabel }
+    );
+    board_control.create(
+      "text",
+      [
+        3,
+        6,
+        () => {
+          const value = parseFloat(W.Value().toFixed(fixedDecimal));
+          return "W: " + value;
+        }
+      ],
+      { fontSize, fixed }
+    );
+    const input5 = board_control.create("input", [7, 6, "", ""], { cssStyle: "width: 50px" });
+    board_control.create("button", [
+      8,
+      6,
+      "Update",
+      () => {
+        if (Number(input5.Value())) W.setValue(Number(input5.Value()));
+      }
+    ]);
 
     // create stable part
     const p1 = board.create("point", [-5, -10], { fixed: true, visible: false });

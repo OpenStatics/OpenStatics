@@ -5,8 +5,13 @@
     <div class="row">
       <div class="col-xl-6 mx-2">
         <div class="ml-5 my-4">
-          <button class="btn btn-primary">gafd</button>
+          <strong>Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">[value here]</span></strong>
         </div>
+        <div class="ml-5 my-4">
+          <strong>Show FBD: </strong>
+          <input type="radio" class="mx-3" />on <input type="radio" class="mx-3" />off
+        </div>
+
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
       <div id="friction" class="jsx-graph col-xl mx-2"></div>

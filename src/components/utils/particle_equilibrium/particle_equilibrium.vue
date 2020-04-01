@@ -62,8 +62,8 @@ export default {
     this.sliders.time = this.box_sliders.create(
       "slider",
       [
-        [left, start + incr],
-        [right, start + incr],
+        [left, start + incr * 0.5],
+        [right, start + incr * 0.5],
         [0, 0, 15]
       ],
       { name: "Time (s)", label: { size: 16 } }
@@ -162,7 +162,7 @@ export default {
 
     this.button_play = this.box_sliders.create("button", [
       left,
-      start + incr * 0,
+      start + incr * -0.5,
       "Play/Pause",
       () => {
         this.animation_state.play = !this.animation_state.play;
@@ -175,8 +175,8 @@ export default {
     ]);
 
     this.box_sliders.create("button", [
-      left + incr * 2,
-      start + incr * 0,
+      left + incr * 1.65,
+      start + incr * -0.5,
       "Reverse",
       () => {
         this.animation_state.direction *= -1;

@@ -70,7 +70,7 @@ export default {
       14,
       "Update",
       () => {
-        if (Number(input1.Value())) force_a.setValue(Number(input1.Value()));
+        if (Number(input1.Value())) u1.setValue(Number(input1.Value()));
       }
     ]);
 

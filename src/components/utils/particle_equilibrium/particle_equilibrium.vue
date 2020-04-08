@@ -51,13 +51,18 @@ export default {
     this.box_sliders = JXG.JSXGraph.initBoard("box_vector_sliders", {
       boundingbox: [-15, 15, 15, -15],
       keepAspectRatio: true,
-      showCopyright: false
+      showCopyright: false,
+      pan: { enabled: false },
+      zoom: { enabled: false },
+      showNavigation: false,
+      showZoom: false
     });
 
     const incr = 5;
     const start = 5;
-    const left = -13;
-    const right = -2;
+    const left = -14;
+    const right = -5;
+    const label_size = 16;
 
     this.sliders.time = this.box_sliders.create(
       "slider",
@@ -66,7 +71,7 @@ export default {
         [right, start + incr * 0.5],
         [0, 0, 15]
       ],
-      { name: "Time (s)", label: { size: 16 } }
+      { name: "Time (s)", withTicks: false, label: { fontSize: label_size } }
     );
     this.sliders.f1_force = this.box_sliders.create(
       "slider",
@@ -77,7 +82,10 @@ export default {
       ],
       {
         name: "F_1 (N)",
-        label: { color: "red" }
+        withTicks: false,
+        color: "red",
+        label: { color: "red", fontSize: label_size },
+        baseline: { color: "red" }
       }
     );
     this.sliders.f1_angle = this.box_sliders.create(
@@ -89,7 +97,9 @@ export default {
       ],
       {
         name: "\u03B8_1 (\u00B0)",
-        label: { color: "red" }
+        withTicks: false,
+        color: "red",
+        label: { color: "red", fontSize: label_size }
       }
     );
     this.sliders.f2_force = this.box_sliders.create(
@@ -101,7 +111,10 @@ export default {
       ],
       {
         name: "F_2 (N)",
-        label: { color: "blue" }
+        withTicks: false,
+        strokeColor: "blue",
+        label: { color: "blue", fontSize: label_size },
+        highline: { color: "blue" }
       }
     );
     this.sliders.f2_angle = this.box_sliders.create(
@@ -113,7 +126,9 @@ export default {
       ],
       {
         name: "\u03B8_2 (\u00B0)",
-        label: { color: "blue" }
+        withTicks: false,
+        strokeColor: "blue",
+        label: { color: "blue", fontSize: label_size }
       }
     );
     this.sliders.f3_force = this.box_sliders.create(
@@ -125,7 +140,12 @@ export default {
       ],
       {
         name: "F_3 (N)",
-        label: { color: "green" }
+        withTicks: false,
+        strokeColor: "black",
+        fillColor: "green",
+        label: { color: "green", fontSize: label_size },
+        highline: { color: "green" },
+        baseline: { color: "green" }
       }
     );
     this.sliders.f3_angle = this.box_sliders.create(
@@ -137,7 +157,10 @@ export default {
       ],
       {
         name: "\u03B8_3 (\u00B0)",
-        label: { color: "green" }
+        withTicks: false,
+        strokeColor: "black",
+        fillColor: "green",
+        label: { color: "green", fontSize: label_size }
       }
     );
     this.sliders.mass = this.box_sliders.create(
@@ -147,7 +170,7 @@ export default {
         [right, start - incr * 8],
         [1, 1, 3]
       ],
-      { name: "Mass (kg)" }
+      { name: "Mass (kg)", withTicks: false, label: { fontSize: label_size } }
     );
 
     let x = () => {
@@ -268,6 +291,77 @@ export default {
       this.sliders.time.setValue(0);
     });
 
+    let buttonClick = (textbox, slider) => {
+      return () => {
+        if (Number(textbox.Value())) {
+          let val = Number(textbox.Value());
+          val = Math.min(slider._smax, val);
+          val = Math.max(slider._smin, val);
+          val = Math.round(val * 100) / 100;
+          slider.setValue(val);
+          this.animation_state.play = false;
+          clearInterval(this.interval);
+          if (slider != this.sliders.time) this.sliders.time.setValue(0);
+        }
+      };
+    };
+
+    this.input_time = this.box_sliders.create("input", [right + incr * 2.6, start + incr * 0.5, "", ""], { cssStyle: "width: 58px" });
+    this.button_time = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 0, "Update", buttonClick(this.input_time, this.sliders.time)],
+      {}
+    );
+
+    this.input_f1_force = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 2, "", ""], { cssStyle: "width: 58px" });
+    this.button_f1_force = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 2.5, "Update", buttonClick(this.input_f1_force, this.sliders.f1_force)],
+      {}
+    );
+
+    this.input_f1_angle = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 3, "", ""], { cssStyle: "width: 58px" });
+    this.button_f1_angle = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 3.5, "Update", buttonClick(this.input_f1_angle, this.sliders.f1_angle)],
+      {}
+    );
+
+    this.input_f2_force = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 4, "", ""], { cssStyle: "width: 58px" });
+    this.button_f2_force = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 4.5, "Update", buttonClick(this.input_f2_force, this.sliders.f2_force)],
+      {}
+    );
+
+    this.input_f2_angle = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 5, "", ""], { cssStyle: "width: 58px" });
+    this.button_f2_angle = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 5.5, "Update", buttonClick(this.input_f2_angle, this.sliders.f2_angle)],
+      {}
+    );
+
+    this.input_f3_force = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 6, "", ""], { cssStyle: "width: 58px" });
+    this.button_f3_force = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 6.5, "Update", buttonClick(this.input_f3_force, this.sliders.f3_force)],
+      {}
+    );
+
+    this.input_f3_angle = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 7, "", ""], { cssStyle: "width: 58px" });
+    this.button_f3_angle = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 7.5, "Update", buttonClick(this.input_f3_angle, this.sliders.f3_angle)],
+      {}
+    );
+
+    this.input_mass = this.box_sliders.create("input", [right + incr * 2.6, start - incr * 8, "", ""], { cssStyle: "width: 58px" });
+    this.button_mass = this.box_sliders.create(
+      "button",
+      [right + incr * 2.6, start - incr * 8.5, "Update", buttonClick(this.input_mass, this.sliders.mass)],
+      {}
+    );
+
     this.box_sliders.fullUpdate();
 
     const boundingSize = 200;
@@ -275,7 +369,15 @@ export default {
       boundingbox: [-boundingSize, boundingSize, boundingSize, -boundingSize],
       keepAspectRatio: true,
       showCopyright: false,
-      axis: true
+      axis: true,
+      pan: { enabled: false },
+      zoom: { enabled: false },
+      showNavigation: false,
+      showZoom: false,
+      defaultAxes: {
+        x: { lastArrow: { type: 1, size: 8 }, firstArrow: { type: 1, size: 8 }, ticks: { label: { fontSize: 14 } } },
+        y: { lastArrow: { type: 1, size: 8 }, firstArrow: { type: 1, size: 8 }, ticks: { label: { fontSize: 14 } } }
+      }
     });
 
     this.box_sliders.addChild(this.box_simulator);

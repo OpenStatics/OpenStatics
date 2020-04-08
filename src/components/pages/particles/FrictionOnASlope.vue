@@ -8,8 +8,8 @@
           <strong>Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">[value here]</span></strong>
         </div>
         <div class="ml-5 my-4">
-          <button class="btn"><i class="fas fa-play"></i></button>
-          <button class="btn"><i class="fas fa-redo"></i></button>
+          <button class="btn" @click="playAnimation"><i class="fas fa-play"></i></button>
+          <button class="btn" @click="resetAnimation"><i class="fas fa-redo"></i></button>
         </div>
         <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
@@ -29,17 +29,20 @@ import SlopeText from "../../utils/slope/SlopeText";
 export default {
   data() {
     return {
+      board: undefined,
+      mu: undefined,
+      m: undefined,
+      angle: 0,
+      slide_percentage: 0.7,
+      animeOn: false,
+
       distance: 10,
       boxLength: 2,
-      angle: 0,
       dummy: undefined,
-      m: undefined,
-      mu: undefined,
       playButton: undefined,
       resetButton: undefined,
       toggle: false,
-      showFBD: false,
-      board: undefined
+      showFBD: false
     };
   },
 
@@ -55,14 +58,18 @@ export default {
     const fixed = true;
     const withLabel = false;
 
+    // module specific values
+    const origin_pos = [-7, -5];
+    const ground_line_length = 15;
+    const end_pos = [-7 + ground_line_length, -5];
+
     // create board
-    const board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
-    this.board = board;
+    this.board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
     });
-    board_control.addChild(board);
+    board_control.addChild(this.board);
 
     // create sliders
     this.mu = board_control.create(
@@ -127,99 +134,65 @@ export default {
       }
     ]);
 
-    // actual content
-    this.dummy = board.create("point", [5, 5], { visible: false });
-
-    const x_axis_point = board.create("point", [8, 0], { visible: false });
-    const origin = board.create("point", [0, 0], { visible: false });
-
-    const x = (mult = 1) => {
-      return mult * Math.cos((this.angle * Math.PI) / 180);
-    };
-    const y = (mult = 1) => {
-      return mult * Math.sin((this.angle * Math.PI) / 180);
-    };
-    const groundLine = board.create("line", [0, 0, 1], { fixed: true });
-    const slopeLine = board.create(
-      "line",
-      [
-        origin,
-        [
-          () => {
-            return x();
-          },
-          () => {
-            return y();
-          }
-        ]
-      ],
-      { fixed: true, straightFirst: false }
-    );
-
-    const a = board.create(
-      "point",
-      [
-        () => {
-          return x(this.distance);
-        },
-        () => {
-          return y(this.distance);
-        }
-      ],
-      { fixed: true }
-    );
-
-    const b = board.create(
-      "point",
-      [
-        () => {
-          return x(this.distance + this.boxLength);
-        },
-        () => {
-          return y(this.distance + this.boxLength);
-        }
-      ],
-      { fixed: true }
-    );
-
-    const c = board.create(
-      "point",
-      [
-        () => {
-          return x(this.distance + this.boxLength) - y(this.boxLength);
-        },
-        () => {
-          return y(this.distance + this.boxLength) + x(this.boxLength);
-        }
-      ],
-      { fixed: true }
-    );
-
-    const d = board.create(
-      "point",
-      [
-        () => {
-          return x(this.distance) - y(this.boxLength);
-        },
-        () => {
-          return y(this.distance) + x(this.boxLength);
-        }
-      ],
-      { fixed: true }
-    );
-    const box = board.create("polygon", [a, b, c, d]);
-    this.playButton = board.create("button", [3, -2, "Play", this.playAnimation]);
-    this.resetButton = board.create("button", [-3, -2, "reset", this.resetAnimation]);
-
-    const angle = board.create("angle", [x_axis_point, origin, a], {
-      radius: 4,
-      name: () => {
-        return "&Theta;: " + this.angle;
-      }
+    // fixed ground line
+    const origin = this.board.create("point", origin_pos, { visible: false, fixed });
+    const ground_line = this.board.create("line", [origin_pos, end_pos], {
+      straightFirst: false,
+      straightLast: false,
+      strokeWidth,
+      fixed
     });
+    const ground_comb = this.board.create("comb", [end_pos, origin_pos]);
+
+    // moving elevating line
+    const rot_trans = this.board.create(
+      "transform",
+      [
+        () => {
+          return (this.angle / 180) * Math.PI;
+        },
+        origin
+      ],
+      { type: "rotate" }
+    );
+
+    const elevate_line = this.board.create("line", [ground_line, rot_trans], { straightFirst: false, straightLast: false, strokeWidth });
+
+    // make box
+    const horizon_trans = this.board.create("transform", [1, 0], { type: "translate" });
+    const vert_trans = this.board.create("transform", [0, 1], { type: "translate" });
+
+    const left_bot_point = this.board.create(
+      "point",
+      [
+        () => {
+          return Math.cos((this.angle / 180) * Math.PI) * ground_line_length * this.slide_percentage + origin_pos[0];
+        },
+        () => {
+          return Math.sin((this.angle / 180) * Math.PI) * ground_line_length * this.slide_percentage + origin_pos[1];
+        }
+      ],
+      { visible: false, fixed }
+    );
+
+    const rot_trans_box = this.board.create(
+      "transform",
+      [
+        () => {
+          return (this.angle / 180) * Math.PI;
+        },
+        left_bot_point
+      ],
+      { type: "rotate" }
+    );
+
+    const right_bot_point = this.board.create("point", [left_bot_point, [horizon_trans, rot_trans_box]], { visible: false, fixed });
+    const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans, vert_trans, rot_trans_box]], { visible: false, fixed });
+    const left_top_point = this.board.create("point", [left_bot_point, [vert_trans, rot_trans_box]], { visible: false, fixed });
+    this.board.create("polygon", [left_bot_point, right_bot_point, right_top_point, left_top_point]);
 
     // Show FBD
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -239,7 +212,7 @@ export default {
         cssStyle: "font-weight: bold"
       }
     );
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -261,7 +234,7 @@ export default {
         cssStyle: "font-weight: bold"
       }
     );
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -283,7 +256,7 @@ export default {
         cssStyle: "font-weight: bold"
       }
     );
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -304,7 +277,7 @@ export default {
         cssStyle: "font-weight: bold"
       }
     );
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -325,7 +298,7 @@ export default {
         cssStyle: "font-weight: bold"
       }
     );
-    board.create(
+    this.board.create(
       "text",
       [
         -13,
@@ -348,27 +321,29 @@ export default {
   },
   methods: {
     async playAnimation() {
-      if (this.toggle) return;
-      this.toggle = true;
       const equilibrium = this.findAngle();
-      while (this.angle < equilibrium) {
-        if (!this.toggle) return;
-        this.angle += 0.25;
-        this.dummy.moveTo([1, 1], 1000);
-        await this.sleep(20);
+      this.animeOn = true;
+      while (this.angle < equilibrium && this.animeOn) {
+        this.angle += 0.5;
+        this.board.fullUpdate();
+        await this.sleep(30);
       }
-      for (let i = 0; i < this.distance * 10; i++) {
-        if (!this.toggle) return;
-        this.distance -= 0.1;
-        this.dummy.moveTo([2, 2], 1000);
+      if (this.animeOn) {
+        this.angle = equilibrium;
+        this.board.fullUpdate();
+      }
+      while (this.slide_percentage > 0.1 && this.animeOn) {
+        this.slide_percentage -= 0.01;
+        this.board.fullUpdate();
         await this.sleep(50);
       }
     },
-    resetAnimation() {
-      this.toggle = false;
+    async resetAnimation() {
+      this.animeOn = false;
+      await sleep(50);
+      this.slide_percentage = 0.7;
       this.angle = 0;
-      this.dummy.moveTo([5, 5]);
-      this.distance = 10;
+      this.board.fullUpdate();
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));

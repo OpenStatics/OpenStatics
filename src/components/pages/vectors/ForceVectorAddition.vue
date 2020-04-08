@@ -5,21 +5,21 @@
     <div class="row">
       <div class="col-xl-6 mx-2">
         <div class="ml-5 my-4">
-          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[0] }" @click="() => this.Toggle([0])">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-dark': !this.componentVisibility[0] }" @click="() => this.Toggle([0])">
             F1 Visibility
           </button>
-          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[1] }" @click="() => this.Toggle([1])">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-dark': !this.componentVisibility[1] }" @click="() => this.Toggle([1])">
             F2 Visibility
           </button>
-          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.componentVisibility[2] }" @click="() => this.Toggle([2])">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-dark': !this.componentVisibility[2] }" @click="() => this.Toggle([2])">
             Resultant
           </button>
         </div>
         <div class="ml-5 my-4" v-if="this.componentVisibility[2]">
-          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': this.isParallolegram }" @click="() => this.ToggleAnimation()">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-dark': !this.isParallolegram }" @click="() => this.ToggleAnimation(0)">
             Parallolegram
           </button>
-          <button class="btn btn-primary mx-2" :class="{ 'btn-warning': !this.isParallolegram }" @click="() => this.ToggleAnimation()">
+          <button class="btn btn-primary mx-2" :class="{ 'btn-dark': this.isParallolegram }" @click="() => this.ToggleAnimation(1)">
             Head-to-Tail
           </button>
         </div>
@@ -68,6 +68,7 @@ export default {
     const strokeWidth = 3;
     const dash = 3;
     const fixed = true;
+    const inputFont = 15;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
@@ -99,15 +100,19 @@ export default {
       ],
       { fontSize, fixed }
     );
-    const inputA = board_control.create("input", [7, 14, "", ""], { cssStyle: "width: 50px" });
-    board_control.create("button", [
-      8,
-      14,
-      "Update",
-      () => {
-        if (Number(inputA.Value())) force_a.setValue(Number(inputA.Value()));
-      }
-    ]);
+    const inputA = board_control.create("input", [8.5, 14, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
+    board_control.create(
+      "button",
+      [
+        10,
+        14,
+        "Update",
+        () => {
+          if (Number(inputA.Value())) force_a.setValue(Number(inputA.Value()));
+        }
+      ],
+      { fontSize: inputFont }
+    );
 
     const angle_a = board_control.create(
       "slider",
@@ -130,15 +135,19 @@ export default {
       ],
       { fontSize, fixed }
     );
-    const inputAA = board_control.create("input", [7, 12, "", ""], { cssStyle: "width: 50px" });
-    board_control.create("button", [
-      8,
-      12,
-      "Update",
-      () => {
-        if (Number(inputAA.Value())) angle_a.setValue(Number(inputAA.Value()));
-      }
-    ]);
+    const inputAA = board_control.create("input", [8.5, 12, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
+    board_control.create(
+      "button",
+      [
+        10,
+        12,
+        "Update",
+        () => {
+          if (Number(inputAA.Value())) angle_a.setValue(Number(inputAA.Value()));
+        }
+      ],
+      { fontSize: inputFont }
+    );
 
     const force_b = board_control.create(
       "slider",
@@ -161,15 +170,15 @@ export default {
       ],
       { fontSize, fixed }
     );
-    const inputB = board_control.create("input", [7, 10, "", ""], { cssStyle: "width: 50px" });
+    const inputB = board_control.create("input", [8.5, 10, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
     board_control.create("button", [
-      8,
+      10,
       10,
       "Update",
       () => {
         if (Number(inputB.Value())) force_b.setValue(Number(inputB.Value()));
       }
-    ]);
+    ],{fontSize:inputFont});
 
     const angle_b = board_control.create(
       "slider",
@@ -192,15 +201,15 @@ export default {
       ],
       { fontSize, fixed }
     );
-    const inputBB = board_control.create("input", [7, 8, "", ""], { cssStyle: "width: 50px" });
+    const inputBB = board_control.create("input", [8.5, 8, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
     const buttonBB = board_control.create("button", [
-      8,
+      10,
       8,
       "Update",
       () => {
         if (Number(inputBB.Value())) angle_b.setValue(Number(inputBB.Value()));
       }
-    ]);
+    ],{fontSize:inputFont});
 
     // create fixed endpoints and origin
     const origin_point = this.board.create("point", [0, 0], { fixed: true, visible: false });
@@ -498,7 +507,10 @@ export default {
       }
       this.board.fullUpdate();
     },
-    ToggleAnimation() {
+    ToggleAnimation(index) {
+      if (index == 0 && this.isParallolegram) return;
+      if (index == 1 && !this.isParallolegram) return;
+
       this.isParallolegram = this.isParallolegram ? false : true;
       this.resetHeadTail(0);
       this.resetHeadTail(1);

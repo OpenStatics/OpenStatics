@@ -18,7 +18,8 @@
         </div>
         <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
-          <input type="radio" class="mx-3" @click="toggleFBD" />on <input type="radio" class="mx-3" />off
+          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" />on
+          <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" checked />off
         </div>
 
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
@@ -41,13 +42,6 @@ export default {
       slide_percentage: 0.7,
       animeOn: false,
       polygon_color: "red",
-
-      distance: 10,
-      boxLength: 2,
-      dummy: undefined,
-      playButton: undefined,
-      resetButton: undefined,
-      toggle: false,
       showFBD: false
     };
   },
@@ -142,11 +136,9 @@ export default {
 
     // stop on slider changes
     this.m.on("drag", () => {
-      this.animeOn = false;
       this.resetAnimation();
     });
     this.mu.on("drag", () => {
-      this.animeOn = false;
       this.resetAnimation();
     });
 
@@ -410,12 +402,14 @@ export default {
       let velocity = 0;
 
       // sliding down
-      while (this.slide_percentage > 0.1 && this.animeOn) {
+      let timeout = 0; // control timeout
+      while (this.slide_percentage > 0.1 && this.animeOn && timeout <= 200) {
         // need to calculate acceleration here
         this.slide_percentage -= velocity;
         velocity += acceleration / 700;
         this.board.fullUpdate();
         await this.sleep(50);
+        timeout += 1;
       }
       this.animeOn = false;
     },
@@ -433,8 +427,8 @@ export default {
     findAngle() {
       return (Math.atan(this.mu.Value()) * 180) / Math.PI;
     },
-    toggleFBD() {
-      this.showFBD = true;
+    toggleFBD(toggleShow) {
+      this.showFBD = toggleShow ? true : false;
       this.board.fullUpdate();
     }
   }

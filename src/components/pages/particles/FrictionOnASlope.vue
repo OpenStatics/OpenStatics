@@ -5,7 +5,9 @@
     <div class="row">
       <div class="col-xl-6 mx-2">
         <div class="ml-5 my-4">
-          <strong>Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">[value here]</span></strong>
+          <strong
+            >Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">{{ this.angle }} &deg;</span></strong
+          >
         </div>
         <div class="ml-5 my-4">
           <button class="btn" @click="playAnimation"><i class="fas fa-play"></i></button>
@@ -35,6 +37,7 @@ export default {
       angle: 0,
       slide_percentage: 0.7,
       animeOn: false,
+      polygon_color: "red",
 
       distance: 10,
       boxLength: 2,
@@ -59,12 +62,12 @@ export default {
     const withLabel = false;
 
     // module specific values
-    const origin_pos = [-7, -5];
+    const origin_pos = [-7, -2];
     const ground_line_length = 15;
-    const end_pos = [-7 + ground_line_length, -5];
+    const end_pos = [-7 + ground_line_length, -2];
 
     // create board
-    this.board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
+    this.board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: false });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
@@ -136,13 +139,14 @@ export default {
 
     // fixed ground line
     const origin = this.board.create("point", origin_pos, { visible: false, fixed });
-    const ground_line = this.board.create("line", [origin_pos, end_pos], {
+    const end = this.board.create("point", end_pos, { visible: false, fixed });
+    const ground_line = this.board.create("line", [origin, end], {
       straightFirst: false,
       straightLast: false,
       strokeWidth,
       fixed
     });
-    const ground_comb = this.board.create("comb", [end_pos, origin_pos]);
+    this.board.create("comb", [end_pos, origin_pos]);
 
     // moving elevating line
     const rot_trans = this.board.create(
@@ -155,12 +159,29 @@ export default {
       ],
       { type: "rotate" }
     );
-
     const elevate_line = this.board.create("line", [ground_line, rot_trans], { straightFirst: false, straightLast: false, strokeWidth });
 
     // make box
-    const horizon_trans = this.board.create("transform", [1, 0], { type: "translate" });
-    const vert_trans = this.board.create("transform", [0, 1], { type: "translate" });
+    const horizon_trans = this.board.create(
+      "transform",
+      [
+        () => {
+          return 1 + this.m.Value() / 5;
+        },
+        0
+      ],
+      { type: "translate" }
+    );
+    const vert_trans = this.board.create(
+      "transform",
+      [
+        0,
+        () => {
+          return 1 + this.m.Value() / 5;
+        }
+      ],
+      { type: "translate" }
+    );
 
     const left_bot_point = this.board.create(
       "point",
@@ -189,7 +210,23 @@ export default {
     const right_bot_point = this.board.create("point", [left_bot_point, [horizon_trans, rot_trans_box]], { visible: false, fixed });
     const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans, vert_trans, rot_trans_box]], { visible: false, fixed });
     const left_top_point = this.board.create("point", [left_bot_point, [vert_trans, rot_trans_box]], { visible: false, fixed });
-    this.board.create("polygon", [left_bot_point, right_bot_point, right_top_point, left_top_point]);
+    this.board.create("polygon", [left_bot_point, right_bot_point, right_top_point, left_top_point], {
+      fillColor: () => {
+        return this.polygon_color;
+      }
+    });
+
+    // make angle
+    this.board.create("angle", [end, origin, left_bot_point], {
+      radius: 5,
+      name: () => {
+        if (this.angle == 0) return "";
+        return "\u03B8";
+      },
+      fillColor: () => {
+        return this.polygon_color;
+      }
+    });
 
     // Show FBD
     this.board.create(
@@ -321,8 +358,20 @@ export default {
   },
   methods: {
     async playAnimation() {
+      // only on once
+      if (this.animeOn) {
+        this.animeOn = false;
+        return;
+      }
+
+      this.polygon_color = "red";
       const equilibrium = this.findAngle();
       this.animeOn = true;
+      this.angle = 0;
+      this.slide_percentage = 0.7;
+      this.board.fullUpdate();
+
+      // elevating
       while (this.angle < equilibrium && this.animeOn) {
         this.angle += 0.5;
         this.board.fullUpdate();
@@ -332,15 +381,28 @@ export default {
         this.angle = equilibrium;
         this.board.fullUpdate();
       }
+      this.polygon_color = "green";
+      // change from static friction to dynamic friction, the friction constant decreases. Making it 0.95 less
+      const friction = 0.95 * this.mu.Value() * Math.cos((this.angle * Math.PI) / 180) * this.m.Value() * 9.8;
+      const down_force = Math.sin((this.angle * Math.PI) / 180) * this.m.Value() * 9.8;
+      const force = down_force - friction;
+      const acceleration = force / this.m.Value(); // range from 0 - 0.408
+      let velocity = 0;
+
+      // sliding down
       while (this.slide_percentage > 0.1 && this.animeOn) {
-        this.slide_percentage -= 0.01;
+        // need to calculate acceleration here
+        this.slide_percentage -= velocity;
+        velocity += acceleration / 700;
         this.board.fullUpdate();
         await this.sleep(50);
       }
+      this.animeOn = false;
     },
     async resetAnimation() {
       this.animeOn = false;
-      await sleep(50);
+      await this.sleep(50);
+      this.polygon_color = "red";
       this.slide_percentage = 0.7;
       this.angle = 0;
       this.board.fullUpdate();

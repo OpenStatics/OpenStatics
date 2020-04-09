@@ -6,12 +6,15 @@
       <div class="col-xl-6 mx-2">
         <div class="ml-5 my-4">
           <strong
-            >Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">{{ this.angle }} &deg;</span></strong
+            >Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">{{ parseFloat(this.angle.toFixed(1)) }} &deg;</span></strong
           >
         </div>
         <div class="ml-5 my-4">
-          <button class="btn" @click="playAnimation"><i class="fas fa-play"></i></button>
-          <button class="btn" @click="resetAnimation"><i class="fas fa-redo"></i></button>
+          <button class="btn" @click="playAnimation">
+            <i v-if="!animeOn" class="fas fa-play"></i>
+            <i v-if="animeOn" class="fas fa-pause"></i>
+          </button>
+          <button class="btn" @click="resetAnimation"><i class="fas fa-redo"> </i></button>
         </div>
         <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
@@ -54,7 +57,7 @@ export default {
   mounted() {
     // initial values
     const multiplier = 4;
-    const fixedDecimal = 2;
+    const fixedDecimal = 1;
     const fontSize = 20;
     const strokeWidth = 3;
     const dash = 3;
@@ -136,6 +139,16 @@ export default {
         if (Number(input2.Value())) this.m.setValue(Number(input2.Value()));
       }
     ]);
+
+    // stop on slider changes
+    this.m.on("drag", () => {
+      this.animeOn = false;
+      this.resetAnimation();
+    });
+    this.mu.on("drag", () => {
+      this.animeOn = false;
+      this.resetAnimation();
+    });
 
     // fixed ground line
     const origin = this.board.create("point", origin_pos, { visible: false, fixed });
@@ -367,9 +380,14 @@ export default {
       this.polygon_color = "red";
       const equilibrium = this.findAngle();
       this.animeOn = true;
-      this.angle = 0;
-      this.slide_percentage = 0.7;
-      this.board.fullUpdate();
+
+      // last run was finished
+      if (this.slide_percentage <= 0.1) {
+        this.polygon_color = "red";
+        this.slide_percentage = 0.7;
+        this.angle = 0;
+        this.board.fullUpdate();
+      }
 
       // elevating
       while (this.angle < equilibrium && this.animeOn) {
@@ -377,11 +395,13 @@ export default {
         this.board.fullUpdate();
         await this.sleep(30);
       }
-      if (this.animeOn) {
-        this.angle = equilibrium;
-        this.board.fullUpdate();
+      if (!this.animeOn) {
+        return;
       }
+      this.angle = equilibrium;
+      this.board.fullUpdate();
       this.polygon_color = "green";
+
       // change from static friction to dynamic friction, the friction constant decreases. Making it 0.95 less
       const friction = 0.95 * this.mu.Value() * Math.cos((this.angle * Math.PI) / 180) * this.m.Value() * 9.8;
       const down_force = Math.sin((this.angle * Math.PI) / 180) * this.m.Value() * 9.8;

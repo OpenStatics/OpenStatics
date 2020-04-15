@@ -110,6 +110,7 @@ export default {
 
       this.input_force = this.b2.create("input", [5, -9 + 0.05, "", ""], { cssStyle: "width: 50px" });
       this.input_angle = this.b2.create("input", [5, -10, "", ""], { cssStyle: "width: 50px" });
+
       this.button_force = this.b2.create(
         "button",
         [
@@ -123,6 +124,8 @@ export default {
               val = Math.max(this.force._smin, val);
               val = Math.round(val * 100) / 100;
               this.force.setValue(val);
+              this.input_force.rendNodeInput.value = "";
+              this.input_force.update();
             }
           }
         ],
@@ -141,6 +144,8 @@ export default {
               val = Math.max(this.angle._smin, val);
               val = Math.round(val * 100) / 100;
               this.angle.setValue(val);
+              this.input_angle.rendNodeInput.value = "";
+              this.input_angle.update();
             }
           }
         ],

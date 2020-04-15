@@ -18,7 +18,7 @@
         </div>
         <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
-          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" checked/>on
+          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" checked />on
           <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" />off
         </div>
 
@@ -57,11 +57,15 @@ export default {
     const dash = 3;
     const fixed = true;
     const withLabel = false;
+    const straightFirst = false;
+    const straightLast = false;
 
     // module specific values
     const origin_pos = [-7, -2];
     const ground_line_length = 15;
     const end_pos = [-7 + ground_line_length, -2];
+    const FBD_line_factor = 1;
+    const point_size = 1;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("friction", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: false });
@@ -108,7 +112,7 @@ export default {
       [
         [2, 11],
         [12, 11],
-        [1, 1, 10]
+        [1, 4, 10]
       ],
       { withLabel }
     );
@@ -149,7 +153,8 @@ export default {
       straightFirst: false,
       straightLast: false,
       strokeWidth,
-      fixed
+      fixed,
+      strokeColor: "black"
     });
     this.board.create("comb", [end_pos, origin_pos]);
 
@@ -164,21 +169,33 @@ export default {
       ],
       { type: "rotate" }
     );
-    const elevate_line = this.board.create("line", [ground_line, rot_trans], { straightFirst: false, straightLast: false, strokeWidth });
+    const elevate_line = this.board.create("line", [ground_line, rot_trans], {
+      straightFirst: false,
+      straightLast: false,
+      strokeWidth,
+      strokeColor: "black"
+    });
 
     // make box
-    const horizon_trans = this.board.create(
-      "transform",
-      [
-        () => {
-          return 1 + this.m.Value() / 5;
-        },
-        0
-      ],
-      { type: "translate" }
-    );
+    const horizon_trans = (val = 1, isBox = true) => {
+      return this.board.create(
+        "transform",
+        [
+          () => {
+            if (isBox) {
+              return (1 + this.m.Value() / 5) / val;
+            } else {
+              const value = val * Math.sqrt(this.m.Value() * 9.8) * Math.sin((this.angle * Math.PI) / 180);
+              return value;
+            }
+          },
+          0
+        ],
+        { type: "translate" }
+      );
+    };
 
-    const ok = (val = 1, isBox = false) => {
+    const vert_trans = (val = 1, isBox = true, isMG = false) => {
       return this.board.create(
         "transform",
         [
@@ -187,23 +204,19 @@ export default {
             if (isBox) {
               return (1 + this.m.Value() / 5) / val;
             } else {
-              return val
+              let value;
+              if (isMG) {
+                value = val * Math.sqrt(this.m.Value() * 9.8);
+              } else {
+                value = val * Math.sqrt(this.m.Value() * 9.8) * Math.cos((this.angle * Math.PI) / 180);
+              }
+              return value;
             }
           }
         ],
         { type: "translate" }
       );
     };
-    const vert_trans = this.board.create(
-      "transform",
-      [
-        0,
-        () => {
-          return 1 + this.m.Value() / 5;
-        }
-      ],
-      { type: "translate" }
-    );
 
     const left_bot_point = this.board.create(
       "point",
@@ -229,12 +242,12 @@ export default {
       { type: "rotate" }
     );
 
-    const right_bot_point = this.board.create("point", [left_bot_point, [horizon_trans, rot_trans_box]], { visible: false, fixed });
-    const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans, vert_trans, rot_trans_box]], {
+    const right_bot_point = this.board.create("point", [left_bot_point, [horizon_trans(), rot_trans_box]], { visible: false, fixed });
+    const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans(), vert_trans(), rot_trans_box]], {
       visible: false,
       fixed
     });
-    const left_top_point = this.board.create("point", [left_bot_point, [vert_trans, rot_trans_box]], { visible: false, fixed });
+    const left_top_point = this.board.create("point", [left_bot_point, [vert_trans(), rot_trans_box]], { visible: false, fixed });
     this.board.create("polygon", [left_bot_point, right_bot_point, right_top_point, left_top_point], {
       fillColor: () => {
         return this.polygon_color;
@@ -253,7 +266,143 @@ export default {
       }
     });
 
-    // Show FBD
+    // make FBD
+    const center_point = this.board.create("point", [left_bot_point, [horizon_trans(2), vert_trans(2), rot_trans_box]], {
+      visible: () => {
+        return this.showFBD;
+      },
+      size: point_size,
+      name: ""
+    });
+
+    const friction_point = this.board.create(
+      "point",
+      [left_bot_point, [horizon_trans(FBD_line_factor, false), horizon_trans(2), vert_trans(2), rot_trans_box]],
+      { visible: false }
+    );
+    const sinTheta_point = this.board.create(
+      "point",
+      [left_bot_point, [horizon_trans(-FBD_line_factor, false), horizon_trans(2), vert_trans(2), rot_trans_box]],
+      { visible: false }
+    );
+    const normal_point = this.board.create(
+      "point",
+      [left_bot_point, [horizon_trans(2), vert_trans(FBD_line_factor, false), vert_trans(2), rot_trans_box]],
+      {
+        visible: () => {
+          return this.showFBD;
+        },
+        size: 0,
+        name: "N"
+      }
+    );
+    const cosTheta_point = this.board.create(
+      "point",
+      [left_bot_point, [horizon_trans(2), vert_trans(-FBD_line_factor, false), vert_trans(2), rot_trans_box]],
+      { visible: false }
+    );
+    const mg_point = this.board.create("point", [center_point, vert_trans(-FBD_line_factor, false, true)], {
+      visible: () => {
+        return this.showFBD;
+      },
+      size: 0,
+      label: { offset: [8, -10], strokeColor: "#000000" },
+      name: "mg"
+    });
+
+    const friction_line = this.board.create("line", [center_point, friction_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      strokeWidth
+    });
+    this.board.create("text", [1, 0, "f"], {
+      anchor: friction_line,
+      visible: () => {
+        return this.showFBD && this.angle;
+      }
+    });
+
+    const sinTheta_line = this.board.create("line", [center_point, sinTheta_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      strokeWidth,
+      strokeColor: "orange"
+    });
+    this.board.create("text", [-2, 1, "mgsin(\u03B8)"], {
+      anchor: sinTheta_line,
+      visible: () => {
+        return this.showFBD && this.angle;
+      }
+    });
+
+    const normal_line = this.board.create("line", [center_point, normal_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      strokeWidth
+    });
+    const cosTheta_line = this.board.create("line", [center_point, cosTheta_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      strokeWidth,
+      strokeColor: "orange"
+    });
+    this.board.create("text", [2, 0, "mgcos(\u03B8)"], {
+      anchor: cosTheta_line,
+      visible: () => {
+        return this.showFBD && this.angle;
+      }
+    });
+
+    const mg_line = this.board.create("line", [center_point, mg_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      strokeWidth,
+      strokeColor: "orange"
+    });
+    const sin_mg = this.board.create("line", [sinTheta_point, mg_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      dash,
+      strokeWidth,
+      strokeColor: "orange"
+    });
+    const cos_mg = this.board.create("line", [cosTheta_point, mg_point], {
+      visible: () => {
+        return this.showFBD;
+      },
+      straightFirst,
+      straightLast,
+      lastArrow: true,
+      dash,
+      strokeWidth,
+      strokeColor: "orange"
+    });
+
+    // Show FBD Text
     this.board.create(
       "text",
       [
@@ -280,7 +429,6 @@ export default {
         -13,
         10,
         () => {
-          // need to find current theta
           const value = this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180);
 
           return "mgsin(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";

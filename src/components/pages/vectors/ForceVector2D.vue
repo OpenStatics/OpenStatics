@@ -23,8 +23,24 @@ export default {
     const b2 = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
 
     // set slider for force and angle
-    const force = b2.create("slider", [[1, -6], [6, -6], [0, 1, 5]], { name: "F(N)" });
-    const angle = b2.create("slider", [[1, -8], [6, -8], [0, 0, 360]], { name: "a(degree)" });
+    const force = b2.create(
+      "slider",
+      [
+        [1, -6],
+        [6, -6],
+        [0, 1, 5]
+      ],
+      { name: "F(N)" }
+    );
+    const angle = b2.create(
+      "slider",
+      [
+        [1, -8],
+        [6, -8],
+        [0, 0, 360]
+      ],
+      { name: "a(degree)" }
+    );
     const check_prof_F_on_x = b2.create("checkbox", [1, -10, "Projection of F on x"], {});
     const check_res_F = b2.create("checkbox", [1, -12, "Resolution of F into components"], {});
     const check_prof_F_on_y = b2.create("checkbox", [1, -14, "Projection of F on y"], {});

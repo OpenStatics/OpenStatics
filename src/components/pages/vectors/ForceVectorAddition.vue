@@ -71,7 +71,16 @@ export default {
     const inputFont = 15;
 
     // create board
-    this.board = JXG.JSXGraph.initBoard("vecaddition", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true, showCopyright: false });
+    this.board = JXG.JSXGraph.initBoard("vecaddition", {
+      boundingbox: [-15, 15, 15, -15],
+      axis: true,
+      keepAspectRatio: true,
+      showCopyright: false,
+      defaultAxes: {
+        x: { lastArrow: { type: 1, size: 8 }, firstArrow: { type: 1, size: 8 }, ticks: { label: { fontSize: 14 } } },
+        y: { lastArrow: { type: 1, size: 8 }, firstArrow: { type: 1, size: 8 }, ticks: { label: { fontSize: 14 } } }
+      }
+    });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false
@@ -171,14 +180,18 @@ export default {
       { fontSize, fixed }
     );
     const inputB = board_control.create("input", [8.5, 10, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
-    board_control.create("button", [
-      10,
-      10,
-      "Update",
-      () => {
-        if (Number(inputB.Value())) force_b.setValue(Number(inputB.Value()));
-      }
-    ],{fontSize:inputFont});
+    board_control.create(
+      "button",
+      [
+        10,
+        10,
+        "Update",
+        () => {
+          if (Number(inputB.Value())) force_b.setValue(Number(inputB.Value()));
+        }
+      ],
+      { fontSize: inputFont }
+    );
 
     const angle_b = board_control.create(
       "slider",
@@ -202,14 +215,18 @@ export default {
       { fontSize, fixed }
     );
     const inputBB = board_control.create("input", [8.5, 8, "", ""], { cssStyle: "width: 80px", fontSize: inputFont });
-    const buttonBB = board_control.create("button", [
-      10,
-      8,
-      "Update",
-      () => {
-        if (Number(inputBB.Value())) angle_b.setValue(Number(inputBB.Value()));
-      }
-    ],{fontSize:inputFont});
+    const buttonBB = board_control.create(
+      "button",
+      [
+        10,
+        8,
+        "Update",
+        () => {
+          if (Number(inputBB.Value())) angle_b.setValue(Number(inputBB.Value()));
+        }
+      ],
+      { fontSize: inputFont }
+    );
 
     // create fixed endpoints and origin
     const origin_point = this.board.create("point", [0, 0], { fixed: true, visible: false });

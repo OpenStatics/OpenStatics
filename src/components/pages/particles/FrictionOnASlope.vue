@@ -18,8 +18,8 @@
         </div>
         <div class="ml-5 my-4">
           <strong>Show FBD: </strong>
-          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" />on
-          <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" checked />off
+          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" checked/>on
+          <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" />off
         </div>
 
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
@@ -42,7 +42,7 @@ export default {
       slide_percentage: 0.7,
       animeOn: false,
       polygon_color: "red",
-      showFBD: false
+      showFBD: true
     };
   },
 
@@ -281,8 +281,7 @@ export default {
         10,
         () => {
           // need to find current theta
-          const angle = 0;
-          const value = this.m.Value() * 9.8 * Math.sin((angle * Math.PI) / 180);
+          const value = this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180);
 
           return "mgsin(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
         }
@@ -321,7 +320,7 @@ export default {
         -13,
         8,
         () => {
-          const value = this.mu.Value() * this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
+          const value = this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180);
           return "f: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
         }
       ],

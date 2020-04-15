@@ -177,6 +177,23 @@ export default {
       ],
       { type: "translate" }
     );
+
+    const ok = (val = 1, isBox = false) => {
+      return this.board.create(
+        "transform",
+        [
+          0,
+          () => {
+            if (isBox) {
+              return (1 + this.m.Value() / 5) / val;
+            } else {
+              return val
+            }
+          }
+        ],
+        { type: "translate" }
+      );
+    };
     const vert_trans = this.board.create(
       "transform",
       [
@@ -213,7 +230,10 @@ export default {
     );
 
     const right_bot_point = this.board.create("point", [left_bot_point, [horizon_trans, rot_trans_box]], { visible: false, fixed });
-    const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans, vert_trans, rot_trans_box]], { visible: false, fixed });
+    const right_top_point = this.board.create("point", [left_bot_point, [horizon_trans, vert_trans, rot_trans_box]], {
+      visible: false,
+      fixed
+    });
     const left_top_point = this.board.create("point", [left_bot_point, [vert_trans, rot_trans_box]], { visible: false, fixed });
     this.board.create("polygon", [left_bot_point, right_bot_point, right_top_point, left_top_point], {
       fillColor: () => {
@@ -282,10 +302,7 @@ export default {
         -13,
         9,
         () => {
-          // need to find current theta
-          const angle = 1;
-          const value = this.m.Value() * 9.8 * Math.sin((angle * Math.PI) / 180);
-
+          const value = this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
           return "mgcos(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
         }
       ],
@@ -304,9 +321,7 @@ export default {
         -13,
         8,
         () => {
-          // need to find friction
-          const value = 1;
-
+          const value = this.mu.Value() * this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
           return "f: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
         }
       ],
@@ -325,8 +340,7 @@ export default {
         -13,
         7,
         () => {
-          // need to find normal force
-          const value = 1;
+          const value = this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
 
           return "N: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
         }

@@ -9,6 +9,7 @@ export default {
   components: {},
   data: () => {
     return {
+      state: 0,
       scale: 3,
       a: 0,
       b: 0,
@@ -35,12 +36,6 @@ export default {
       line_size_2: 0,
       line_size_3: 0,
       line_size_4: 0,
-      line_divide_1: 0,
-      line_divide_2: 0,
-      line_divide_3: 0,
-      line_divide_4: 0,
-      line_divide_5: 0,
-      line_divide_6: 0,
       pointF: 0,
       line_angle: 0,
       line_a_b: 0,
@@ -92,13 +87,30 @@ export default {
   methods: {
     init() {
       const scale = this.scale;
-
+      this.state = 0;
       this.b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 10, 15, -15], keepAspectRatio: true, showCopyright: false });
-      this.force = this.b2.create("slider", [[-6, -9], [0, -9], [1, 1, 2]], { name: "Load F" });
-      this.angle = this.b2.create("slider", [[-6, -10], [0, -10], [19, 90, 198]], { name: "Angle(\u03b1)" });
+      this.force = this.b2.create(
+        "slider",
+        [
+          [-6, -9],
+          [0, -9],
+          [1, 1, 2]
+        ],
+        { name: "Load F" }
+      );
+      this.angle = this.b2.create(
+        "slider",
+        [
+          [-6, -10],
+          [0, -10],
+          [19, 90, 198]
+        ],
+        { name: "Angle(\u03b1)" }
+      );
 
       this.input_force = this.b2.create("input", [5, -9 + 0.05, "", ""], { cssStyle: "width: 50px" });
       this.input_angle = this.b2.create("input", [5, -10, "", ""], { cssStyle: "width: 50px" });
+
       this.button_force = this.b2.create(
         "button",
         [
@@ -106,12 +118,14 @@ export default {
           -9,
           "Update",
           () => {
-            if (Number(this.input_force.Value())) {
+            if (!isNaN(this.input_force.Value())) {
               let val = Number(this.input_force.Value());
               val = Math.min(this.force._smax, val);
               val = Math.max(this.force._smin, val);
               val = Math.round(val * 100) / 100;
               this.force.setValue(val);
+              this.input_force.rendNodeInput.value = "";
+              this.input_force.update();
             }
           }
         ],
@@ -124,18 +138,19 @@ export default {
           -10,
           "Update",
           () => {
-            if (Number(this.input_angle.Value())) {
+            if (!isNaN(this.input_angle.Value())) {
               let val = Number(this.input_angle.Value());
               val = Math.min(this.angle._smax, val);
               val = Math.max(this.angle._smin, val);
               val = Math.round(val * 100) / 100;
               this.angle.setValue(val);
+              this.input_angle.rendNodeInput.value = "";
+              this.input_angle.update();
             }
           }
         ],
         {}
       );
-      //var input = board.create('input', [0, 1, 'sin(x)*x', 'f(x)='], {cssStyle: 'width: 100px'});
 
       const pointFill = "red";
       const pointStroke = "red";
@@ -143,402 +158,271 @@ export default {
       const offsetFactor = 11;
 
       // create points
+      const genericPointProperties = { fixed: true, fillColor: pointFill, strokeColor: pointStroke, visible: true };
+      const genericPointLabelProperties = { strokeColor: pointLabel };
+      const overviewProperties = {
+        visible: () => {
+          return this.state == 0;
+        }
+      };
+      const nonOverviewProperties = {
+        visible: () => {
+          return this.state != 0;
+        }
+      };
+
       this.a = this.b2.create("point", [-3 * scale, 0], {
+        ...genericPointProperties,
         name: "A",
-        fixed: true,
-        visible: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [-offsetFactor, -offsetFactor] }
+        label: { ...genericPointLabelProperties, offset: [-offsetFactor, -offsetFactor] }
       });
       this.b = this.b2.create("point", [-1 * scale, 2 * scale], {
+        ...genericPointProperties,
         name: "B",
-        fixed: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [offsetFactor, offsetFactor] }
+        label: { ...genericPointLabelProperties, offset: [offsetFactor, offsetFactor] }
       });
       this.c = this.b2.create("point", [1 * scale, 2 * scale], {
+        ...genericPointProperties,
         name: "C",
-        fixed: true,
-        visible: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [offsetFactor, offsetFactor] }
+        label: { ...genericPointLabelProperties, offset: [offsetFactor, offsetFactor] }
       });
       this.d = this.b2.create("point", [3 * scale, 2 * scale], {
+        ...genericPointProperties,
         name: "D",
-        fixed: true,
-        visible: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [(-offsetFactor * 3) / 2, offsetFactor] }
+        visible: () => {
+          return this.state == 0;
+        },
+        label: { ...genericPointLabelProperties, offset: [(-offsetFactor * 3) / 2, offsetFactor] }
       });
       this.e = this.b2.create("point", [3 * scale, 0], {
+        ...genericPointProperties,
         name: "E",
-        fixed: true,
-        visible: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [(-offsetFactor * 3) / 2, -offsetFactor] }
+        visible: () => {
+          return this.state == 0;
+        },
+        label: { ...genericPointLabelProperties, offset: [(-offsetFactor * 3) / 2, -offsetFactor] }
       });
       this.f = this.b2.create("point", [1 * scale, 0], {
+        ...genericPointProperties,
         name: "F",
-        fixed: true,
-        visible: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [offsetFactor, -offsetFactor] }
+        label: { ...genericPointLabelProperties, offset: [offsetFactor, -offsetFactor] }
       });
       this.g = this.b2.create("point", [-1 * scale, 0], {
+        ...genericPointProperties,
         name: "G",
-        fixed: true,
-        fillColor: pointFill,
-        strokeColor: pointStroke,
-        label: { strokeColor: pointLabel, offset: [offsetFactor, -offsetFactor] }
+        label: { ...genericPointLabelProperties, offset: [offsetFactor, -offsetFactor] }
       });
 
-      this.bc = this.b2.create("point", [0, 2 * scale], { name: "bc", fixed: true, visible: false });
-      this.gc = this.b2.create("point", [0, 1 * scale], { name: "gc", fixed: true, visible: false });
-      this.gf = this.b2.create("point", [0, 0], { name: "gf", fixed: true, visible: false });
+      const hiddenPointProperties = { fixed: true, visible: false };
 
-      this.Fbc = this.b2.create("point", [0.5 * scale, 2 * scale], { name: "Fbc", fixed: true, visible: false });
-      this.Fgc = this.b2.create("point", [0.5 * scale, 1.5 * scale], { name: "Fgc", fixed: true, visible: false });
-      this.Fgf = this.b2.create("point", [0.5 * scale, 0], { name: "Fgf", fixed: true, visible: false });
+      this.bc = this.b2.create("point", [0, 2 * scale], { name: "bc", ...hiddenPointProperties });
+      this.gc = this.b2.create("point", [0, 1 * scale], { name: "gc", ...hiddenPointProperties });
+      this.gf = this.b2.create("point", [0, 0], { name: "gf", ...hiddenPointProperties });
 
-      this.pointF = this.b2.create("point", [this.f_point(this.force, this.angle, scale, "x"), this.f_point(this.force, this.angle, scale, "y")], {
-        visible: false
-      });
+      this.Fbc = this.b2.create("point", [0.5 * scale, 2 * scale], { name: "Fbc", ...hiddenPointProperties });
+      this.Fgc = this.b2.create("point", [0.5 * scale, 1.5 * scale], { name: "Fgc", ...hiddenPointProperties });
+      this.Fgf = this.b2.create("point", [0.5 * scale, 0], { name: "Fgf", ...hiddenPointProperties });
+
+      this.pointF = this.b2.create(
+        "point",
+        [
+          () => {
+            return -1 * scale * this.force.Value() * Math.cos((this.angle.Value() / 180) * Math.PI) - 3 * scale;
+          },
+          () => {
+            return -1 * scale * this.force.Value() * Math.sin((this.angle.Value() / 180) * Math.PI);
+          }
+        ],
+        { ...hiddenPointProperties }
+      );
 
       const triangleScale = 1;
 
-      this.T1 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale + triangleScale], { visible: false });
-      this.T2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale], { visible: false });
-      this.R1 = this.b2.create("point", [3 * scale + 0.5 * triangleScale, 0], { visible: false });
+      this.T1 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale + triangleScale], { ...hiddenPointProperties });
+      this.T2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale], { ...hiddenPointProperties });
+      this.R1 = this.b2.create("point", [3 * scale + 0.5 * triangleScale, 0], { ...hiddenPointProperties });
 
       this.triangle = this.b2.create("polygon", [this.d, this.T1, this.T2], {
-        visible: true,
+        visible: () => {
+          return this.state == 0;
+        },
         fillColor: "green",
         borders: {
           strokeColor: "green",
           strokeWidth: 2
-        }
+        },
+        fixed: true
       });
-      this.roller = this.b2.create("circle", [this.R1, 0.5 * triangleScale], { fillColor: "green", strokeColor: "grey" });
+      this.roller = this.b2.create("circle", [this.R1, 0.5 * triangleScale], {
+        fillColor: "green",
+        strokeColor: "grey",
+        visible: () => {
+          return this.state == 0;
+        },
+        fixed: true
+      });
 
-      this.moveRight = this.b2.create(
-        "transform",
+      const sizeCoords = [
         [
-          function() {
-            return 2 * scale;
-          },
-          "MR"
+          [-3 * scale + 0.05, -0.5 * scale],
+          [-1 * scale - 0.05, -0.5 * scale],
+          [18 * scale, -4 * scale]
         ],
-        { type: "translate" }
-      );
+        [
+          [-1 * scale + 0.05, -0.5 * scale],
+          [1 * scale - 0.05, -0.5 * scale],
+          [18 * scale, -4 * scale]
+        ],
+        [
+          [1 * scale + 0.05, -0.5 * scale],
+          [3 * scale - 0.05, -0.5 * scale],
+          [18 * scale, -4 * scale]
+        ],
+        [
+          [3 * scale + 2.5 * triangleScale, 2 * scale - 0.05],
+          [3 * scale + 2.5 * triangleScale, 0 + 0.05],
+          [4 * scale, -20 * scale]
+        ]
+      ];
 
-      this.line_size_1 = this.b2.create(
-        "line",
-        [
-          this.b2.create("point", [-3 * scale + 0.05, -0.5 * scale], { visible: false }),
-          this.b2.create("point", [-1 * scale - 0.05, -0.5 * scale], { visible: false })
-        ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: true,
-          firstArrow: true,
-          strokeWidth: 3,
-          name: "2 m",
-          withLabel: true,
-          label: { offset: [18 * scale, -4 * scale] }
-        }
-      );
-      this.line_size_2 = this.b2.create(
-        "line",
-        [
-          this.b2.create("point", [-1 * scale + 0.05, -0.5 * scale], { visible: false }),
-          this.b2.create("point", [1 * scale - 0.05, -0.5 * scale], { visible: false })
-        ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: true,
-          firstArrow: true,
-          strokeWidth: 3,
-          name: "2 m",
-          withLabel: true,
-          label: { offset: [18 * scale, -4 * scale] }
-        }
-      );
-      this.line_size_3 = this.b2.create(
-        "line",
-        [
-          this.b2.create("point", [1 * scale + 0.05, -0.5 * scale], { visible: false }),
-          this.b2.create("point", [3 * scale - 0.05, -0.5 * scale], { visible: false })
-        ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: true,
-          firstArrow: true,
-          strokeWidth: 3,
-          name: "2 m",
-          withLabel: true,
-          label: { offset: [18 * scale, -4 * scale] }
-        }
-      );
-      this.line_size_4 = this.b2.create(
-        "line",
-        [
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale, 2 * scale - 0.05], { visible: false }),
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale, 0 + 0.05], { visible: false })
-        ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: true,
-          firstArrow: true,
-          strokeWidth: 3,
-          name: "2 m",
-          withLabel: true,
-          label: { offset: [4 * scale, -20 * scale] }
-        }
-      );
+      for (const coords of sizeCoords) {
+        this.b2.create(
+          "line",
+          [this.b2.create("point", coords[0], { ...hiddenPointProperties }), this.b2.create("point", coords[1], { ...hiddenPointProperties })],
+          {
+            straightFirst: false,
+            straightLast: false,
+            visible: () => {
+              return this.state == 0;
+            },
+            lastArrow: true,
+            firstArrow: true,
+            strokeWidth: 3,
+            name: "2 m",
+            withLabel: true,
+            label: { offset: coords[2] }
+          }
+        );
+      }
 
-      this.line_divide_1 = this.b2.create(
-        "line",
+      const divideCoords = [
         [
-          this.b2.create("point", [-3 * scale, -0.25 * scale], { visible: false }),
-          this.b2.create("point", [-3 * scale, -0.75 * scale], { visible: false })
+          [-3 * scale, -0.25 * scale],
+          [-3 * scale, -0.75 * scale]
         ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
-      this.line_divide_2 = this.b2.create(
-        "line",
         [
-          this.b2.create("point", [-1 * scale, -0.25 * scale], { visible: false }),
-          this.b2.create("point", [-1 * scale, -0.75 * scale], { visible: false })
+          [-1 * scale, -0.25 * scale],
+          [-1 * scale, -0.75 * scale]
         ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
-      this.line_divide_3 = this.b2.create(
-        "line",
         [
-          this.b2.create("point", [1 * scale, -0.25 * scale], { visible: false }),
-          this.b2.create("point", [1 * scale, -0.75 * scale], { visible: false })
+          [1 * scale, -0.25 * scale],
+          [1 * scale, -0.75 * scale]
         ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
-      this.line_divide_4 = this.b2.create(
-        "line",
         [
-          this.b2.create("point", [3 * scale, -0.25 * scale], { visible: false }),
-          this.b2.create("point", [3 * scale, -0.75 * scale], { visible: false })
+          [3 * scale, -0.25 * scale],
+          [3 * scale, -0.75 * scale]
         ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
-      this.line_divide_5 = this.b2.create(
-        "line",
         [
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale - 0.25 * scale, 2 * scale], { visible: false }),
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale + 0.25 * scale, 2 * scale], { visible: false })
+          [3 * scale + 2.5 * triangleScale - 0.25 * scale, 2 * scale],
+          [3 * scale + 2.5 * triangleScale + 0.25 * scale, 2 * scale]
         ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
-      this.line_divide_6 = this.b2.create(
-        "line",
         [
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale - 0.25 * scale, 0], { visible: false }),
-          this.b2.create("point", [3 * scale + 2.5 * triangleScale + 0.25 * scale, 0], { visible: false })
-        ],
-        {
-          straightFirst: false,
-          straightLast: false,
-          visible: true,
-          lastArrow: false,
-          firstArrow: false
-        }
-      );
+          [3 * scale + 2.5 * triangleScale - 0.25 * scale, 0],
+          [3 * scale + 2.5 * triangleScale + 0.25 * scale, 0]
+        ]
+      ];
+
+      for (const coordSet of divideCoords) {
+        this.b2.create(
+          "line",
+          [this.b2.create("point", coordSet[0], { ...hiddenPointProperties }), this.b2.create("point", coordSet[1], { ...hiddenPointProperties })],
+          {
+            straightFirst: false,
+            straightLast: false,
+            visible: () => {
+              return this.state == 0;
+            },
+            lastArrow: false,
+            firstArrow: false
+          }
+        );
+      }
 
       // connect points
-      this.line_a_b = this.b2.create("line", [this.a, this.b], {
-        straightFirst: false,
-        straightLast: false,
-        visible: true,
-        strokeWidth: 10
-      });
-      this.line_a_g = this.b2.create("line", [this.a, this.g], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_b_g = this.b2.create("line", [this.b, this.g], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_b_c = this.b2.create("line", [this.b, this.c], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_c_d = this.b2.create("line", [this.c, this.d], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_c_f = this.b2.create("line", [this.c, this.f], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_c_g = this.b2.create("line", [this.c, this.g], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_d_e = this.b2.create("line", [this.d, this.e], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_d_f = this.b2.create("line", [this.d, this.f], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_e_f = this.b2.create("line", [this.e, this.f], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_f_g = this.b2.create("line", [this.f, this.g], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
+      const genLineProperties = { straightFirst: false, straightLast: false, strokeWidth: 10 };
+      const nonOverviewLineProperties = { ...genLineProperties, ...nonOverviewProperties };
 
-      this.line_b_bc = this.b2.create("line", [this.b, this.bc], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_g_gc = this.b2.create("line", [this.g, this.gc], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
-      this.line_g_gf = this.b2.create("line", [this.g, this.gf], { straightFirst: false, straightLast: false, visible: true, strokeWidth: 10 });
+      for (const points of [
+        [this.a, this.b],
+        [this.a, this.g],
+        [this.b, this.g]
+      ]) {
+        this.b2.create("line", points, { ...genLineProperties, visible: true });
+      }
 
-      this.line_Fbc_c = this.b2.create("line", [this.Fbc, this.c], {
-        straightFirst: false,
-        straightLast: false,
-        visible: true,
-        strokeWidth: 2,
-        dash: 2
-      });
-      this.line_Fgc_c = this.b2.create("line", [this.Fgc, this.c], {
-        straightFirst: false,
-        straightLast: false,
-        visible: true,
-        strokeWidth: 2,
-        dash: 2
-      });
-      this.line_Fgf_f = this.b2.create("line", [this.Fgf, this.f], {
-        straightFirst: false,
-        straightLast: false,
-        visible: true,
-        strokeWidth: 2,
-        dash: 2
-      });
+      for (const points of [
+        [this.b, this.c],
+        [this.c, this.d],
+        [this.c, this.f],
+        [this.c, this.g],
+        [this.d, this.e],
+        [this.d, this.f],
+        [this.e, this.f],
+        [this.f, this.g]
+      ]) {
+        this.b2.create("line", points, { ...genLineProperties, ...overviewProperties });
+      }
+
+      this.line_b_bc = this.b2.create("line", [this.b, this.bc], nonOverviewLineProperties);
+      this.line_g_gc = this.b2.create("line", [this.g, this.gc], nonOverviewLineProperties);
+      this.line_g_gf = this.b2.create("line", [this.g, this.gf], nonOverviewLineProperties);
+
+      const dottedProperties = { strokeWidth: 2, dash: 2 };
+      this.line_Fbc_c = this.b2.create("line", [this.Fbc, this.c], { ...nonOverviewLineProperties, ...dottedProperties });
+      this.line_Fgc_c = this.b2.create("line", [this.Fgc, this.c], { ...nonOverviewLineProperties, ...dottedProperties });
+      this.line_Fgf_f = this.b2.create("line", [this.Fgf, this.f], { ...nonOverviewLineProperties, ...dottedProperties });
 
       // create force vectors
-      this.line_a_pointF = this.b2.create("line", [this.a, this.pointF], {
-        straightFirst: false,
-        straightLast: false,
-        touchFirstPoint: true,
-        lastArrow: true,
-        strokeWidth: 4
-      });
-      this.line_bc_Fbc = this.b2.create("line", [this.bc, this.Fbc], {
-        straightFirst: false,
-        straightLast: false,
-        touchFirstPoint: true,
-        lastArrow: true,
-        strokeWidth: 4
-      });
-      this.line_gf_Fgf = this.b2.create("line", [this.gf, this.Fgf], {
-        straightFirst: false,
-        straightLast: false,
-        touchFirstPoint: true,
-        lastArrow: true,
-        strokeWidth: 4
-      });
-      this.line_gc_Fgc = this.b2.create("line", [this.gc, this.Fgc], {
-        straightFirst: false,
-        straightLast: false,
-        touchFirstPoint: true,
-        lastArrow: true,
-        strokeWidth: 4
-      });
-
-      const f_text_func = function(force) {
-        return function() {
-          return "F = " + Math.round(force.Value() * 100) / 100 + "N";
+      const forceVectorProperties = { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true, strokeWidth: 4 };
+      const redOnState = s => {
+        return () => {
+          if (this.state == s) return "red";
+          else return "blue";
         };
       };
+      this.line_a_pointF = this.b2.create("line", [this.a, this.pointF], { ...forceVectorProperties });
+      this.line_bc_Fbc = this.b2.create("line", [this.bc, this.Fbc], {
+        ...forceVectorProperties,
+        strokeColor: redOnState(2),
+        ...nonOverviewProperties
+      });
+      this.line_gf_Fgf = this.b2.create("line", [this.gf, this.Fgf], {
+        ...forceVectorProperties,
+        strokeColor: redOnState(4),
+        ...nonOverviewProperties
+      });
+      this.line_gc_Fgc = this.b2.create("line", [this.gc, this.Fgc], {
+        ...forceVectorProperties,
+        strokeColor: redOnState(3),
+        ...nonOverviewProperties
+      });
+
       // create text on force vectors
-      this.text_F = this.b2.create("text", [0, -0.5, f_text_func(this.force)], { anchor: this.pointF, visible: true });
-      this.text_Fbc = this.b2.create(
-        "text",
-        [
-          0,
-          0.5,
-          function() {
-            return "F_{BC}";
-          }
-        ],
-        { anchor: this.Fbc, visible: true }
-      );
-      this.text_Fgc = this.b2.create(
+      this.text_F = this.b2.create(
         "text",
         [
           0,
           -0.5,
-          function() {
-            return "F_{GC}";
-          }
-        ],
-        { anchor: this.Fgc, visible: true }
-      );
-      this.text_Fgf = this.b2.create(
-        "text",
-        [
-          0,
-          -0.5,
-          function() {
-            return "F_{GF}";
-          }
-        ],
-        { anchor: this.Fgf, visible: true }
-      );
-
-      this.label_top = this.b2.create(
-        "text",
-        [-6, -6, "Suppose forces in the members BC, GD, and GF are desired, so we choose a section passes these members"],
-        { fontSize: 14 }
-      );
-
-      this.label_middle = this.b2.create(
-        "text",
-        [
-          -6,
-          -7,
           () => {
-            return "";
+            return "F = " + Math.round(this.force.Value() * 100) / 100 + "N";
           }
         ],
-        { fontSize: 14 }
+        { anchor: this.pointF, visible: true }
       );
 
-      this.label_bottom = this.b2.create(
-        "text",
-        [
-          -6,
-          -8,
-          () => {
-            return "";
-          }
-        ],
-        { fontSize: 14 }
-      );
+      this.text_Fbc = this.b2.create("text", [0, 1, "F_{BC}"], { anchor: this.Fbc, ...nonOverviewProperties });
+      this.text_Fgc = this.b2.create("text", [0, -0.5, "F_{GC}"], { anchor: this.Fgc, ...nonOverviewProperties });
+      this.text_Fgf = this.b2.create("text", [0, -0.5, "F_{GF}"], { anchor: this.Fgf, ...nonOverviewProperties });
 
       this.options_middle_text = [
         "",
@@ -556,11 +440,34 @@ export default {
         this.tension_computed(this.force, this.angle, "GF")
       ];
 
-      this.point_angle = this.b2.create("point", [-4 * scale, 0], {
-        name: "point_angle",
-        fixed: true,
-        visible: false
+      this.label_top = this.b2.create(
+        "text",
+        [
+          () => {
+            if (this.state <= 1) return -12;
+            else return -6;
+          },
+          -6,
+          ""
+        ],
+        { fontSize: 14 }
+      );
+
+      this.label_middle = this.b2.create("text", [-6, -7, ""], {
+        fontSize: 14,
+        visible: () => {
+          return this.state >= 2;
+        }
       });
+
+      this.label_bottom = this.b2.create("text", [-6, -8, ""], {
+        fontSize: 14,
+        visible: () => {
+          return this.state >= 2;
+        }
+      });
+
+      this.point_angle = this.b2.create("point", [-4 * scale, 0], { ...hiddenPointProperties });
 
       this.line_angle = this.b2.create("line", [this.a, this.point_angle], {
         straightFirst: false,
@@ -577,8 +484,8 @@ export default {
         name: "\u03b1"
       });
 
-      this.point_comb_top_1 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale + triangleScale], { visible: false });
-      this.point_comb_top_2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale * 1.19], { visible: false });
+      this.point_comb_top_1 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale + triangleScale], { ...hiddenPointProperties });
+      this.point_comb_top_2 = this.b2.create("point", [3 * scale + triangleScale, 2 * scale - triangleScale * 1.19], { ...hiddenPointProperties });
       this.comb_top = this.b2.create("comb", [this.point_comb_top_1, this.point_comb_top_2], { curve: { strokeWidth: 1, strokeColor: "green" } });
 
       this.point_comb_bottom_1 = this.b2.create("point", [3 * scale + triangleScale, triangleScale], { visible: false });
@@ -586,9 +493,9 @@ export default {
       this.comb_bottom_line = this.b2.create("line", [this.point_comb_bottom_1, this.point_comb_bottom_2], {
         straightFirst: false,
         straightLast: false,
-        visible: true,
         strokeColor: "green",
-        strokeWidth: 2
+        strokeWidth: 2,
+        ...overviewProperties
       });
       this.comb_bottom = this.b2.create("comb", [this.point_comb_bottom_1, this.point_comb_bottom_2], {
         curve: { strokeWidth: 1, strokeColor: "green" }
@@ -597,323 +504,34 @@ export default {
       this.b2.fullUpdate();
     },
     change_state(state) {
-      let state_0 = {
-        visible: [
-          this.d,
-          this.e,
-          this.line_b_c,
-          this.line_c_d,
-          this.line_c_f,
-          this.line_c_g,
-          this.line_d_e,
-          this.line_d_f,
-          this.line_e_f,
-          this.line_f_g,
-          this.roller,
-          this.triangle,
-          this.comb_bottom,
-          this.comb_bottom_line,
-          this.comb_top,
-          this.line_size_1,
-          this.line_size_2,
-          this.line_size_3,
-          this.line_size_4,
-          this.line_divide_1,
-          this.line_divide_2,
-          this.line_divide_3,
-          this.line_divide_4,
-          this.line_divide_5,
-          this.line_divide_6
-        ],
-        invisible: [
-          this.line_b_bc,
-          this.line_g_gc,
-          this.line_g_gf,
-          this.line_Fbc_c,
-          this.line_Fgc_c,
-          this.line_Fgf_f,
-          this.line_bc_Fbc,
-          this.line_gf_Fgf,
-          this.line_gc_Fgc,
-          this.text_Fbc,
-          this.text_Fgc,
-          this.text_Fgf,
-          this.label_middle,
-          this.label_bottom
-        ],
-        aspects: [
-          [this.line_bc_Fbc, { strokeColor: "blue" }],
-          [this.line_gc_Fgc, { strokeColor: "blue" }],
+      this.state = state;
 
-          [this.line_gf_Fgf, { strokeColor: "blue" }]
-        ]
-      };
-      let state_1 = {
-        visible: [
-          this.line_b_bc,
-          this.line_g_gc,
-          this.line_g_gf,
-          this.line_Fbc_c,
-          this.line_Fgc_c,
-          this.line_Fgf_f,
-          this.line_bc_Fbc,
-          this.line_gf_Fgf,
-          this.line_gc_Fgc,
-          this.text_Fbc,
-          this.text_Fgc,
-          this.text_Fgf
-        ],
-        invisible: [
-          this.d,
-          this.e,
-          this.line_b_c,
-          this.line_c_d,
-          this.line_c_f,
-          this.line_c_g,
-          this.line_d_e,
-          this.line_d_f,
-          this.line_e_f,
-          this.line_f_g,
-          this.label_middle,
-          this.label_bottom,
-          this.roller,
-          this.triangle,
-          this.comb_bottom,
-          this.comb_bottom_line,
-          this.comb_top,
-          this.line_size_1,
-          this.line_size_2,
-          this.line_size_3,
-          this.line_size_4,
-          this.line_divide_1,
-          this.line_divide_2,
-          this.line_divide_3,
-          this.line_divide_4,
-          this.line_divide_5,
-          this.line_divide_6
-        ],
-        aspects: [
-          [this.line_bc_Fbc, { strokeColor: "blue" }],
-          [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.line_gf_Fgf, { strokeColor: "blue" }],
-          [this.triangle, { borders: { strokeColor: "orange" } }]
-        ]
-      };
-
-      let state_2 = {
-        visible: [
-          this.line_b_bc,
-          this.line_g_gc,
-          this.line_g_gf,
-          this.line_Fbc_c,
-          this.line_Fgc_c,
-          this.line_Fgf_f,
-          this.line_bc_Fbc,
-          this.line_gf_Fgf,
-          this.line_gc_Fgc,
-          this.text_Fbc,
-          this.text_Fgc,
-          this.text_Fgf,
-          this.label_middle,
-          this.label_bottom
-        ],
-        invisible: [
-          this.d,
-          this.e,
-          this.line_b_c,
-          this.line_c_d,
-          this.line_c_f,
-          this.line_c_g,
-          this.line_d_e,
-          this.line_d_f,
-          this.line_e_f,
-          this.line_f_g,
-          this.roller,
-          this.triangle,
-          this.comb_bottom,
-          this.comb_bottom_line,
-          this.comb_top,
-          this.line_size_1,
-          this.line_size_2,
-          this.line_size_3,
-          this.line_size_4,
-          this.line_divide_1,
-          this.line_divide_2,
-          this.line_divide_3,
-          this.line_divide_4,
-          this.line_divide_5,
-          this.line_divide_6
-        ],
-        aspects: [
-          [this.line_bc_Fbc, { strokeColor: "red" }],
-          [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.line_gf_Fgf, { strokeColor: "blue" }]
-        ]
-      };
-
-      let state_3 = {
-        visible: [
-          this.line_b_bc,
-          this.line_g_gc,
-          this.line_g_gf,
-          this.line_Fbc_c,
-          this.line_Fgc_c,
-          this.line_Fgf_f,
-          this.line_bc_Fbc,
-          this.line_gf_Fgf,
-          this.line_gc_Fgc,
-          this.text_Fbc,
-          this.text_Fgc,
-          this.text_Fgf,
-          this.label_middle,
-          this.label_bottom
-        ],
-        invisible: [
-          this.d,
-          this.e,
-          this.line_b_c,
-          this.line_c_d,
-          this.line_c_f,
-          this.line_c_g,
-          this.line_d_e,
-          this.line_d_f,
-          this.line_e_f,
-          this.line_f_g,
-          this.roller,
-          this.triangle,
-          this.comb_bottom,
-          this.comb_bottom_line,
-          this.comb_top,
-          this.line_size_1,
-          this.line_size_2,
-          this.line_size_3,
-          this.line_size_4,
-          this.line_divide_1,
-          this.line_divide_2,
-          this.line_divide_3,
-          this.line_divide_4,
-          this.line_divide_5,
-          this.line_divide_6
-        ],
-        aspects: [
-          [this.line_bc_Fbc, { strokeColor: "blue" }],
-          [this.line_gc_Fgc, { strokeColor: "red" }],
-          [this.line_gf_Fgf, { strokeColor: "blue" }]
-        ]
-      };
-
-      let state_4 = {
-        visible: [
-          this.line_b_bc,
-          this.line_g_gc,
-          this.line_g_gf,
-          this.line_Fbc_c,
-          this.line_Fgc_c,
-          this.line_Fgf_f,
-          this.line_bc_Fbc,
-          this.line_gf_Fgf,
-          this.line_gc_Fgc,
-          this.text_Fbc,
-          this.text_Fgc,
-          this.text_Fgf,
-          this.label_middle,
-          this.label_bottom
-        ],
-        invisible: [
-          this.d,
-          this.e,
-          this.line_b_c,
-          this.line_c_d,
-          this.line_c_f,
-          this.line_c_g,
-          this.line_d_e,
-          this.line_d_f,
-          this.line_e_f,
-          this.line_f_g,
-          this.roller,
-          this.triangle,
-          this.comb_bottom,
-          this.comb_bottom_line,
-          this.comb_top,
-          this.line_size_1,
-          this.line_size_2,
-          this.line_size_3,
-          this.line_size_4,
-          this.line_divide_1,
-          this.line_divide_2,
-          this.line_divide_3,
-          this.line_divide_4,
-          this.line_divide_5,
-          this.line_divide_6
-        ],
-        aspects: [
-          [this.line_bc_Fbc, { strokeColor: "blue" }],
-          [this.line_gc_Fgc, { strokeColor: "blue" }],
-          [this.line_gf_Fgf, { strokeColor: "red" }]
-        ]
-      };
-
-      const what_to_do = [state_0, state_1, state_2, state_3, state_4];
-
-      for (let i = 0; i < what_to_do[state].visible.length; i++) {
-        //console.log(i);
-        //console.log(what_to_do[state].visible[i]);
-        what_to_do[state].visible[i].setAttribute({
-          visible: true
-        });
-      }
-
-      if (state == 0) this.triangle.showElement();
-      else this.triangle.hideElement();
-
-      for (let i = 0; i < what_to_do[state].invisible.length; i++) {
-        what_to_do[state].invisible[i].setAttribute({
-          visible: false
-        });
-      }
-
-      for (let i = 0; i < what_to_do[state].aspects.length; i++) {
-        what_to_do[state].aspects[i][0].setAttribute(what_to_do[state].aspects[i][1]);
-      }
+      let val = this.state == 0;
+      this.comb_bottom.setAttribute({ visible: val });
+      this.comb_top.setAttribute({ visible: val });
 
       this.label_top.setText(this.options_top_text[state]);
       this.label_middle.setText(this.options_middle_text[state]);
       this.label_bottom.setText(this.options_bottom_text[state]);
-      //console.log(this.label_top);
 
       this.b2.fullUpdate();
     },
-    f_point: (force, angle, scale, piece) => {
-      if (piece == "x")
-        return function() {
-          const x = Math.cos((angle.Value() / 180) * Math.PI);
-          //if (Math.abs(x) < Math.pow(10, -7)) return x - 10;
-          return -1 * scale * force.Value() * x - 3 * scale;
-        };
-
-      if (piece == "y")
-        return function() {
-          const y = Math.sin((angle.Value() / 180) * Math.PI);
-          if (Math.abs(y) < Math.pow(10, -7)) return 0;
-          return -1 * scale * force.Value() * y;
-        };
-    },
     val_computed: (force, angle, type) => {
       if (type == "GF")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = 4 * force.Value() * Math.sin(radians) - 2 * force.Value() * Math.cos(radians);
           val /= -2;
           return "F_{GF} = " + Math.round(val * 100) / 100 + " N";
         };
       if (type == "GC")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = (force.Value() / Math.sin(Math.PI / 4)) * Math.sin(radians);
           return "F_{GC} = " + Math.round(val * 100) / 100 + " N";
         };
       if (type == "BC")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = force.Value() * Math.sin(radians);
           return "F_{BC} = " + Math.round(val * 100) / 100 + " N";
@@ -922,7 +540,7 @@ export default {
     },
     tension_computed: (force, angle, type) => {
       if (type == "GF")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = 4 * force.Value() * Math.sin(radians) - 2 * force.Value() * Math.cos(radians);
           val /= -2;
@@ -930,14 +548,14 @@ export default {
           else return "Member GF is in compression";
         };
       if (type == "GC")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = (force.Value() / Math.sin(Math.PI / 4)) * Math.sin(radians);
           if (val >= 0) return "Member GC is in tension";
           else return "Member GC is in compression";
         };
       if (type == "BC")
-        return function() {
+        return () => {
           let radians = (angle.Value() * Math.PI) / 180;
           let val = force.Value() * Math.sin(radians);
           if (val >= 0) return "Member BC is in tension";

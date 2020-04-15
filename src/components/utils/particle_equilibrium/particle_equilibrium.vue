@@ -296,6 +296,8 @@ export default {
           this.animation_state.play = false;
           clearInterval(this.interval);
           if (slider != this.sliders.time) this.sliders.time.setValue(0);
+          textbox.rendNodeInput.value = "";
+          textbox.update();
         }
       };
     };

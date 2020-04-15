@@ -32,12 +32,30 @@
         </p>
       </div>
       <div class="col">
-        <div class="row">
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">Overview</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">Section</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">F_BC</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">F_GC</button>
-          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">F_GF</button>
+        <div class="row align-items-center">
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
+              Overview
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">Section</button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">
+              F<sub>BC</sub>
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">
+              F<sub>GC</sub>
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">
+              F<sub>GF</sub>
+            </button>
+          </div>
         </div>
         <div class="row">
           <methOfSec ref="foo" />

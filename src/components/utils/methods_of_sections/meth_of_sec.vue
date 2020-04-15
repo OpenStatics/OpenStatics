@@ -117,7 +117,7 @@ export default {
           -9,
           "Update",
           () => {
-            if (!isNan(this.input_force.Value())) {
+            if (!isNaN(this.input_force.Value())) {
               let val = Number(this.input_force.Value());
               val = Math.min(this.force._smax, val);
               val = Math.max(this.force._smin, val);
@@ -135,7 +135,7 @@ export default {
           -10,
           "Update",
           () => {
-            if (Number(this.input_angle.Value())) {
+            if (!isNaN(this.input_angle.Value())) {
               let val = Number(this.input_angle.Value());
               val = Math.min(this.angle._smax, val);
               val = Math.max(this.angle._smin, val);

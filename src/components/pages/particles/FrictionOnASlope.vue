@@ -4,22 +4,50 @@
     <SlopeText></SlopeText>
     <div class="row">
       <div class="col-xl-6 mx-2">
-        <div class="ml-5 my-4">
-          <strong
-            >Increase <vue-mathjax formula="(\theta_0)" />: <span class="mx-4">{{ parseFloat(this.angle.toFixed(1)) }} &deg;</span></strong
-          >
-        </div>
-        <div class="ml-5 my-4">
-          <button class="btn" @click="playAnimation">
-            <i v-if="!animeOn" class="fas fa-play"></i>
-            <i v-if="animeOn" class="fas fa-pause"></i>
-          </button>
-          <button class="btn" @click="resetAnimation"><i class="fas fa-redo"> </i></button>
-        </div>
-        <div class="ml-5 my-4">
-          <strong>Show FBD: </strong>
-          <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" checked />on
-          <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" />off
+        <div class="row">
+          <div class="col">
+            <div class="ml-5 my-4">
+              <strong
+                >Increase &theta;: <span class="mx-4">{{ parseFloat(this.angle.toFixed(1)) }} &deg;</span></strong
+              >
+            </div>
+            <div class="ml-5 my-4">
+              <button class="btn" @click="playAnimation">
+                <i v-if="!animeOn" class="fas fa-play"></i>
+                <i v-if="animeOn" class="fas fa-pause"></i>
+              </button>
+              <button class="btn" @click="resetAnimation"><i class="fas fa-redo"> </i></button>
+            </div>
+            <div class="ml-5 my-4">
+              <strong>Show FBD: </strong>
+              <input type="radio" class="mx-3" @click="toggleFBD(true)" name="FBD" />on
+              <input type="radio" class="mx-3" name="FBD" @click="toggleFBD(false)" checked />off
+            </div>
+          </div>
+          <div class="col" v-if="showFBD">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <th scope="row">mg:</th>
+                  <td>{{ this.m.Value() * 9.8 }}N</td>
+                  <th>&theta;<sub>0</sub>:</th>
+                  <td>{{ this.findAngle() }}&deg;</td>
+                </tr>
+                <tr>
+                  <th scope="row">mgsin(&theta;):</th>
+                  <td>{{ (this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180)).toFixed(1) }}N</td>
+                  <th>mgcos(&theta;):</th>
+                  <td>{{ (this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180)).toFixed(1) }}N</td>
+                </tr>
+                <tr>
+                  <th scope="row">f:</th>
+                  <td>{{ (this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180)).toFixed(1) }}N</td>
+                  <th>N</th>
+                  <td>{{ (this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180)).toFixed(1) }}N</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
@@ -42,7 +70,7 @@ export default {
       slide_percentage: 0.7,
       animeOn: false,
       polygon_color: "red",
-      showFBD: true
+      showFBD: false
     };
   },
 
@@ -61,9 +89,9 @@ export default {
     const straightLast = false;
 
     // module specific values
-    const origin_pos = [-7, -2];
+    const origin_pos = [-7, 2];
     const ground_line_length = 15;
-    const end_pos = [-7 + ground_line_length, -2];
+    const end_pos = [-7 + ground_line_length, 2];
     const FBD_line_factor = 1;
     const point_size = 1;
 
@@ -292,8 +320,9 @@ export default {
         visible: () => {
           return this.showFBD;
         },
+        label: { offset: [10, 15], strokeColor: "#000000" },
         size: 0,
-        name: "N"
+        name: "<strong>N</strong>"
       }
     );
     const cosTheta_point = this.board.create(
@@ -306,8 +335,8 @@ export default {
         return this.showFBD;
       },
       size: 0,
-      label: { offset: [8, -10], strokeColor: "#000000" },
-      name: "mg"
+      label: { offset: [8, -8], strokeColor: "#000000" },
+      name: "<strong>mg</strong>"
     });
 
     const friction_line = this.board.create("line", [center_point, friction_point], {
@@ -319,11 +348,12 @@ export default {
       lastArrow: true,
       strokeWidth
     });
-    this.board.create("text", [1, 0, "f"], {
+    this.board.create("text", [1, 1.5, "f"], {
       anchor: friction_line,
       visible: () => {
         return this.showFBD && this.angle;
-      }
+      },
+      cssStyle: "font-weight: bold"
     });
 
     const sinTheta_line = this.board.create("line", [center_point, sinTheta_point], {
@@ -340,9 +370,9 @@ export default {
       anchor: sinTheta_line,
       visible: () => {
         return this.showFBD && this.angle;
-      }
+      },
+      cssStyle: "font-weight: bold"
     });
-
     const normal_line = this.board.create("line", [center_point, normal_point], {
       visible: () => {
         return this.showFBD;
@@ -366,7 +396,8 @@ export default {
       anchor: cosTheta_line,
       visible: () => {
         return this.showFBD && this.angle;
-      }
+      },
+      cssStyle: "font-weight: bold"
     });
 
     const mg_line = this.board.create("line", [center_point, mg_point], {
@@ -403,124 +434,6 @@ export default {
     });
 
     // Show FBD Text
-    this.board.create(
-      "text",
-      [
-        -13,
-        11,
-        () => {
-          const value = this.m.Value() * 9.8;
-
-          return "mg: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -13,
-        10,
-        () => {
-          const value = this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180);
-
-          return "mgsin(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -13,
-        9,
-        () => {
-          const value = this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
-          return "mgcos(\u03B8): " + parseFloat(value.toFixed(fixedDecimal)) + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -13,
-        8,
-        () => {
-          const value = this.m.Value() * 9.8 * Math.sin((this.angle * Math.PI) / 180);
-          return "f: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -13,
-        7,
-        () => {
-          const value = this.m.Value() * 9.8 * Math.cos((this.angle * Math.PI) / 180);
-
-          return "N: " + parseFloat(value.toFixed(fixedDecimal)) + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -13,
-        6,
-        () => {
-          const value = this.findAngle();
-
-          return "\u03B8_0: " + parseFloat(value.toFixed(fixedDecimal)) + "\u00B0";
-        }
-      ],
-      {
-        visible: () => {
-          return this.showFBD;
-        },
-        fontSize,
-        fixed,
-        cssStyle: "font-weight: bold"
-      }
-    );
   },
   methods: {
     async playAnimation() {

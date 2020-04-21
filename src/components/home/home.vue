@@ -24,8 +24,4 @@ export default {
     }
   }
 };
-export const meta = {
-  title: "methods of joint",
-  description: "joaint"
-};
 </script>

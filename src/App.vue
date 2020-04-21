@@ -34,7 +34,7 @@
         <component :is="current"></component>
       </template>
       <template v-else>
-        <home :modulesInfo='pages' @fromChild="updateRoute"/>
+        <home :modulesInfo="pages" @fromChild="updateRoute" />
       </template>
     </div>
   </div>
@@ -75,11 +75,10 @@ export default Vue.extend({
     };
   },
   mounted() {
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("path")) {
-      console.log(query);
-      this.updateRoute(query.get("path"));
-    }
+    // parse the url and get the last two index for redirection
+    const urls = window.location.href.split("/");
+    const path = urls.slice(urls.length - 2, urls.length);
+    this.updateRoute("/" + path.join("/"));
   },
   methods: {
     /**

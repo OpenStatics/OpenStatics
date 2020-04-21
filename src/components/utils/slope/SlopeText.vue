@@ -9,7 +9,7 @@
     While in the original balance state, changing the mass of the block, m, cannot break the balance.
     <br />
     Module below shows these ideas where <vue-mathjax formula="(\mu)" /> and m are variable and <vue-mathjax formula="(\theta)" /> can be 
-    increased automatically to <vue-mathjax formula="(\theta_0)" />. Play withthese parameters to see how the FBD and balance change.
+    increased automatically to <vue-mathjax formula="(\theta_0)" />. Play with these parameters to see how the FBD and balance change.
   </div>
 </template>
 <script>

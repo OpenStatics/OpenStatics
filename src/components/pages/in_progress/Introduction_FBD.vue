@@ -37,6 +37,7 @@ export default {
 };
 export const meta = {
   title: "Introduction to Free Body Diagram",
-  description: "ok"
+  description: "ok",
+  number: 17
 };
 </script>

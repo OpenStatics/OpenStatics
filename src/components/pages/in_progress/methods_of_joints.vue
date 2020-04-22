@@ -43,6 +43,7 @@ export default {
 };
 export const meta = {
   title: "methods of joint",
-  description: "joint"
+  description: "joint",
+  number: 21
 };
 </script>

@@ -14,6 +14,7 @@ export default {
 };
 export const meta = {
   title: "Determinacy of Beams",
-  description: "Determinacy of Beams"
+  description: "Determinacy of Beams",
+  number: 20
 };
 </script>

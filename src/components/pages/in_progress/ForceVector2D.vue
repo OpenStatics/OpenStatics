@@ -154,7 +154,8 @@ export default {
 };
 export const meta = {
   title: "Force Vector (2D)",
-  description: "from JSX graph"
+  description: "from JSX graph",
+  number: 1
 };
 </script>
 

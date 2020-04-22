@@ -36,6 +36,7 @@ export default {
 
 export const meta = {
   title: "Free Body Diagram of Beam",
-  description: "FBD"
+  description: "FBD",
+  number: 18
 };
 </script>

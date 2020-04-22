@@ -101,7 +101,8 @@ export default {
 };
 export const meta = {
   title: "methods of sections",
-  description: "IN PROGRESS - WATKINS"
+  description: "IN PROGRESS - WATKINS",
+  number: 22
 };
 </script>
 

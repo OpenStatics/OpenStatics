@@ -567,6 +567,7 @@ export default {
 };
 export const meta = {
   title: "Force Vector Addition",
-  description: "from JSX graph"
+  description: "from JSX graph",
+  number: 3
 };
 </script>

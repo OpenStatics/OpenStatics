@@ -150,6 +150,7 @@ export default {
 };
 export const meta = {
   title: "Moment of force",
-  description: "moment of force"
+  description: "moment of force",
+  number: 9
 };
 </script>

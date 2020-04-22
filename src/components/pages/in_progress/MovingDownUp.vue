@@ -335,6 +335,7 @@ export default {
 };
 export const meta = {
   title: "Moving downward or upward",
-  description: "Non sense"
+  description: "Non sense",
+  number: 27
 };
 </script>

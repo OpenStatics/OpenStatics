@@ -509,6 +509,7 @@ export default {
 };
 export const meta = {
   title: "Friction on a slope",
-  description: "joint"
+  description: "joint",
+  number: 26
 };
 </script>

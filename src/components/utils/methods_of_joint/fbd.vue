@@ -12,8 +12,24 @@ export default {
 
     const b2 = JXG.JSXGraph.initBoard("box1", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
 
-    const force = b2.create("slider", [[-3, -10], [3, -10], [1, 1, 2]], { name: "Load F_C" });
-    const angle = b2.create("slider", [[-3, -12], [3, -12], [0, 90, 180]], { name: "Angle(&Phi;)" });
+    const force = b2.create(
+      "slider",
+      [
+        [-3, -10],
+        [3, -10],
+        [1, 1, 2]
+      ],
+      { name: "Load F_C" }
+    );
+    const angle = b2.create(
+      "slider",
+      [
+        [-3, -12],
+        [3, -12],
+        [0, 90, 180]
+      ],
+      { name: "Angle(&Phi;)" }
+    );
 
     // get RA_x value
     const getR_Ax = function() {
@@ -154,10 +170,10 @@ export default {
     b2.create("line", [d, e], { straightFirst: false, straightLast: false });
 
     // create force vectors
-    const line_cfc = b2.create("line", [c, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
-    const line_aray = b2.create("line", [a, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
-    const line_arax = b2.create("line", [a, pointR_Ax], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
-    const line_ere = b2.create("line", [e, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
+    b2.create("line", [c, pointFC], { straightFirst: false, straightLast: false, touchFirstPoint: true, lastArrow: true });
+    b2.create("line", [a, pointR_Ay], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    b2.create("line", [a, pointR_Ax], { straightFirst: false, straightLast: false, firstArrow: true, touchFirstPoint: true });
+    b2.create("line", [e, pointRE], { straightFirst: false, straightLast: false, touchFirstPoint: true, firstArrow: true });
     // create text on force vector FC
     b2.create(
       "text",

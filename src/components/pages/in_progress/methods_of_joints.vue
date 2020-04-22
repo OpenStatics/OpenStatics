@@ -1,41 +1,66 @@
 <template>
-  <div>
-    <fbd v-if="currentSelection == 0" />
-    <analysisA v-if="currentSelection == 1" />
-    <analysisB v-if="currentSelection == 2" />
-    <analysisC v-if="currentSelection == 3" />
-    <analysisD v-if="currentSelection == 4" />
-
-    <!-- <div id="box2" class="jsx-graph my-2 text-center"></div> -->
-    <button @click="() => changeSelection(0)">Overview: Free Body Diagram</button>
-    <button @click="() => changeSelection(1)">Analysis on A</button>
-    <button @click="() => changeSelection(2)">Analysis on B</button>
-    <button @click="() => changeSelection(3)">Analysis on C</button>
-    <button @click="() => changeSelection(4)">Analysis on D</button>
-    <button @click="() => changeSelection(5)">Analysis on E</button>
+  <div class="container-fluid">
+    <h1 class="text-danger text-center my-4">Method of Joints</h1>
+    <div class="row">
+      <div class="col">
+        <jointText />
+      </div>
+      <div class="col">
+        <div class="row align-items-center">
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
+              Truss
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">
+              FBD
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">
+              &Sigma;M<sub>A</sub>=0
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">
+              &Sigma;F<sub>x</sub>=0
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">
+              &Sigma;F<sub>y</sub>=0
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 }" @click="() => changeSelection(5)">
+              Solved
+            </button>
+          </div>
+        </div>
+        <div class="row">
+          <loadedTruss ref="foo" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import fbd from "../../utils/methods_of_joint/fbd";
-import analysisA from "../../utils/methods_of_joint/analysisA";
-import analysisB from "../../utils/methods_of_joint/analysisB";
-import analysisC from "../../utils/methods_of_joint/analysisC";
-import analysisD from "../../utils/methods_of_joint/analysisD";
-
+import loadedTrussVue from "../../utils/methods_of_joint/loadedTruss";
+import joint_text from "../../utils/methods_of_joint/joint_text";
 export default {
   data() {
     return { currentSelection: 0 };
   },
   components: {
-    fbd: fbd,
-    analysisA: analysisA,
-    analysisC: analysisC,
-    analysisD: analysisD
+    loadedTruss: loadedTrussVue,
+    jointText: joint_text
   },
   methods: {
     changeSelection(nextState) {
       this.currentSelection = nextState;
+      this.$refs.foo.changeState(nextState);
       console.log(this.currentSelection);
     }
   },

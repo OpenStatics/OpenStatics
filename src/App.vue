@@ -95,4 +95,8 @@ export default Vue.extend({
 });
 </script>
 
-<style></style>
+<style>
+#app{
+  background: #f8f9fa;
+}
+</style>

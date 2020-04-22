@@ -278,6 +278,33 @@ export default {
       }
     });
 
+    b2.create("angle", [point_a, point_c, point_F], {
+      orthoType: "sector",
+      radius: vectorScale * 0.5,
+      name: "\u03a6"
+    });
+
+    b2.create(
+      "text",
+      [
+        0,
+        0,
+        () => {
+          if ([0, 1, 2, 3, 4, 5].includes(this.state)) return "F_C = " + String(Math.round(force.Value() * 100) / 100) + " kN";
+          else return "";
+        }
+      ],
+      {
+        anchor: point_F,
+        anchorX: "middle",
+        strokeColor: "blue",
+        offset: [offsetFactor * 0.5, -offsetFactor * 0.75],
+        isLabel: true,
+        fontSize: 14,
+        fixed: true
+      }
+    );
+
     b2.create(
       "text",
       [
@@ -351,34 +378,42 @@ export default {
       top: [
         "",
         "",
-        "sum of the moments about A: \u03a3 M_A = 0 = wF_C \\sin (\u03a6) - 2wR_E",
-        "sum of the x forces: \u03a3 F_x = F_C \\cos (\u03a6) = R_{A,x}",
-        "sum of the y forces: \u03a3 F_y = 0 = R_{A,y} - F_C \\sin (\u03a6) + R_E",
+        'sum of the moments about A: \u03a3 M_A = 0 = w<span style="color:blue">F_C</span> \\sin(\u03a6) - 2w<span style="color:red">R_E</span>',
+        'sum of the x forces: \u03a3 F_x = <span style="color:blue">F_C</span> \\cos(\u03a6) = <span style="color:red">R_{A,x}</span>',
+        'sum of the y forces: \u03a3 F_y = 0 = <span style="color:red">R_{A,y}</span> - <span style="color:blue">F_C</span> \\sin(\u03a6) + <span style="color:red">R_E</span>',
         ""
       ],
       middle: [
         "Every member has an equal length of w",
         "",
-        "reaction force E: R_E = 0.5*F_C \\sin \u03a6",
+        'reaction force E: <span style="color:red">R_E</span> = 0.5*<span style="color:blue">F_C</span> \\sin(\u03a6)',
         () => {
           return (
-            "x component of reaction force A: R_{A,x} = " +
+            'x component of reaction force A: <span style="color:red">R_{A,x} = ' +
             String(Math.round(force.Value() * Math.cos((angle.Value() / 180) * Math.PI) * 100) / 100) +
-            " kN"
+            " kN</span>"
           );
         },
-        "y component of reaction force A: R_{A,y} = F_C \\sin (\u03a6) - R_E",
+        'y component of reaction force A: <span style="color:red">R_{A,y}</span> = <span style="color:blue">F_C</span> \\sin (\u03a6) - <span style="color:red">R_E</span>',
         ""
       ],
       bottom: [
         "",
         "",
         () => {
-          return "R_E = " + String(Math.round(0.5 * force.Value() * Math.sin((angle.Value() / 180) * Math.PI) * 100) / 100) + " kN";
+          return (
+            '<span style="color:red">R_E = ' +
+            String(Math.round(0.5 * force.Value() * Math.sin((angle.Value() / 180) * Math.PI) * 100) / 100) +
+            " kN</span>"
+          );
         },
         "",
         () => {
-          return "R_{A,y} = " + String(Math.round(0.5 * force.Value() * Math.sin((angle.Value() / 180) * Math.PI) * 100) / 100) + " kN";
+          return (
+            '<span style="color:red">R_{A,y} = ' +
+            String(Math.round(0.5 * force.Value() * Math.sin((angle.Value() / 180) * Math.PI) * 100) / 100) +
+            " kN</span>"
+          );
         },
         ""
       ]

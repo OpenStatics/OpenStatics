@@ -1,11 +1,10 @@
 <template>
   <div>
     <h1 class="text-danger text-center my-4">Force Vector Representation in 2D</h1>
+    <ForceText></ForceText>
     <div class="row">
+      <div id="control" style="height:500px;width:100%" class="mx-2 col"></div>
       <div id="ForceVec2D" class="jsx-graph col-xl mx-2"></div>
-      <div class="col-xl mx-2">
-        <ForceText></ForceText>
-      </div>
     </div>
   </div>
 </template>
@@ -17,37 +16,46 @@ export default {
     ForceText
   },
   mounted() {
+    // initial values
     const multiplier = 3;
+    const fixedDecimal = 2;
+    const fontSize = 20;
+    const strokeWidth = 3;
+    const dash = 3;
+    const fixed = true;
+    const inputFont = 15;
 
-    // create b2 board
-    const b2 = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
+    // create board board
+    const board = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], axis: true, keepAspectRatio: true });
+    const board_control = JXG.JSXGraph.initBoard("control", {
+      boundingbox: [0, 15, 15, 0],
+      showCopyright: false
+    });
+    board_control.addChild(this.board);
 
     // set slider for force and angle
-    const force = b2.create(
+    const force = board_control.create(
       "slider",
-      [
-        [1, -6],
-        [6, -6],
+    [
+        [2, 13],
+        [12, 13],
         [0, 1, 5]
       ],
       { name: "F(N)" }
     );
-    const angle = b2.create(
+    const angle = board_control.create(
       "slider",
       [
-        [1, -8],
-        [6, -8],
-        [0, 0, 360]
+        [2, 11],
+        [12, 11],
+        [0, 30, 360]
       ],
       { name: "a(degree)" }
     );
-    const check_prof_F_on_x = b2.create("checkbox", [1, -10, "Projection of F on x"], {});
-    const check_res_F = b2.create("checkbox", [1, -12, "Resolution of F into components"], {});
-    const check_prof_F_on_y = b2.create("checkbox", [1, -14, "Projection of F on y"], {});
-
+    
     // create two points for reference
-    const origin_point = b2.create("point", [0, 0], { fixed: true }, { name: "O" });
-    const end_point = b2.create(
+    const origin_point = board.create("point", [0, 0], { fixed: true }, { name: "O" });
+    const end_point = board.create(
       "point",
       [
         function() {
@@ -61,10 +69,10 @@ export default {
     );
 
     // create the main vector
-    const vector = b2.create("line", [origin_point, end_point], { straightFirst: false, straightLast: false, lastArrow: true });
+    const vector = board.create("line", [origin_point, end_point], { straightFirst: false, straightLast: false, lastArrow: true });
 
     // projection of F on x
-    const proj_F_on_x = b2.create(
+    const proj_F_on_x = board.create(
       "line",
       [
         origin_point,
@@ -86,7 +94,7 @@ export default {
     );
 
     // Projection of F on y
-    const proj_F_on_y = b2.create(
+    const proj_F_on_y = board.create(
       "line",
       [
         origin_point,
@@ -108,7 +116,7 @@ export default {
     );
 
     // Resolution of F into components
-    const res_F_y = b2.create(
+    const res_F_y = board.create(
       "line",
       [
         [
@@ -129,7 +137,7 @@ export default {
         dash: 2
       }
     );
-    const res_F_x = b2.create(
+    const res_F_x = board.create(
       "line",
       [
         [

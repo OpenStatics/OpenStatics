@@ -6,7 +6,34 @@
         <jointText />
       </div>
       <div class="col">
+        <!-- Top two buttons -->
         <div class="row align-items-center">
+          <div class="col">
+            <button
+              class="btn btn-primary mx-3"
+              :class="{
+                'btn-warning': index === 0
+              }"
+              @click="() => changeSelection(0)"
+            >
+              Loaded Truss
+            </button>
+          </div>
+          <div class="col">
+            <button
+              class="btn btn-primary mx-3"
+              :class="{
+                'btn-warning': index === 1
+              }"
+              @click="() => changeSelection(10)"
+            >
+              Balances at Joints
+            </button>
+          </div>
+        </div>
+
+        <!-- Loaded Truss Buttons -->
+        <div class="row align-items-center" v-if="index === 0">
           <div class="col">
             <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
               Truss
@@ -38,6 +65,42 @@
             </button>
           </div>
         </div>
+
+        <!-- Balances of Joints buttons -->
+        <div class="row align-items-center" v-if="index === 1">
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 10 }" @click="() => changeSelection(10)">
+              Joints
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 11 }" @click="() => changeSelection(11)">
+              A
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 12 }" @click="() => changeSelection(12)">
+              B
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 13 }" @click="() => changeSelection(13)">
+              C
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 14 }" @click="() => changeSelection(14)">
+              D
+            </button>
+          </div>
+          <div class="col">
+            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 15 }" @click="() => changeSelection(15)">
+              Solved
+            </button>
+          </div>
+        </div>
+
+        <!-- The JSXGraph component -->
         <div class="row">
           <loadedTruss ref="foo" />
         </div>
@@ -51,7 +114,7 @@ import loadedTrussVue from "../../utils/methods_of_joint/loadedTruss";
 import joint_text from "../../utils/methods_of_joint/joint_text";
 export default {
   data() {
-    return { currentSelection: 0 };
+    return { currentSelection: 0, lastUsed: [0, 10], index: 0 };
   },
   components: {
     loadedTruss: loadedTrussVue,
@@ -59,9 +122,25 @@ export default {
   },
   methods: {
     changeSelection(nextState) {
+      let currVal = this.intDiv(this.currentSelection, 10);
+      let nextVal = this.intDiv(nextState, 10);
+      if (currVal != nextVal) {
+        this.index = (this.index + 1) % 2;
+        nextState = this.lastUsed[this.index];
+      }
+      this.lastUsed[currVal] = this.currentSelection;
+      this.lastUsed[nextVal] = nextState;
+
       this.currentSelection = nextState;
       this.$refs.foo.changeState(nextState);
-      console.log(this.currentSelection);
+      // console.log(this.currentSelection);
+      // console.log(this.lastUsed);
+    },
+    intDiv(val, div) {
+      return Math.floor(val / div);
+    },
+    matches(val, div, target) {
+      return this.intDiv(val, div) === target;
     }
   },
   mounted() {}

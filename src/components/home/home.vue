@@ -1,5 +1,5 @@
 <template>
-  <div id="home" style="margin:20px">
+  <div id="home" class="container">
     <h1 class="category">Open Statics</h1>
     <div class="row">
       <div v-for="(items, category) in modulesInfo" :key="category" class="col">

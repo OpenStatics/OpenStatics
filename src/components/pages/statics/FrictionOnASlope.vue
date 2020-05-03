@@ -1,5 +1,5 @@
 <template>
-  <div style="margin:20px">
+  <div class='container-fluid'>
     <h1 class="text-danger text-center my-4">Friction on a slope</h1>
     <SlopeText></SlopeText>
     <div class="row">
@@ -52,7 +52,7 @@
 
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
-      <div id="friction" class="jsx-graph col-xl mx-2"></div>
+      <div id="friction" class="jsx-graph col-xl-6 mx-2"></div>
     </div>
   </div>
 </template>

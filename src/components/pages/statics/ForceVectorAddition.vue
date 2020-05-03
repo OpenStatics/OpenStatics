@@ -1,5 +1,5 @@
 <template>
-  <div style="margin:20px">
+  <div class='container-fluid'>
     <h1 class="text-danger text-center my-4">Vector Addition of Forces</h1>
     <VecAddText></VecAddText>
     <div class="row">
@@ -39,7 +39,7 @@
         </div>
         <div id="control" style="height:500px;width:100%" class="mx-2"></div>
       </div>
-      <div id="vecaddition" class="jsx-graph col-xl mx-2"></div>
+      <div id="vecaddition" class="jsx-graph col-xl-6 mx-2"></div>
     </div>
   </div>
 </template>

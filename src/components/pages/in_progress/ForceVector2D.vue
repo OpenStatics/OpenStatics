@@ -1,47 +1,78 @@
 <template>
   <div class="container-fluid">
     <h1 class="text-danger text-center my-4">Force Vector Representation in 2D</h1>
+    <h5 class="text-center mt-4">Creator: Zichao Hu, 2020-05-03</h5>
+    <h5 class="text-center mb-4">Creator: Zhelong He, Marek-Jerzy Pindera University of Virginia, 2017-07-27</h5>
+
     <ForceText></ForceText>
     <div class="row my-3">
       <div class="col-xl-6 border">
-        <div>
-          F Visibility: <input type="radio" class="mx-3" name="F_Visible" checked @click="ToggleVisibility(0)" />on
-          <input type="radio" class="mx-3" name="F_Visible" @click="ToggleVisibility(1)" />off
-        </div>
-        <div>
-          Projection of F on x: <input type="radio" class="mx-3" name="Project_F_X" @click="ToggleVisibility(2)" />on
-          <input type="radio" class="mx-3" name="Project_F_X" checked @click="ToggleVisibility(3)" />off
-        </div>
-        <div>
-          Projection of F on y: <input type="radio" class="mx-3" name="Project_F_y" @click="ToggleVisibility(4)" />on
-          <input type="radio" class="mx-3" name="Project_F_y" checked @click="ToggleVisibility(5)" />off
-        </div>
-        <div>
-          Resolution of F into components: <input type="radio" class="mx-3" name="Resolution_F" @click="ToggleVisibility(6)" />on
-          <input type="radio" class="mx-3" name="Resolution_F" checked @click="ToggleVisibility(7)" />off
-        </div>
-        <div>
-          u Visibility: <input type="radio" class="mx-3" name="u_Visibility" @click="ToggleVisibility(8)" />on
-          <input type="radio" class="mx-3" name="u_Visibility" checked @click="ToggleVisibility(9)" />off
-        </div>
-        <div>
-          Projection of u on x: <input type="radio" class="mx-3" name="Project_u_x" @click="ToggleVisibility(10)" />on
-          <input type="radio" class="mx-3" name="Project_u_x" checked @click="ToggleVisibility(11)" />off
-        </div>
-        <div>
-          Projection of u on y: <input type="radio" class="mx-3" name="Project_u_y" @click="ToggleVisibility(12)" />on
-          <input type="radio" class="mx-3" name="Project_u_y" checked @click="ToggleVisibility(13)" />off
-        </div>
-        <div>
-          Projection of u into components: <input type="radio" class="mx-3" name="Project_u_comp" @click="ToggleVisibility(14)" />on
-          <input type="radio" class="mx-3" name="ok" checked @click="ToggleVisibility(15)" />off
-        </div>
+        <table class="table table-borderless">
+          <tbody>
+            <tr>
+              <td>F Visibility:</td>
+              <td>
+                <input type="radio" class="mx-3" name="F_Visible" checked @click="ToggleVisibility(0)" />on
+                <input type="radio" class="mx-3" name="F_Visible" @click="ToggleVisibility(1)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Projection of F on x:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Project_F_X" @click="ToggleVisibility(2)" />on
+                <input type="radio" class="mx-3" name="Project_F_X" checked @click="ToggleVisibility(3)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Projection of F on y:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Project_F_y" @click="ToggleVisibility(4)" />on
+                <input type="radio" class="mx-3" name="Project_F_y" checked @click="ToggleVisibility(5)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Resolution of F into components:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Resolution_F" @click="ToggleVisibility(6)" />on
+                <input type="radio" class="mx-3" name="Resolution_F" checked @click="ToggleVisibility(7)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>u Visibility:</td>
+              <td>
+                <input type="radio" class="mx-3" name="u_Visibility" @click="ToggleVisibility(8)" />on
+                <input type="radio" class="mx-3" name="u_Visibility" checked @click="ToggleVisibility(9)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Projection of u on x:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Project_u_x" @click="ToggleVisibility(10)" />on
+                <input type="radio" class="mx-3" name="Project_u_x" checked @click="ToggleVisibility(11)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Projection of u on y:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Project_u_y" @click="ToggleVisibility(12)" />on
+                <input type="radio" class="mx-3" name="Project_u_y" checked @click="ToggleVisibility(13)" />off
+              </td>
+            </tr>
+            <tr>
+              <td>Projection of u into components:</td>
+              <td>
+                <input type="radio" class="mx-3" name="Project_u_comp" @click="ToggleVisibility(14)" />on
+                <input type="radio" class="mx-3" name="Project_u_comp" checked @click="ToggleVisibility(15)" />off
+              </td>
+            </tr>
+          </tbody>
+        </table>
         <div class="d-flex justify-content-center">
           <div id="control" style="width:400px; height:200px;"></div>
         </div>
       </div>
       <div class="col-xl-6 d-flex justify-content-center">
-        <div id="ForceVec2D" style="width:400px; height:400px;"></div>
+        <div id="ForceVec2D" style="width:500px; height:500px;"></div>
       </div>
     </div>
   </div>
@@ -62,7 +93,7 @@ export default {
   },
   mounted() {
     // initial values
-    const multiplier = 3;
+    const multiplier = 5;
     const fixedDecimal = 2;
     const fontSize = 20;
     const strokeWidth = 3;
@@ -98,7 +129,7 @@ export default {
       [
         [2, 10],
         [12, 10],
-        [0, 3, 5]
+        [0, 2, 3]
       ],
       { withLabel: false }
     );
@@ -221,43 +252,42 @@ export default {
     // create angles from x-axis and y-axis
     const angle_x = this.board.create("angle", [right_border_point, origin_point, end_point], {
       radius: () => {
-        return force.Value() * 0.85;
+        return force.Value() * 1.5;
       },
       orthoType: "sector",
-      name: "&alpha;",
+      withLabel: false,
       fillOpacity: 0,
       strokeColor: "orange",
       strokeWidth,
       visible: () => {
-        return comp_visible([1, 3, 4, 5, 6, 7]);
+        return comp_visible([1, 3, 5, 7]);
       }
     });
 
     const angle_y_below_90 = this.board.create("angle", [end_point, origin_point, top_border_point], {
       radius: () => {
-        return force.Value();
+        return force.Value() * 2;
       },
       orthoType: "sector",
-
-      name: "&beta;",
+      withLabel: false,
       fillOpacity: 0,
       strokeColor: "red",
       strokeWidth,
       visible: () => {
-        return angle.Value() < 90 && comp_visible([2, 3, 4, 5, 6, 7]);
+        return angle.Value() < 90 && comp_visible([2, 3, 6, 7]);
       }
     });
     const angle_y_over_90 = this.board.create("angle", [top_border_point, origin_point, end_point], {
       radius: () => {
-        return force.Value();
+        return force.Value() * 2;
       },
       orthoType: "sector",
-      name: "&beta;",
+      withLabel: false,
       fillOpacity: 0,
       strokeColor: "red",
       strokeWidth,
       visible: () => {
-        return angle.Value() >= 90 && comp_visible([2, 3, 4, 5, 6, 7]);
+        return angle.Value() >= 90 && comp_visible([2, 3, 6, 7]);
       }
     });
 
@@ -481,49 +511,43 @@ export default {
         }
       }
     );
-    // // Resolution of F into components
-    // const res_F_y = board.create(
-    //   "line",
-    //   [
-    //     [
-    //       0,
-    //       function() {
-    //         return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-    //       }
-    //     ],
-    //     end_point
-    //   ],
-    //   {
-    //     straightFirst: false,
-    //     straightLast: false,
-    //     lastArrow: true,
-    //     visible: function() {
-    //       return check_res_F.Value() * multiplier;
-    //     },
-    //     dash: 2
-    //   }
-    // );
-    // const res_F_x = board.create(
-    //   "line",
-    //   [
-    //     [
-    //       function() {
-    //         return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-    //       },
-    //       0
-    //     ],
-    //     end_point
-    //   ],
-    //   {
-    //     straightFirst: false,
-    //     straightLast: false,
-    //     lastArrow: true,
-    //     visible: function() {
-    //       return check_res_F.Value();
-    //     },
-    //     dash: 2
-    //   }
-    // );
+    // Text
+    this.board.create(
+      "text",
+      [
+        -10,
+        12,
+        () => {
+          const value = parseFloat(angle.Value().toFixed(fixedDecimal));
+          return "&alpha;: " + value + "\u00B0";
+        }
+      ],
+      {
+        visible: () => {
+          return comp_visible([1, 3, 5, 7]);
+        },
+        fontSize,
+        strokeColor: "orange"
+      }
+    );
+    this.board.create(
+      "text",
+      [
+        -10,
+        10,
+        () => {
+          const value = parseFloat((90 - angle.Value()).toFixed(fixedDecimal));
+          return "&beta;: " + value + "\u00B0";
+        }
+      ],
+      {
+        visible: () => {
+          return comp_visible([2, 3, 6, 7]);
+        },
+        fontSize,
+        strokeColor: "red"
+      }
+    );
   },
   methods: {
     ToggleVisibility(index) {

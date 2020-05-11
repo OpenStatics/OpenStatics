@@ -29,12 +29,15 @@ export default {
         q4: undefined
       },
       b2: undefined,
-      labelsToUpdate: []
+      labelsToUpdate: {},
+      labelFormulas: {}
     };
   },
   mounted() {
     // Scale determines the size of the whole structure
     const scale = 4.5;
+    const bgColor = window.getComputedStyle(document.getElementById("app"), null).getPropertyValue("background-color");
+    // let lodash = require("lodash");
 
     // Setup the board
     const b2 = JXG.JSXGraph.initBoard("box1", {
@@ -56,7 +59,7 @@ export default {
         [0, -9],
         [1, 1, 2]
       ],
-      { name: "Load F (N)" }
+      { name: "Load F (N)", label: { fontSize: 15 } }
     );
     const angle = b2.create(
       "slider",
@@ -65,12 +68,12 @@ export default {
         [0, -10],
         [0, 90, 180]
       ],
-      { name: "Angle" }
+      { name: "Angle \u03a6 (\u00B0)", label: { fontSize: 15 } }
     );
 
     // Input boxes for the sliders
-    const input_force = b2.create("input", [5, -9 + 0.05, "", ""], { cssStyle: "width: 50px" });
-    const input_angle = b2.create("input", [5, -10, "", ""], { cssStyle: "width: 50px" });
+    const input_force = b2.create("input", [6, -9 + 0.05, "", ""], { cssStyle: "width: 50px" });
+    const input_angle = b2.create("input", [6, -10, "", ""], { cssStyle: "width: 50px" });
 
     // Update buttons for the sliders
     b2.create(
@@ -193,7 +196,7 @@ export default {
       fillColor: "white",
       strokeColor: "black",
       size: () => {
-        if (forStates([0, 1, 2, 3, 4, 5, 15])()) return 5;
+        if (forStates([0, 1, 2, 3, 4, 5, 15, 16])()) return 5;
         else return 7;
       },
       visible: forStates([0, 1, 2, 3, 4, 5, 10, 15])
@@ -211,7 +214,7 @@ export default {
         },
         visible: forStates([0, 1, 2, 3, 4, 5, 10, 11])
       },
-      visible: forStates([0, 1, 2, 3, 4, 5, 10, 11, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 10, 11, 15, 16])
     });
     const point_b = b2.create("point", [-1 * scale, Math.sqrt(3) * scale], {
       ...pointProperties,
@@ -224,7 +227,7 @@ export default {
         },
         visible: forStates([0, 1, 2, 3, 4, 5, 10, 12])
       },
-      visible: forStates([0, 1, 2, 3, 4, 5, 10, 12, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 10, 12, 15, 16])
     });
     const point_c = b2.create("point", [0 * scale, 0 * scale], {
       ...pointProperties,
@@ -237,7 +240,7 @@ export default {
         },
         visible: forStates([0, 1, 2, 3, 4, 5, 10, 13])
       },
-      visible: forStates([0, 1, 2, 3, 4, 5, 10, 13, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 10, 13, 15, 16])
     });
     const point_d = b2.create("point", [1 * scale, Math.sqrt(3) * scale], {
       ...pointProperties,
@@ -250,7 +253,7 @@ export default {
         },
         visible: forStates([0, 1, 2, 3, 4, 5, 10, 14])
       },
-      visible: forStates([0, 1, 2, 3, 4, 5, 10, 14, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 10, 14, 15, 16])
     });
     const point_e = b2.create("point", [2 * scale, 0], {
       ...pointProperties,
@@ -263,7 +266,7 @@ export default {
         },
         visible: forStates([0, 1, 2, 3, 4, 5, 10])
       },
-      visible: forStates([0, 1, 2, 3, 4, 5, 10, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 10, 15, 16])
     });
 
     // create triangle & circle
@@ -335,7 +338,7 @@ export default {
       b2.create("line", [p[0], p[1]], {
         ...lineProperties,
         strokeColor: () => {
-          if (forStates([15])()) {
+          if (forStates([15, 16])()) {
             if (p[2]() < 0) return "purple";
             else return "green";
           } else return "green";
@@ -362,7 +365,7 @@ export default {
       "point",
       [
         () => {
-          if (forStates([5, 15])()) return -1 * vectorScale * Math.abs(value.F_x()) - scale * 2;
+          if (forStates([5, 15, 16])()) return -1 * vectorScale * Math.abs(value.F_x()) - scale * 2;
           else return -(vectorScale + scale * 2);
         },
         0
@@ -375,7 +378,7 @@ export default {
       [
         -scale * 2,
         () => {
-          if (forStates([5, 15])()) return -vectorScale * value.Ray();
+          if (forStates([5, 15, 16])()) return -vectorScale * value.Ray();
           else return -vectorScale;
         }
       ],
@@ -387,7 +390,7 @@ export default {
       [
         scale * 2,
         () => {
-          if (forStates([5, 15])()) return -vectorScale * value.Re();
+          if (forStates([5, 15, 16])()) return -vectorScale * value.Re();
           else return -vectorScale;
         }
       ],
@@ -399,191 +402,165 @@ export default {
     b2.create("line", [point_c, point_F], {
       ...forceVectorProperties,
       strokeColor: "blue",
-      visible: forStates([0, 1, 2, 3, 4, 5, 13, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 13, 15, 16])
     });
     b2.create("line", [point_Rax, point_a], {
       ...forceVectorProperties,
       strokeColor: "red",
-      visible: forStates([1, 3, 4, 5, 11, 15])
+      visible: forStates([1, 3, 4, 5, 11, 15, 16])
     });
     b2.create("line", [point_Ray, point_a], {
       ...forceVectorProperties,
       strokeColor: "red",
-      visible: forStates([1, 3, 4, 5, 11, 15])
+      visible: forStates([1, 3, 4, 5, 11, 15, 16])
     });
     b2.create("line", [point_Re, point_e], {
       ...forceVectorProperties,
       strokeColor: "red",
-      visible: forStates([1, 2, 3, 4, 5, 15])
+      visible: forStates([1, 2, 3, 4, 5, 15, 16])
     });
 
     b2.create("angle", [point_a, point_c, point_F], {
       orthoType: "sector",
       radius: vectorScale * 0.5,
       name: "\u03a6",
-      visible: forStates([0, 1, 2, 3, 4, 5, 13, 15])
+      visible: forStates([0, 1, 2, 3, 4, 5, 13, 15, 16]),
+      strokeColor: "black",
+      fillColor: bgColor,
+      dash: 1
     });
 
     // joint vector lines
-    const jointScale = 0.4;
+    const jointScale = 0.425;
 
     for (const line of [
-      [point_a, scale * (-2 + jointScale), scale * jointScale * Math.sqrt(3), 11],
-      [point_a, scale * (-2 + 2 * jointScale), 0, 11],
-      [point_b, scale * (-1 - jointScale), scale * (1 - jointScale) * Math.sqrt(3), 12],
-      [point_b, scale * (-1 + jointScale), scale * (1 - jointScale) * Math.sqrt(3), 12],
-      [point_b, scale * (-1 + 2 * jointScale), scale * Math.sqrt(3), 12],
-      [point_c, scale * 2 * jointScale, 0, 13],
-      [point_c, scale * jointScale, scale * jointScale * Math.sqrt(3), 13],
-      [point_c, scale * -1 * jointScale, scale * jointScale * Math.sqrt(3), 13],
-      [point_c, scale * -2 * jointScale, 0, 13],
-      [point_d, scale * (1 - 2 * jointScale), scale * Math.sqrt(3), 14],
-      [point_d, scale * (1 - jointScale), scale * (1 - jointScale) * Math.sqrt(3), 14],
-      [point_d, scale * (1 + jointScale), scale * (1 - jointScale) * Math.sqrt(3), 14]
+      [point_a, scale * (-2 + jointScale), scale * jointScale * Math.sqrt(3), 11, value.Fab],
+      [point_a, scale * (-2 + 2 * jointScale), 0, 11, value.Fac],
+      [point_b, scale * (-1 - jointScale), scale * (1 - jointScale) * Math.sqrt(3), 12, value.Fab],
+      [point_b, scale * (-1 + jointScale), scale * (1 - jointScale) * Math.sqrt(3), 12, value.Fbc],
+      [point_b, scale * (-1 + 2 * jointScale), scale * Math.sqrt(3), 12, value.Fbd],
+      [point_c, scale * 2 * jointScale, 0, 13, value.Fce],
+      [point_c, scale * jointScale, scale * jointScale * Math.sqrt(3), 13, value.Fcd],
+      [point_c, scale * -1 * jointScale, scale * jointScale * Math.sqrt(3), 13, value.Fbc],
+      [point_c, scale * -2 * jointScale, 0, 13, value.Fac],
+      [point_d, scale * (1 - 2 * jointScale), scale * Math.sqrt(3), 14, value.Fbd],
+      [point_d, scale * (1 - jointScale), scale * (1 - jointScale) * Math.sqrt(3), 14, value.Fcd],
+      [point_d, scale * (1 + jointScale), scale * (1 - jointScale) * Math.sqrt(3), 14, value.Fde],
+      [point_e, scale * (2 - 2 * jointScale), 0, 16, value.Fce],
+      [point_e, scale * (2 - jointScale), scale * jointScale * Math.sqrt(3), 16, value.Fde]
     ]) {
       const p = b2.create("point", [line[1], line[2]], { visible: false, fixed: true });
       b2.create("line", [line[0], p], {
         straightFirst: false,
         straightLast: false,
-        strokeColor: "green",
+        strokeColor: () => {
+          if (forStates([16])() && line[4]() < 0) return "purple";
+          else return "green";
+        },
         strokeWidth: 4,
-        visible: forStates([line[3]]),
-        lastArrow: true
+        visible: forStates([line[3], 16]),
+        firstArrow: () => {
+          return forStates([16])() && line[4]() < 0;
+        },
+        lastArrow: () => {
+          return !(forStates([16])() && line[4]() < 0);
+        }
       });
     }
 
     // force vector label text
-    let lbl;
-    lbl = b2.create(
-      "text",
-      [
-        0,
-        0,
-        () => {
-          if (forStates([0, 1, 2, 3, 4, 5, 13, 15])()) return "F_C = " + String(Math.round(force.Value() * 100) / 100) + " kN";
-          else return "";
-        }
-      ],
-      {
-        anchor: point_F,
-        anchorX: "middle",
-        strokeColor: "blue",
-        offset: [offsetFactor * 0.5, -offsetFactor * 0.75],
-        isLabel: true,
-        fontSize: 14,
-        fixed: true
-      }
-    );
-    this.labelsToUpdate.push(lbl);
 
-    lbl = b2.create(
-      "text",
-      [
-        0,
-        0,
-        () => {
-          if (forStates([1, 3, 4, 11])()) return "R_{A,x}";
-          else if (forStates([5, 15])()) return "R_{A,x} = " + String(Math.round(value.Rax() * 100) / 100) + " kN";
-          else return "";
-        }
-      ],
-      {
-        anchor: point_Rax,
-        anchorX: "right",
-        strokeColor: "red",
-        offset: [-offsetFactor * 1, offsetFactor * 0],
-        isLabel: true,
-        fontSize: 14,
-        fixed: true
-      }
-    );
-    this.labelsToUpdate.push(lbl);
+    this.labelsToUpdate["F_C"] = b2.create("text", [0, 0, ""], {
+      anchor: point_F,
+      anchorX: "middle",
+      strokeColor: "blue",
+      offset: [offsetFactor * 0.5, -offsetFactor * 0.75],
+      isLabel: true,
+      fontSize: 16,
+      fixed: true
+    });
+    this.labelFormulas["F_C"] = () => {
+      if (forStates([0, 1, 2, 3, 4, 5, 13, 15, 16])()) return "F_C = " + String(Math.round(force.Value() * 100) / 100) + " kN";
+      else return "";
+    };
 
-    lbl = b2.create(
-      "text",
-      [
-        0,
-        0,
-        () => {
-          if (forStates([1, 3, 4, 11])()) return "R_{A,y}";
-          else if (forStates([5, 15])()) return "R_{A,y} = " + String(Math.round(value.Ray() * 100) / 100) + " kN";
-          else return "";
-        }
-      ],
-      {
-        anchor: point_Ray,
-        anchorX: "middle",
-        strokeColor: "red",
-        offset: [-offsetFactor * 0, -offsetFactor * 0.75],
-        isLabel: true,
-        fontSize: 14,
-        fixed: true
-      }
-    );
-    this.labelsToUpdate.push(lbl);
+    this.labelsToUpdate["R_Ax"] = b2.create("text", [0, 0, ""], {
+      anchor: point_Rax,
+      anchorX: "right",
+      strokeColor: "red",
+      offset: [-offsetFactor * 1, offsetFactor * 0],
+      isLabel: true,
+      fontSize: 14,
+      fixed: true
+    });
+    this.labelFormulas["R_Ax"] = () => {
+      if (forStates([1, 3, 4, 11])()) return "R_{A,x}";
+      else if (forStates([5, 15, 16])()) return "R_{A,x} = " + String(Math.round(value.Rax() * 100) / 100) + " kN";
+      else return "";
+    };
 
-    lbl = b2.create(
-      "text",
-      [
-        0,
-        0,
-        () => {
-          if (forStates([1, 2])()) return "R_E";
-          else if (forStates([3, 4, 5, 15])()) return "R_E = " + String(Math.round(value.Re() * 100) / 100) + " kN";
-          else return "";
-        }
-      ],
-      {
-        anchor: point_Re,
-        anchorX: "middle",
-        strokeColor: "red",
-        offset: [offsetFactor * 0.5, -offsetFactor * 0.75],
-        isLabel: true,
-        fontSize: 14,
-        fixed: true
-      }
-    );
-    this.labelsToUpdate.push(lbl);
+    this.labelsToUpdate["R_Ay"] = b2.create("text", [0, 0, ""], {
+      anchor: point_Ray,
+      anchorX: "middle",
+      strokeColor: "red",
+      offset: [-offsetFactor * 0, -offsetFactor * 0.75],
+      isLabel: true,
+      fontSize: 14,
+      fixed: true
+    });
+    this.labelFormulas["R_Ay"] = () => {
+      if (forStates([1, 3, 4, 11])()) return "R_{A,y}";
+      else if (forStates([5, 15, 16])()) return "R_{A,y} = " + String(Math.round(value.Ray() * 100) / 100) + " kN";
+      else return "";
+    };
 
-    // Joint vector lables
+    this.labelsToUpdate["R_E"] = b2.create("text", [0, 0, ""], {
+      anchor: point_Re,
+      anchorX: "middle",
+      strokeColor: "red",
+      offset: [offsetFactor * 0.5, -offsetFactor * 0.75],
+      isLabel: true,
+      fontSize: 14,
+      fixed: true
+    });
+    this.labelFormulas["R_E"] = () => {
+      if (forStates([1, 2])()) return "R_E";
+      else if (forStates([3, 4, 5, 15, 16])()) return "R_E = " + String(Math.round(value.Re() * 100) / 100) + " kN";
+      else return "";
+    };
+
+    // Joint vector labels
     for (const p of [
-      [["F_{AB}", "F_AB"], -1.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fab, [10, 11], [12, 15], 0],
-      [["F_{AC}", "F_AC"], -1 * scale, 0, value.Fac, [10, 11], [13, 15], 0],
-      [["F_{BC}", "F_BC"], -0.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fbc, [10, 12], [13, 15], 0],
-      [["F_{BD}", "F_BD"], 0, Math.sqrt(3) * scale, value.Fbd, [10, 12], [14, 15], 0],
-      [["F_{CD}", "F_CD"], 0.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fcd, [10, 13], [14, 15], 0],
-      [["F_{CE}", "F_CE"], 1 * scale, 0, value.Fce, [10, 13], [15], 0],
-      [["F_{DE}", "F_DE"], 1.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fde, [10, 14], [15], 0]
+      [["F_{AB}", "F_AB"], -1.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fab, [10, 11], [12, 15, 16], []],
+      [["F_{AC}", "F_AC"], -1 * scale, 0, value.Fac, [10, 11], [13, 15, 16], [13]],
+      [["F_{BC}", "F_BC"], -0.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fbc, [10, 12], [13, 15, 16], []],
+      [["F_{BD}", "F_BD"], 0, Math.sqrt(3) * scale, value.Fbd, [10, 12], [14, 15, 16], [14]],
+      [["F_{CD}", "F_CD"], 0.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fcd, [10, 13], [14, 15, 16], []],
+      [["F_{CE}", "F_CE"], 1 * scale, 0, value.Fce, [10, 13], [15, 16], []],
+      [["F_{DE}", "F_DE"], 1.5 * scale, 0.5 * Math.sqrt(3) * scale, value.Fde, [10, 14], [15, 16], []]
     ]) {
-      lbl = b2.create(
-        "text",
-        [
-          p[1],
-          p[2],
-          () => {
-            if (forStates(p[4])()) return p[0][0];
-            else if (forStates(p[5])()) return "" + p[0][0] + " = " + String(Math.round(p[3]() * 100) / 100) + " kN";
-            else return "";
-          }
-        ],
-        {
-          anchorX: () => {
-            return "middle";
-          },
-          strokeColor: () => {
-            if (forStates([15])()) {
-              if (p[3]() < 0) return "purple";
-              else return "green";
-            } else return "black";
-          },
-          cssStyle: "background-color:#FFFFFF",
-          fontSize: 14,
-          fixed: true
-        }
-      );
-      this.labelsToUpdate.push(lbl);
+      this.labelsToUpdate[p[0][1]] = b2.create("text", [p[1], p[2], ""], {
+        anchorX: () => {
+          if (forStates(p[6])()) return "right";
+          else return "middle";
+        },
+        strokeColor: () => {
+          if (forStates([15])()) {
+            if (p[3]() < 0) return "purple";
+            else return "green";
+          } else return "black";
+        },
+        cssStyle: "background-color:" + bgColor,
+        fontSize: 14,
+        fixed: true
+      });
+      this.labelFormulas[p[0][1]] = () => {
+        if (forStates(p[4])()) return p[0][0];
+        else if (forStates(p[5])()) return "" + p[0][0] + " = " + String(Math.round(p[3]() * 100) / 100) + " kN";
+        else return "";
+      };
     }
-
+    // this.labelsToUpdate["F_BD"].setAttribute({});
     // large text at bottom
 
     this.infoText = {
@@ -609,11 +586,11 @@ export default {
         "",
         "",
         () => {
-          return '<span style="color:red">R_E = ' + String(Math.round((value.Re() * 100) / 100)) + " kN</span>";
+          return '<span style="color:red">R_E = ' + String(Math.round(value.Re() * 100) / 100) + " kN</span>";
         },
         "",
         () => {
-          return '<span style="color:red">R_{A,y} = ' + String(Math.round((value.Ray() * 100) / 100)) + " kN</span>";
+          return '<span style="color:red">R_{A,y} = ' + String(Math.round(value.Ray() * 100) / 100) + " kN</span>";
         },
         ""
       ].concat(new Array(10).fill("")),
@@ -669,7 +646,7 @@ export default {
       ])
     };
 
-    const infoProperties = { fontSize: 14, fixed: true, useMathJax: false };
+    const infoProperties = { fontSize: 15, fixed: true, useMathJax: false };
 
     this.info.top = b2.create("text", [-6, -6, ""], {
       ...infoProperties,
@@ -708,22 +685,30 @@ export default {
   methods: {
     changeState(newState) {
       //console.log(newState);
-      this.info.top.setText(this.infoText.top[newState]);
-      this.info.middle.setText(this.infoText.middle[newState]);
-      this.info.bottom.setText(this.infoText.bottom[newState]);
-      this.info.q1.setText(this.infoText.q1[newState]);
-      this.info.q2.setText(this.infoText.q2[newState]);
-      this.info.q3.setText(this.infoText.q3[newState]);
-      this.info.q4.setText(this.infoText.q4[newState]);
+      for (const key of ["top", "middle", "bottom", "q1", "q2", "q3", "q4"]) {
+        this.info[key].setText("");
+        this.info[key].setText(this.infoText[key][newState]);
+      }
+      // this.info.top.setText(this.infoText.top[newState]);
+      // this.info.middle.setText(this.infoText.middle[newState]);
+      // this.info.bottom.setText(this.infoText.bottom[newState]);
+      // this.info.q1.setText(this.infoText.q1[newState]);
+      // this.info.q2.setText(this.infoText.q2[newState]);
+      // this.info.q3.setText(this.infoText.q3[newState]);
+      // this.info.q4.setText(this.infoText.q4[newState]);
 
-      const val1 = this.state == 0 || this.state == 2;
-      const val2 = this.state == 0;
+      // const val1 = this.state == 0 || this.state == 2;
+      // const val2 = this.state == 0;
 
       this.state = newState;
       this.b2.fullUpdate();
-      // for (const lbl of this.labelsToUpdate) {
-      //   lbl.updateSize();
-      // }
+      // console.log(this.infoText["middle"][newState]);
+      for (const lbl of Object.keys(this.labelsToUpdate)) {
+        this.labelsToUpdate[lbl].setText("");
+        this.labelsToUpdate[lbl].setText(this.labelFormulas[lbl]);
+      }
+
+      // console.log(window.getComputedStyle(document.getElementById("app"), null).getPropertyValue("background-color"));
 
       //console.log(this.infoText.bottom[newState]);
     }

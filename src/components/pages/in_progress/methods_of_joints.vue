@@ -7,97 +7,85 @@
       </div>
       <div class="col">
         <!-- Top two buttons -->
-        <div class="row align-items-center">
-          <div class="col">
-            <button
-              class="btn btn-primary mx-3"
-              :class="{
-                'btn-warning': index === 0
-              }"
-              @click="() => changeSelection(0)"
-            >
-              Loaded Truss
-            </button>
-          </div>
-          <div class="col">
-            <button
-              class="btn btn-primary mx-3"
-              :class="{
-                'btn-warning': index === 1
-              }"
-              @click="() => changeSelection(10)"
-            >
-              Balances at Joints
-            </button>
-          </div>
+        <div class="row">
+          <button
+            class="btn btn-primary mx-3"
+            :class="{
+              'btn-warning': index === 0
+            }"
+            @click="() => changeSelection(0)"
+          >
+            Loaded Truss
+          </button>
+          <button
+            class="btn btn-primary mx-3"
+            :class="{
+              'btn-warning': index === 1
+            }"
+            @click="() => changeSelection(10)"
+          >
+            Joint Equilibrium
+          </button>
         </div>
+
+        <br />
 
         <!-- Loaded Truss Buttons -->
         <div class="row align-items-center" v-if="index === 0">
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
-              Truss
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">
-              FBD
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">
-              &Sigma;M<sub>A</sub>=0
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">
-              &Sigma;F<sub>x</sub>=0
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">
-              &Sigma;F<sub>y</sub>=0
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 }" @click="() => changeSelection(5)">
-              Solved
-            </button>
-          </div>
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
+            Truss
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 1 }" @click="() => changeSelection(1)">
+            FBD
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 2 }" @click="() => changeSelection(2)">
+            &Sigma;M<sub>A</sub>=0
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">
+            &Sigma;F<sub>x</sub>=0
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 4 }" @click="() => changeSelection(4)">
+            &Sigma;F<sub>y</sub>=0
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 }" @click="() => changeSelection(5)">
+            Solved
+          </button>
         </div>
 
         <!-- Balances of Joints buttons -->
         <div class="row align-items-center" v-if="index === 1">
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 10 }" @click="() => changeSelection(10)">
-              Joints
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 11 }" @click="() => changeSelection(11)">
-              A
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 12 }" @click="() => changeSelection(12)">
-              B
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 13 }" @click="() => changeSelection(13)">
-              C
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 14 }" @click="() => changeSelection(14)">
-              D
-            </button>
-          </div>
-          <div class="col">
-            <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 15 }" @click="() => changeSelection(15)">
-              Solved
-            </button>
-          </div>
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 10 }" @click="() => changeSelection(10)">
+            Joints
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 11 }" @click="() => changeSelection(11)">
+            A
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 12 }" @click="() => changeSelection(12)">
+            B
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 13 }" @click="() => changeSelection(13)">
+            C
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 14 }" @click="() => changeSelection(14)">
+            D
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 15 }" @click="() => changeSelection(15)">
+            Member Forces
+          </button>
+
+          <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 16 }" @click="() => changeSelection(16)">
+            Joint Forces
+          </button>
         </div>
 
         <!-- The JSXGraph component -->

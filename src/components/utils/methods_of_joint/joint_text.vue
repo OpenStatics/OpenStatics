@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>
+    <div style="font-size: 16px">
       <p>
         To demonstrate the essence of method of joint, this modules solves a truss problem using the method of joint. Try to solve this problem first
         by using the default settings, then check your process and answers with this module.

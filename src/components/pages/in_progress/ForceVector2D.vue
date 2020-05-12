@@ -1,13 +1,13 @@
 <template>
   <div class="container-fluid">
     <h1 class="text-danger text-center my-4">Force Vector Representation in 2D</h1>
-    <h5 class="text-center mt-4">Creator: Zichao Hu, 2020-05-03</h5>
-    <h5 class="text-center mb-4">Creator: Zhelong He, Marek-Jerzy Pindera University of Virginia, 2017-07-27</h5>
+    <h5 class="text-center mb-4">Creator: Zichao Hu, Zhelong He, Marek-Jerzy Pindera</h5>
+    <h5 class="text-center mb-4">University of Virginia, 2020-05-03</h5>
 
     <ForceText></ForceText>
     <div class="row my-3">
       <div class="col-xl-6 border">
-        <table class="table table-borderless">
+        <table class="table table-borderless table-sm">
           <tbody>
             <tr>
               <td>F Visibility:</td>
@@ -30,13 +30,13 @@
                 <input type="radio" class="mx-3" name="Project_F_y" checked @click="ToggleVisibility(5)" />off
               </td>
             </tr>
-            <tr>
+            <!-- <tr>
               <td>Resolution of F into components:</td>
               <td>
                 <input type="radio" class="mx-3" name="Resolution_F" @click="ToggleVisibility(6)" />on
                 <input type="radio" class="mx-3" name="Resolution_F" checked @click="ToggleVisibility(7)" />off
               </td>
-            </tr>
+            </tr> -->
             <tr>
               <td>u Visibility:</td>
               <td>
@@ -58,13 +58,13 @@
                 <input type="radio" class="mx-3" name="Project_u_y" checked @click="ToggleVisibility(13)" />off
               </td>
             </tr>
-            <tr>
+            <!-- <tr>
               <td>Projection of u into components:</td>
               <td>
                 <input type="radio" class="mx-3" name="Project_u_comp" @click="ToggleVisibility(14)" />on
                 <input type="radio" class="mx-3" name="Project_u_comp" checked @click="ToggleVisibility(15)" />off
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
         <div class="d-flex justify-content-center">
@@ -543,6 +543,42 @@ export default {
       {
         visible: () => {
           return comp_visible([2, 3, 6, 7]);
+        },
+        fontSize,
+        strokeColor: "red"
+      }
+    );
+    this.board.create(
+      "text",
+      [
+        -10,
+        8,
+        () => {
+          const value = parseFloat(Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier).toFixed(fixedDecimal);
+          return "F_x: " + value + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return comp_visible([1]);
+        },
+        fontSize,
+        strokeColor: "orange"
+      }
+    );
+    this.board.create(
+      "text",
+      [
+        -10,
+        6,
+        () => {
+          const value = parseFloat(Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier).toFixed(fixedDecimal);
+          return "F_y: " + value + "N";
+        }
+      ],
+      {
+        visible: () => {
+          return comp_visible([2]);
         },
         fontSize,
         strokeColor: "red"

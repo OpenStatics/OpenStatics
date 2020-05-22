@@ -59,7 +59,15 @@ export default {
         [0, -9],
         [1, 1, 2]
       ],
-      { name: "Load F (N)", label: { fontSize: 15 } }
+      {
+        name: "Load F (N)",
+        withTicks: false,
+        strokeColor: "blue",
+        fillColor: "white",
+        label: { color: "black", fontSize: 15 },
+        highline: { color: "blue" },
+        baseline: { color: "blue" }
+      }
     );
     const angle = b2.create(
       "slider",
@@ -68,7 +76,15 @@ export default {
         [0, -10],
         [0, 90, 180]
       ],
-      { name: "Angle \u03a6 (\u00B0)", label: { fontSize: 15 } }
+      {
+        name: "Angle \u03a6 (\u00B0)",
+        withTicks: false,
+        strokeColor: "blue",
+        fillColor: "white",
+        label: { color: "black", fontSize: 15 },
+        highline: { color: "blue" },
+        baseline: { color: "blue" }
+      }
     );
 
     // Input boxes for the sliders
@@ -430,8 +446,26 @@ export default {
       dash: 1
     });
 
+    for (const info of [
+      [point_c, point_a, point_b, 11],
+      [point_c, point_b, point_d, 12],
+      [point_e, point_c, point_d, 13],
+      [point_b, point_d, point_c, 14]
+    ]) {
+      b2.create("angle", [info[0], info[1], info[2]], {
+        orthoType: "sector",
+        radius: vectorScale * 0.5,
+        name: "\u03b8=60",
+        visible: forStates([info[3]]),
+        label: { fontSize: 14, strokeColor: "black" },
+        strokeColor: "black",
+        fillColor: bgColor,
+        dash: 1
+      });
+    }
+
     // joint vector lines
-    const jointScale = 0.425;
+    const jointScale = 0.3;
 
     for (const line of [
       [point_a, scale * (-2 + jointScale), scale * jointScale * Math.sqrt(3), 11, value.Fab],
@@ -545,7 +579,7 @@ export default {
           else return "middle";
         },
         strokeColor: () => {
-          if (forStates([15])()) {
+          if (forStates([15, 16])()) {
             if (p[3]() < 0) return "purple";
             else return "green";
           } else return "black";
@@ -617,13 +651,13 @@ export default {
       q3: new Array(10).fill("").concat([
         "",
         () => {
-          return "F_{AB} = " + String(Math.round((value.Fab() * 100) / 100)) + " kN";
+          return "F_{AB} = " + String(Math.round(value.Fab() * 100) / 100) + " kN";
         },
         () => {
-          return "F_{BC} = " + String(Math.round((value.Fbc() * 100) / 100)) + " kN";
+          return "F_{BC} = " + String(Math.round(value.Fbc() * 100) / 100) + " kN";
         },
         () => {
-          return "F_{CD} = " + String(Math.round((value.Fcd() * 100) / 100)) + " kN";
+          return "F_{CD} = " + String(Math.round(value.Fcd() * 100) / 100) + " kN";
         },
         "",
         ""
@@ -631,16 +665,16 @@ export default {
       q4: new Array(10).fill("").concat([
         "",
         () => {
-          return "F_{AC} = " + String(Math.round((value.Fac() * 100) / 100)) + " kN";
+          return "F_{AC} = " + String(Math.round(value.Fac() * 100) / 100) + " kN";
         },
         () => {
-          return "F_{BD} = " + String(Math.round((value.Fbd() * 100) / 100)) + " kN";
+          return "F_{BD} = " + String(Math.round(value.Fbd() * 100) / 100) + " kN";
         },
         () => {
-          return "F_{CE} = " + String(Math.round((value.Fce() * 100) / 100)) + " kN";
+          return "F_{CE} = " + String(Math.round(value.Fce() * 100) / 100) + " kN";
         },
         () => {
-          return "F_{DE} = " + String(Math.round((value.Fde() * 100) / 100)) + " kN";
+          return "F_{DE} = " + String(Math.round(value.Fde() * 100) / 100) + " kN";
         },
         ""
       ])

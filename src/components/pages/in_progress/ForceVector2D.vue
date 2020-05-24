@@ -73,8 +73,16 @@
             </tr>
           </tbody>
         </table>
-        <div class="d-flex justify-content-center">
-          <div id="control" style="width:400px; height:200px;"></div>
+
+        <div class="d-flex justify-content-center row">
+          <div id="control" class="col" style="width:400px; height:200px;"></div>
+          <div class="col">
+            <h5>Analysis</h5>
+            <div v-if="visible_components[1]">F<sub>x</sub>: {{ parseFloat(this.findXVal().toFixed(2)) }} N</div>
+            <div v-if="visible_components[1]">{{ "&alpha;: " + parseFloat(this.angle.Value().toFixed(2)) + "\u00B0" }}</div>
+            <div v-if="visible_components[2]">F<sub>y</sub>: {{ parseFloat(this.findYVal().toFixed(2)) }} N</div>
+            <div v-if="visible_components[2]">{{ "&beta;: " + parseFloat((90 - this.angle.Value()).toFixed(2)) + "\u00B0" }}</div>
+          </div>
         </div>
       </div>
       <div class="col-xl-6 d-flex justify-content-center">
@@ -225,7 +233,6 @@ export default {
     const right_border_point = this.board.create("point", [15, 0], { fixed, visible: false });
     const top_border_point = this.board.create("point", [0, 15], { fixed, visible: false });
     const bottom_border_point = this.board.create("point", [0, -15], { fixed, visible: false });
-
 
     // create two points for reference
     const origin_point = this.board.create("point", [0, 0], { fixed, visible: false });
@@ -445,80 +452,6 @@ export default {
         return comp_visible([7]);
       }
     });
-
-    // Text
-    this.board.create(
-      "text",
-      [
-        -10,
-        12,
-        () => {
-          const value = parseFloat(angle.Value().toFixed(fixedDecimal));
-          return "&alpha;: " + value + "\u00B0";
-        }
-      ],
-      {
-        visible: () => {
-          return comp_visible([1, 3, 5, 7]);
-        },
-        fontSize,
-        strokeColor: "orange"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -10,
-        10,
-        () => {
-          const value = parseFloat((90 - angle.Value()).toFixed(fixedDecimal));
-          return "&beta;: " + value + "\u00B0";
-        }
-      ],
-      {
-        visible: () => {
-          return comp_visible([2, 3, 6, 7]);
-        },
-        fontSize,
-        strokeColor: "red"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -10,
-        8,
-        () => {
-          const value = parseFloat(Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier).toFixed(fixedDecimal);
-          return "F_x: " + value + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return comp_visible([1]);
-        },
-        fontSize,
-        strokeColor: "orange"
-      }
-    );
-    this.board.create(
-      "text",
-      [
-        -10,
-        6,
-        () => {
-          const value = parseFloat(Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier).toFixed(fixedDecimal);
-          return "F_y: " + value + "N";
-        }
-      ],
-      {
-        visible: () => {
-          return comp_visible([2]);
-        },
-        fontSize,
-        strokeColor: "red"
-      }
-    );
   },
   methods: {
     findXVal(isUnitVec = false) {

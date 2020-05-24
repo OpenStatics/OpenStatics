@@ -61,14 +61,14 @@
                 <input type="radio" class="mx-3" name="Project_u_y" checked @click="ToggleVisibility(13)" />off
               </td>
             </tr>
-            <tr>
+            <tr v-show="visible_components[7]">
               <td>Scale u</td>
               <td>
-                <button class="btn" @click="y_animation">
-                  <i v-if="!y_animeOn" class="fas fa-play"></i>
-                  <i v-if="y_animeOn" class="fas fa-pause"></i>
+                <button class="btn" @click="u_animation">
+                  <i v-if="!u_animeOn" class="fas fa-play"></i>
+                  <i v-if="u_animeOn" class="fas fa-pause"></i>
                 </button>
-                <button class="btn" @click="y_animation"><i class="fas fa-redo"> </i></button>
+                <button class="btn" @click="u_reset"><i class="fas fa-redo"> </i></button>
               </td>
             </tr>
           </tbody>
@@ -99,7 +99,9 @@ export default {
       multiplier: 5,
       visible_components: [true, false, false, false, false, false, false, false],
       y_trans: 0,
-      y_animeOn: false
+      y_animeOn: false,
+      u_trans: 1,
+      u_animeOn: false
     };
   },
   mounted() {
@@ -123,7 +125,7 @@ export default {
     };
 
     // create board board
-    this.board = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
+    this.board = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false,
@@ -224,18 +226,6 @@ export default {
     const top_border_point = this.board.create("point", [0, 15], { fixed, visible: false });
     const bottom_border_point = this.board.create("point", [0, -15], { fixed, visible: false });
 
-    const x_axis = this.board.create("line", [left_border_point, right_border_point], {
-      strokeWidth,
-      lastArrow: true,
-      firstArrow: true,
-      strokeColor: "black"
-    });
-    const y_axis = this.board.create("line", [bottom_border_point, top_border_point], {
-      strokeWidth,
-      lastArrow: true,
-      firstArrow: true,
-      strokeColor: "black"
-    });
 
     // create two points for reference
     const origin_point = this.board.create("point", [0, 0], { fixed, visible: false });
@@ -261,7 +251,7 @@ export default {
       withLabel: false,
       strokeWidth,
       visible: () => {
-        return comp_visible([1, 5, 7]);
+        return comp_visible([1]);
       }
     });
 
@@ -273,7 +263,7 @@ export default {
       withLabel: false,
       strokeWidth,
       visible: () => {
-        return angle.Value() < 90 && comp_visible([2, 6, 7]);
+        return angle.Value() < 90 && comp_visible([2]);
       }
     });
     const angle_y_over_90 = this.board.create("angle", [top_border_point, origin_point, end_point], {
@@ -284,7 +274,7 @@ export default {
       withLabel: false,
       strokeWidth,
       visible: () => {
-        return angle.Value() >= 90 && comp_visible([2, 6, 7]);
+        return angle.Value() >= 90 && comp_visible([2]);
       }
     });
 
@@ -380,7 +370,7 @@ export default {
         dash,
         strokeWidth: 5,
         visible: () => {
-          return comp_visible([5, 7]);
+          return comp_visible([5]);
         }
       }
     );
@@ -405,10 +395,56 @@ export default {
         dash,
         strokeWidth: 5,
         visible: () => {
-          return comp_visible([6, 7]);
+          return comp_visible([6]);
         }
       }
     );
+
+    // u anime
+    const u_translation = this.board.create(
+      "transform",
+      [
+        () => {
+          return this.u_trans;
+        },
+        () => {
+          return this.u_trans;
+        }
+      ],
+      { type: "scale" }
+    );
+    const u_line_scale = this.board.create("line", [u_line, u_translation], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      strokeWidth: 5,
+      strokeColor: "red",
+      visible: () => {
+        return comp_visible([7]);
+      }
+    });
+    const u_x_scale = this.board.create("line", [proj_u_on_x, u_translation], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      dash,
+      strokeWidth: 5,
+      strokeColor: "red",
+      visible: () => {
+        return comp_visible([7]);
+      }
+    });
+    const u_y_scale = this.board.create("line", [proj_u_on_y, u_translation], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      dash,
+      strokeWidth: 5,
+      strokeColor: "red",
+      visible: () => {
+        return comp_visible([7]);
+      }
+    });
 
     // Text
     this.board.create(
@@ -508,19 +544,24 @@ export default {
         this.$set(this.visible_components, 3, false);
         this.y_reset();
       }
+
+      if (this.visible_components[4] && this.visible_components[5] && this.visible_components[6]) {
+        this.$set(this.visible_components, 7, true);
+      } else {
+        this.$set(this.visible_components, 7, false);
+        this.u_reset();
+      }
       this.board.fullUpdate();
     },
     async y_animation() {
       // only on once
       if (this.y_animeOn) {
         this.y_animeOn = false;
-        console.log("ok");
         return;
       }
 
       this.y_animeOn = true;
 
-      this.visible_components[3] = true;
       this.y_trans = 0;
 
       while (this.y_trans < 0.99 && this.y_animeOn) {
@@ -540,6 +581,35 @@ export default {
       this.y_animeOn = false;
       await this.sleep(50);
       this.y_trans = 0;
+      this.board.fullUpdate();
+    },
+    async u_animation() {
+      // only on once
+      if (this.u_animeOn) {
+        this.u_animeOn = false;
+        return;
+      }
+      this.u_animeOn = true;
+
+      this.u_trans = 1;
+
+      while (this.u_trans < this.force.Value() && this.u_animeOn) {
+        this.u_trans += 0.05;
+        this.board.fullUpdate();
+        await this.sleep(100);
+      }
+      if (!this.u_animeOn) {
+        return;
+      }
+
+      this.u_trans = this.force.Value();
+      this.board.fullUpdate();
+      this.u_animeOn = false;
+    },
+    async u_reset() {
+      this.u_animeOn = false;
+      await this.sleep(50);
+      this.u_trans = 1;
       this.board.fullUpdate();
     },
     sleep(ms) {

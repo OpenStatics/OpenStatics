@@ -30,13 +30,16 @@
                 <input type="radio" class="mx-3" name="Project_F_y" checked @click="ToggleVisibility(5)" />off
               </td>
             </tr>
-            <!-- <tr>
-              <td>Resolution of F into components:</td>
+            <tr>
+              <td>Add Force Components</td>
               <td>
-                <input type="radio" class="mx-3" name="Resolution_F" @click="ToggleVisibility(6)" />on
-                <input type="radio" class="mx-3" name="Resolution_F" checked @click="ToggleVisibility(7)" />off
+                <button class="btn" @click="y_animation">
+                  <i v-if="!y_animeOn" class="fas fa-play"></i>
+                  <i v-if="y_animeOn" class="fas fa-pause"></i>
+                </button>
+                <button class="btn" @click="y_animation"><i class="fas fa-redo"> </i></button>
               </td>
-            </tr> -->
+            </tr>
             <tr>
               <td>u Visibility:</td>
               <td>
@@ -58,13 +61,16 @@
                 <input type="radio" class="mx-3" name="Project_u_y" checked @click="ToggleVisibility(13)" />off
               </td>
             </tr>
-            <!-- <tr>
-              <td>Projection of u into components:</td>
+            <tr>
+              <td>Scale u</td>
               <td>
-                <input type="radio" class="mx-3" name="Project_u_comp" @click="ToggleVisibility(14)" />on
-                <input type="radio" class="mx-3" name="Project_u_comp" checked @click="ToggleVisibility(15)" />off
+                <button class="btn" @click="y_animation">
+                  <i v-if="!y_animeOn" class="fas fa-play"></i>
+                  <i v-if="y_animeOn" class="fas fa-pause"></i>
+                </button>
+                <button class="btn" @click="y_animation"><i class="fas fa-redo"> </i></button>
               </td>
-            </tr> -->
+            </tr>
           </tbody>
         </table>
         <div class="d-flex justify-content-center">
@@ -88,7 +94,12 @@ export default {
     // visibile_components: [Proj_F_x, Proj_F_y, Resolut_F_comp, u_Visibility, Proj_u_x, Proj_u_y, Proj_u_comp]
     return {
       board: undefined,
-      visible_components: [true, false, false, false, false, false, false, false]
+      angle: undefined,
+      force: undefined,
+      multiplier: 5,
+      visible_components: [true, false, false, false, false, false, false, false],
+      y_trans: 0,
+      y_animeOn: false
     };
   },
   mounted() {
@@ -204,6 +215,9 @@ export default {
       { fontSize: inputFont }
     );
 
+    this.angle = angle;
+    this.force = force;
+
     // create border
     const left_border_point = this.board.create("point", [-15, 0], { fixed, visible: false });
     const right_border_point = this.board.create("point", [15, 0], { fixed, visible: false });
@@ -225,18 +239,7 @@ export default {
 
     // create two points for reference
     const origin_point = this.board.create("point", [0, 0], { fixed, visible: false });
-    const end_point = this.board.create(
-      "point",
-      [
-        function() {
-          return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-        },
-        function() {
-          return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-        }
-      ],
-      { fixed, visible: false }
-    );
+    const end_point = this.board.create("point", [this.findXVal, this.findYVal], { fixed, visible: false });
 
     // create the main vector
     const vector = this.board.create("line", [origin_point, end_point], {
@@ -256,11 +259,9 @@ export default {
       },
       orthoType: "sector",
       withLabel: false,
-      fillOpacity: 0,
-      strokeColor: "orange",
       strokeWidth,
       visible: () => {
-        return comp_visible([1, 3, 5, 7]);
+        return comp_visible([1, 5, 7]);
       }
     });
 
@@ -270,11 +271,9 @@ export default {
       },
       orthoType: "sector",
       withLabel: false,
-      fillOpacity: 0,
-      strokeColor: "red",
       strokeWidth,
       visible: () => {
-        return angle.Value() < 90 && comp_visible([2, 3, 6, 7]);
+        return angle.Value() < 90 && comp_visible([2, 6, 7]);
       }
     });
     const angle_y_over_90 = this.board.create("angle", [top_border_point, origin_point, end_point], {
@@ -283,121 +282,68 @@ export default {
       },
       orthoType: "sector",
       withLabel: false,
-      fillOpacity: 0,
-      strokeColor: "red",
       strokeWidth,
       visible: () => {
-        return angle.Value() >= 90 && comp_visible([2, 3, 6, 7]);
+        return angle.Value() >= 90 && comp_visible([2, 6, 7]);
       }
     });
 
     // projection of F on x
-    const proj_F_on_x = this.board.create(
-      "line",
-      [
-        origin_point,
-        [
-          function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-          },
-          0
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        strokeColor: "orange",
-        strokeWidth: () => {
-          if (comp_visible([3])) return 5;
-          else return 3;
-        },
-        visible: () => {
-          return comp_visible([1, 3]);
-        }
+    const proj_F_on_x = this.board.create("line", [origin_point, [this.findXVal, 0]], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      dash,
+      strokeWidth: 5,
+      visible: () => {
+        return comp_visible([1, 3]);
       }
-    );
-    const proj_F_on_x_dash = this.board.create(
-      "line",
-      [
-        [
-          function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-          },
-          0
-        ],
-        end_point
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        strokeColor: "orange",
-        strokeWidth,
-        dash,
-        visible: () => {
-          return comp_visible([1]);
-        }
-      }
-    );
+    });
 
     // Projection of F on y
-    const proj_F_on_y = this.board.create(
-      "line",
+    const proj_F_on_y = this.board.create("line", [origin_point, [0, this.findYVal]], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      dash,
+      strokeWidth: 5,
+      visible: () => {
+        return comp_visible([2]) && !comp_visible([3]);
+      }
+    });
+
+    // move y animation
+    const y_translation = this.board.create(
+      "transform",
       [
-        origin_point,
-        [
-          0,
-          function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-          }
-        ]
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        lastArrow: true,
-        strokeColor: "red",
-        strokeWidth: () => {
-          if (comp_visible([3])) return 5;
-          else return 3;
+        () => {
+          return this.y_trans * this.findXVal();
         },
-        visible: () => {
-          return comp_visible([2, 3]);
-        }
-      }
-    );
-    const proj_F_on_y_dash = this.board.create(
-      "line",
-      [
-        [
-          0,
-          function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * force.Value() * multiplier;
-          }
-        ],
-        end_point
+        0
       ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        strokeColor: "red",
-        strokeWidth,
-        dash,
-        visible: () => {
-          return comp_visible([2]);
-        }
-      }
+      { type: "translate" }
     );
+
+    const y_line_trans = this.board.create("line", [proj_F_on_y, y_translation], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      dash,
+      strokeWidth: 5,
+      visible: () => {
+        return comp_visible([3]);
+      }
+    });
 
     // u visibility
     const u_end_point = this.board.create(
       "point",
       [
-        function() {
-          return Math.cos((angle.Value() / 180) * Math.PI) * multiplier;
+        () => {
+          return this.findXVal(true);
         },
-        function() {
-          return Math.sin((angle.Value() / 180) * Math.PI) * multiplier;
+        () => {
+          return this.findYVal(true);
         }
       ],
       { fixed, visible: false }
@@ -407,8 +353,8 @@ export default {
       straightFirst: false,
       straightLast: false,
       lastArrow: true,
-      strokeWidth,
-      strokeColor: "green",
+      strokeWidth: 5,
+      strokeColor: "red",
       visible: () => {
         return comp_visible([4, 5, 6, 7]);
       }
@@ -430,40 +376,16 @@ export default {
         straightFirst: false,
         straightLast: false,
         lastArrow: true,
-        strokeColor: "orange",
-        strokeWidth: () => {
-          if (comp_visible([7])) return 5;
-          else return 3;
-        },
+        strokeColor: "red",
+        dash,
+        strokeWidth: 5,
         visible: () => {
           return comp_visible([5, 7]);
         }
       }
     );
-    const proj_u_on_x_dash = this.board.create(
-      "line",
-      [
-        [
-          function() {
-            return Math.cos((angle.Value() / 180) * Math.PI) * multiplier;
-          },
-          0
-        ],
-        u_end_point
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        strokeColor: "orange",
-        strokeWidth,
-        dash,
-        visible: () => {
-          return comp_visible([5]);
-        }
-      }
-    );
 
-    // Projection of F on y
+    // Projection of u on y
     const proj_u_on_y = this.board.create(
       "line",
       [
@@ -480,37 +402,14 @@ export default {
         straightLast: false,
         lastArrow: true,
         strokeColor: "red",
-        strokeWidth: () => {
-          if (comp_visible([7])) return 5;
-          else return 3;
-        },
+        dash,
+        strokeWidth: 5,
         visible: () => {
           return comp_visible([6, 7]);
         }
       }
     );
-    const proj_u_on_y_dash = this.board.create(
-      "line",
-      [
-        [
-          0,
-          function() {
-            return Math.sin((angle.Value() / 180) * Math.PI) * multiplier;
-          }
-        ],
-        u_end_point
-      ],
-      {
-        straightFirst: false,
-        straightLast: false,
-        strokeColor: "red",
-        strokeWidth,
-        dash,
-        visible: () => {
-          return comp_visible([6]);
-        }
-      }
-    );
+
     // Text
     this.board.create(
       "text",
@@ -586,6 +485,14 @@ export default {
     );
   },
   methods: {
+    findXVal(isUnitVec = false) {
+      if (isUnitVec) return Math.cos((this.angle.Value() / 180) * Math.PI) * this.multiplier;
+      return Math.cos((this.angle.Value() / 180) * Math.PI) * this.force.Value() * this.multiplier;
+    },
+    findYVal(isUnitVec = false) {
+      if (isUnitVec) return Math.sin((this.angle.Value() / 180) * Math.PI) * this.multiplier;
+      return Math.sin((this.angle.Value() / 180) * Math.PI) * this.force.Value() * this.multiplier;
+    },
     ToggleVisibility(index) {
       if (index % 2 === 0) {
         this.visible_components[Math.floor(index / 2)] = true;
@@ -593,6 +500,23 @@ export default {
         this.visible_components[Math.floor(index / 2)] = false;
       }
       this.board.fullUpdate();
+    },
+    async y_animation() {
+      this.y_animeOn = true;
+      this.visible_components[3] = true;
+      this.y_trans = 0;
+      while (this.y_trans < 0.99) {
+        this.y_trans += 0.1;
+        this.board.fullUpdate();
+        await this.sleep(100);
+      }
+      this.y_trans = 1;
+      this.visible_components[3] = false;
+      this.board.fullUpdate();
+      this.y_animeOn = false;
+    },
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
 };

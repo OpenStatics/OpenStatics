@@ -6,7 +6,7 @@
     between the vector and x-axis, <vue-mathjax formula="(\\\beta\\)" /> is the angle between the vector and y-axis. 
     Thus we have
     <vue-mathjax :formula="eq4" />
-    Where <vue-mathjax :formula="eq5" /> is the unite vector.
+    Where <vue-mathjax :formula="eq5" /> is the unit vector.
   </div>
 </template>
 

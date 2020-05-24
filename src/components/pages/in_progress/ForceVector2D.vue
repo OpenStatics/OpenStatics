@@ -30,14 +30,14 @@
                 <input type="radio" class="mx-3" name="Project_F_y" checked @click="ToggleVisibility(5)" />off
               </td>
             </tr>
-            <tr>
+            <tr v-show="visible_components[3]">
               <td>Add Force Components</td>
               <td>
                 <button class="btn" @click="y_animation">
                   <i v-if="!y_animeOn" class="fas fa-play"></i>
                   <i v-if="y_animeOn" class="fas fa-pause"></i>
                 </button>
-                <button class="btn" @click="y_animation"><i class="fas fa-redo"> </i></button>
+                <button class="btn" @click="y_reset"><i class="fas fa-redo"> </i></button>
               </td>
             </tr>
             <tr>
@@ -248,7 +248,7 @@ export default {
       lastArrow: true,
       strokeWidth,
       visible: () => {
-        return comp_visible([0, 1, 2, 3]);
+        return comp_visible([0]);
       }
     });
 
@@ -356,7 +356,7 @@ export default {
       strokeWidth: 5,
       strokeColor: "red",
       visible: () => {
-        return comp_visible([4, 5, 6, 7]);
+        return comp_visible([4]);
       }
     });
 
@@ -494,26 +494,53 @@ export default {
       return Math.sin((this.angle.Value() / 180) * Math.PI) * this.force.Value() * this.multiplier;
     },
     ToggleVisibility(index) {
+      const new_index = Math.floor(index / 2);
       if (index % 2 === 0) {
-        this.visible_components[Math.floor(index / 2)] = true;
+        this.$set(this.visible_components, new_index, true);
       } else {
-        this.visible_components[Math.floor(index / 2)] = false;
+        this.$set(this.visible_components, new_index, false);
+      }
+
+      // make y animation visible
+      if (this.visible_components[1] && this.visible_components[2]) {
+        this.$set(this.visible_components, 3, true);
+      } else {
+        this.$set(this.visible_components, 3, false);
+        this.y_reset();
       }
       this.board.fullUpdate();
     },
     async y_animation() {
+      // only on once
+      if (this.y_animeOn) {
+        this.y_animeOn = false;
+        console.log("ok");
+        return;
+      }
+
       this.y_animeOn = true;
+
       this.visible_components[3] = true;
       this.y_trans = 0;
-      while (this.y_trans < 0.99) {
-        this.y_trans += 0.1;
+
+      while (this.y_trans < 0.99 && this.y_animeOn) {
+        this.y_trans += 0.05;
         this.board.fullUpdate();
         await this.sleep(100);
       }
+      if (!this.y_animeOn) {
+        return;
+      }
+
       this.y_trans = 1;
-      this.visible_components[3] = false;
       this.board.fullUpdate();
       this.y_animeOn = false;
+    },
+    async y_reset() {
+      this.y_animeOn = false;
+      await this.sleep(50);
+      this.y_trans = 0;
+      this.board.fullUpdate();
     },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));

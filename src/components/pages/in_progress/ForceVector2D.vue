@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-danger text-center my-4">Force Vector Representation in 2D TEST</h1>
+    <h1 class="text-danger text-center my-4">Force Vector Representation in 2D</h1>
     <div class="row">
       <div id="ForceVec2D" class="jsx-graph col-xl mx-2"></div>
       <div class="col-xl mx-2">

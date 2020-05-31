@@ -134,7 +134,7 @@ export default {
   mounted() {}
 };
 export const meta = {
-  title: "methods of joint",
+  title: "Methods of joint",
   description: "joint",
   number: 21
 };

@@ -100,7 +100,7 @@ export default {
   }
 };
 export const meta = {
-  title: "methods of sections",
+  title: "Methods of sections",
   description: "",
   number: 22
 };

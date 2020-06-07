@@ -1,12 +1,9 @@
 <template>
   <div class="container">
     <div class="row">
-      <div class="col-auto">
-        <div id="boxLeft" class="boxLeft my-2" style="width:400px; height:600px;"></div>
-      </div>
-      <div class="col-auto">
-        <div id="boxRight" class="boxRight my-2" style="width:650px; height:600px;"></div>
-      </div>
+      <div id="boxLeft" class="boxLeft my-2" style="width:400px; height:600px;"></div>
+
+      <div id="boxRight" class="boxRight my-2" style="width:700px; height:600px;"></div>
     </div>
   </div>
 </template>
@@ -52,7 +49,7 @@ export default {
       showZoom: false,
       axis: false
     });
-    bR.resizeContainer(650, 600);
+    bR.resizeContainer(700, 600);
 
     let sliders = {};
     let points = {};
@@ -80,20 +77,25 @@ export default {
       sliders[data[0]] = bL.create("slider", [[-14, 12 + data[2]], [-4, 12 + data[2]], data[3]], {
         name: data[1],
         withTicks: false,
-        label: { fontSize: label_size }
+        strokeColor: "blue",
+        fillColor: "white",
+        highline: { color: "blue" },
+        baseline: { color: "blue" },
+        label: { color: "black", fontSize: label_size }
       });
       let textbox = bL.create("input", [-4, 12 + data[2] - 2.5, "", ""], { cssStyle: "width: 58px", fixed: true });
-      bL.create("button", [3, 12 + data[2] - 2.5, "Update", buttonClick(textbox, sliders[data[0]])], {});
+      bL.create("button", [1, 12 + data[2] - 2.5, "Update", buttonClick(textbox, sliders[data[0]])], {});
     }
 
     //    bL.fullUpdate();
-    const corner = { x: -14, y: 5 };
+    const corner = { x: -12, y: 3 };
     const pointProperties = { fixed: true, fillColor: "white", strokeColor: "black", size: 4 };
     const labelProperties = { strokeColor: "black" };
     // const offsetFactor = 11;
     // const centerOffset = [-offsetFactor * 0.3, 0];
     //console.log(sliders["width"].Value());
     const dVal = { topY: -0.15, middleY: -0.25, bottomY: -0.35, leftX: 3.15, middleX: 3.25, rightX: 3.35 };
+    const tVal = { height: 0.3, sideL: (2 * 0.3) / Math.sqrt(3) };
     for (let data of [
       // Normal points
       ["A", 0, 0, [0, 1]],
@@ -174,6 +176,27 @@ export default {
             return data[3].includes(this.state);
           }
         }
+      );
+    }
+
+    for (let data of [
+      // Triangle points
+      ["T_l_u", -tVal.height, tVal.sideL / 2, 0],
+      ["T_l_b", -tVal.height, -tVal.sideL / 2, 0],
+      ["T_t_u", -tVal.height, tVal.sideL / 2, 1],
+      ["T_t_b", -tVal.height, -tVal.sideL / 2, 1]
+    ]) {
+      points[data[0]] = bR.create(
+        "point",
+        [
+          () => {
+            return corner.x + data[1] * scale * sliders["width"].Value();
+          },
+          () => {
+            return corner.y + data[2] * scale * sliders["width"].Value() + data[3] * scale * 3;
+          }
+        ],
+        { ...pointProperties, name: data[0], visible: false }
       );
     }
 
@@ -272,6 +295,23 @@ export default {
         ],
         { anchor: points[data[0]], anchorX: data[1], anchorY: data[2], fontSize: 14 }
       );
+    }
+
+    for (let data of [
+      ["A", "T_l_u", "T_l_b"],
+      ["I", "T_t_u", "T_t_b"]
+    ]) {
+      bR.create("polygon", [points[data[0]], points[data[1]], points[data[2]]], {
+        fillColor: "green",
+        borders: {
+          strokeColor: "green",
+          strokeWidth: 2
+        },
+        fixed: true,
+        visible: () => {
+          return this.state == 0;
+        }
+      });
     }
 
     let values = {};
@@ -417,7 +457,7 @@ export default {
       };
     }
 
-    const graphOrigin = { x: -10, y: -10 };
+    const graphOrigin = { x: -12, y: -12 };
     const graphHeight = 10;
     const graphLength = 20;
     for (let data of [
@@ -466,6 +506,13 @@ export default {
       }
     });
 
+    bR.create("ticks", [lines.top, 0.5], {
+      includeBoundaries: true,
+      drawLabels: false,
+      drawZero: true,
+      scale: graphLength / 3
+    });
+
     bR.create("ticks", [lines.left, 500], {
       anchor: "middle",
       includeBoundaries: true,
@@ -479,6 +526,13 @@ export default {
         anchorY: "middle",
         offset: [-6, 0]
       }
+    });
+
+    bR.create("ticks", [lines.right, 500], {
+      includeBoundaries: true,
+      drawLabels: false,
+      drawZero: true,
+      scale: 1 / 400
     });
 
     const axisLabelProperties = { fontSize: 14, anchorX: "middle", anchorY: "middle" };
@@ -510,9 +564,9 @@ export default {
     };
 
     for (let data of [
-      ["F_HG", "F_{HG}", "skyBlue"],
-      ["F_BG", "F_{BG}", "orange"],
-      ["F_BC", "F_{BC}", "green"]
+      ["F_HG", "F_{HG}", "skyBlue", true],
+      ["F_BG", "F_{BG}", "orange", false],
+      ["F_BC", "F_{BC}", "green", true]
     ]) {
       let p1 = bR.create(
         "point",
@@ -538,7 +592,7 @@ export default {
         ],
         { visible: false }
       );
-      bR.create("line", [p1, p2], { straightFirst: false, straightLast: false, strokeColor: data[2] });
+      bR.create("line", [p1, p2], { straightFirst: false, straightLast: false, strokeColor: data[2], visible: data[3] });
       bR.create(
         "point",
         [
@@ -552,6 +606,23 @@ export default {
         { visible: true, name: data[1] }
       );
     }
+
+    bR.create(
+      "curve",
+      [
+        t => {
+          let x = t;
+          return graphOrigin.x + x * (graphLength / 3);
+        },
+        t => {
+          let y = calc.F_BG(t);
+          return graphOrigin.y + graphHeight / 2 + y / 400;
+        },
+        0,
+        3
+      ],
+      { strokeColor: "orange", visible: true, strokeWidth: 2 }
+    );
 
     bL.addChild(bR);
     bR.addChild(bL);

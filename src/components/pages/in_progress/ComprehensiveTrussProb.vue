@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <h1 class="text-danger text-center my-4">Comprehensive Truss Problem</h1>
-    <div class="row align-items-center">
+    <div class="row">
       <div class="col">
         <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 0 }" @click="() => changeSelection(0)">
           Truss
@@ -17,9 +17,7 @@
         <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 3 }" @click="() => changeSelection(3)">Cut 3</button>
       </div>
     </div>
-    <div class="row">
-      <compTruss ref="foo" />
-    </div>
+    <compTruss ref="foo" />
   </div>
 </template>
 

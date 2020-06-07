@@ -441,23 +441,24 @@ export default {
       radius: vectorScale * 0.5,
       name: "\u03a6",
       visible: forStates([0, 1, 2, 3, 4, 5, 13, 15, 16]),
-      strokeColor: "black",
+      strokeColor: "blue",
       fillColor: bgColor,
       dash: 1
     });
 
     for (const info of [
-      [point_c, point_a, point_b, 11],
-      [point_c, point_b, point_d, 12],
-      [point_e, point_c, point_d, 13],
-      [point_b, point_d, point_c, 14]
+      // [ref point 1, center point, ref point 2 (counter clockwise), state of visibility, offset]
+      [point_c, point_a, point_b, 11, [5, 15]],
+      [point_c, point_b, point_d, 12, [5, 5]],
+      [point_e, point_c, point_d, 13, [5, 195]],
+      [point_b, point_d, point_c, 14, [-30, 190]]
     ]) {
       b2.create("angle", [info[0], info[1], info[2]], {
         orthoType: "sector",
         radius: vectorScale * 0.5,
         name: "\u03b8=60",
         visible: forStates([info[3]]),
-        label: { fontSize: 14, strokeColor: "black" },
+        label: { fontSize: 14, strokeColor: "black", offset: info[4] },
         strokeColor: "black",
         fillColor: bgColor,
         dash: 1

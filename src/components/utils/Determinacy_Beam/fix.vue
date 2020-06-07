@@ -122,7 +122,6 @@ export default {
     // create board
     const board = JXG.JSXGraph.initBoard("fixFix", {
       boundingbox: [-15, 15, 15, -15],
-      axis: true,
       keepAspectRatio: true,
       showCopyright: false,
       showNavigation: false

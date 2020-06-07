@@ -133,7 +133,7 @@ export default {
     };
 
     // create board board
-    this.board = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
+    this.board = JXG.JSXGraph.initBoard("ForceVec2D", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: false });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false,
@@ -228,11 +228,27 @@ export default {
     this.angle = angle;
     this.force = force;
 
-    // create border
+    // create border points
     const left_border_point = this.board.create("point", [-15, 0], { fixed, visible: false });
     const right_border_point = this.board.create("point", [15, 0], { fixed, visible: false });
     const top_border_point = this.board.create("point", [0, 15], { fixed, visible: false });
     const bottom_border_point = this.board.create("point", [0, -15], { fixed, visible: false });
+
+    // x,y line
+    this.board.create("line", [left_border_point, right_border_point], {
+      fixed,
+      strokeWidth,
+      strokeColor: "black",
+      lastArrow: true,
+      firstArrow: true
+    });
+    this.board.create("line", [top_border_point, bottom_border_point], {
+      fixed,
+      strokeWidth,
+      strokeColor: "black",
+      lastArrow: true,
+      firstArrow: true
+    });
 
     // create two points for reference
     const origin_point = this.board.create("point", [0, 0], { fixed, visible: false });

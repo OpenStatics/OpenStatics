@@ -1,5 +1,5 @@
 <template>
-  <div style="margin:20px">
+  <div class='container-fluid'>
     <h1 class="text-danger text-center my-4">Vector Addition of Forces</h1>
     <VecAddText></VecAddText>
     <div class="row">

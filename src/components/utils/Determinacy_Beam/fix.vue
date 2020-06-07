@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class='container-fluid'>
     <!-- get rid of input/button to optimize -->
     <!-- needs to figure out the moment A value -->
     <!-- need to decide if the dummy value is good or not, and the direction cw and ccw -->
@@ -46,7 +46,7 @@
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
-    <div id="fixFix" class="text-center jsx-graph mx-2"></div>
+    <div id="fixFix" class="text-center jsx-graph mx-2 col-xl"></div>
   </div>
 </template>
 

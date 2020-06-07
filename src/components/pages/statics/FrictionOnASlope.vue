@@ -1,5 +1,5 @@
 <template>
-  <div style="margin:20px">
+  <div class='container-fluid'>
     <h1 class="text-danger text-center my-4">Friction on a slope</h1>
     <SlopeText></SlopeText>
     <div class="row">

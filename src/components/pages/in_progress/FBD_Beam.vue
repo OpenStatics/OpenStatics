@@ -5,12 +5,12 @@
     <div class="row my-3">
       <div class="col-xl-6">
         <div class="my-3">
-          <button class="btn btn-warning mx-3" @click="handleBeam(0)">Cantilever</button>
+          <button class="btn btn-primary mx-3" @click="handleBeam(0)">Cantilever</button>
           <button class="btn btn-primary mx-3" @click="handleBeam(1)">Simple Supported</button>
         </div>
         <div>
-          <button class="btn btn-warning mx-3">Force</button>
-          <button class="btn btn-primary mx-3">Moment</button>
+          <button class="btn btn-primary mx-3" @click="handleLoading(0)">Force</button>
+          <button class="btn btn-primary mx-3" @click="handleLoading(1)">Moment</button>
         </div>
         <div id="control" class="jsx-graph"></div>
       </div>
@@ -44,7 +44,9 @@ export default {
           roller_line: undefined,
           roller_comb: undefined
         }
-      ]
+      ],
+      isForce: true,
+      isCantilever: true
     };
   },
   mounted() {
@@ -177,142 +179,241 @@ export default {
     simple_supported.roller_line = this.board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
     simple_supported.roller_comb = this.board.create("comb", [roller_p2, roller_p1]);
     this.handleBeam(0);
-    
 
-    // //
-    // const F_0 = this.board.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return this.position.Value() * 10;
-    //     },
-    //     0
-    //   ],
-    //   { visible: false }
-    // );
-    // const F_1 = this.board.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 2 + F_0.X();
-    //     },
-    //     () => {
-    //       return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 2 + F_0.Y();
-    //     }
-    //   ],
-    //   {
-    //     visible: false
-    //   }
-    // );
-    // const forceLine = this.board.create("line", [F_0, F_1], { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 });
-    // const forceLineLabel = this.board.create("text", [1, 0, "F"], { anchor: forceLine });
+    // create force
+    const F_0 = this.board.create(
+      "point",
+      [
+        () => {
+          return this.position.Value() * 10 + x_shift;
+        },
+        y_shift
+      ],
+      { visible: false }
+    );
+    const F_1 = this.board.create(
+      "point",
+      [
+        () => {
+          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + F_0.X();
+        },
+        () => {
+          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 4 + F_0.Y();
+        }
+      ],
+      {
+        visible: false
+      }
+    );
+    const forceLine = this.board.create("line", [F_0, F_1], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      strokeWidth: 3,
+      visible: () => {
+        return this.isForce === true;
+      }
+    });
+    const forceLineLabel = this.board.create("text", [1, 1, "F"], {
+      anchor: forceLine,
+      visible: () => {
+        return this.isForce === true;
+      }
+    });
 
-    // const MA_Curve = this.board.create(
-    //   "curve",
-    //   [
-    //     function(t) {
-    //       return -2 * Math.sin(t);
-    //     },
-    //     function(t) {
-    //       return -2 * Math.cos(t);
-    //     },
-    //     () => {
-    //       let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-    //       return ((val * 3) / 8 + 0.5) * Math.PI;
-    //     },
-    //     () => {
-    //       let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-    //       return ((val * 3) / 8 + 0.5) * Math.PI;
-    //     }
-    //   ],
-    //   {
-    //     strokeWidth: 3,
-    //     firstArrow: true
-    //   }
-    // );
+    // create moment
+    const F_Curve = this.board.create(
+      "curve",
+      [
+        function(t) {
+          return 2 * Math.sin(t) + F_0.X();
+        },
+        function(t) {
+          return 2 * Math.cos(t) + y_shift;
+        },
+        () => {
+          return ((-this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          return ((this.magnitude.Value() * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        lastArrow: true,
+        visible: () => {
+          return this.isForce === false;
+        }
+      }
+    );
+    const F_Curve_Label = this.board.create("text", [3, 0, "M"], {
+      anchor: F_0,
+      visible: () => {
+        return this.isForce === true;
+      }
+    });
 
-    // const MA_Text = this.board.create("text", [-3, 0.5, "M_A"]);
-    // const MA = this.board.create("text", [
-    //   -10,
-    //   -2,
-    //   () => {
-    //     let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-    //     if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //     return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kNm";
-    //   }
-    // ]);
+    // create MA curve from cant force
+    const MA_Curve = this.board.create(
+      "curve",
+      [
+        function(t) {
+          return -2 * Math.sin(t) + x_shift;
+        },
+        function(t) {
+          return -2 * Math.cos(t) + y_shift + y_react_shift;
+        },
+        () => {
+          let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        },
+        () => {
+          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          return ((val * 3) / 8 + 0.5) * Math.PI;
+        }
+      ],
+      {
+        strokeWidth: 3,
+        firstArrow: true,
+        strokeColor: "red",
+        visible: () => {
+          return react_visible() && this.isCantilever;
+        }
+      }
+    );
 
-    // const Ax_Line = this.board.create(
-    //   "line",
-    //   [
-    //     [
-    //       () => {
-    //         let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-    //         if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //         return -2 * Math.abs(val);
-    //       },
-    //       0
-    //     ],
-    //     [0, 0]
-    //   ],
-    //   {
-    //     straightFirst: false,
-    //     straightLast: false,
-    //     firstArrow: () => {
-    //       let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-    //       if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //       return val < 0;
-    //     },
-    //     lastArrow: () => {
-    //       let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-    //       if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //       return val > 0;
-    //     },
-    //     strokeWidth: 3
-    //   }
-    // );
+    const MA_Text = this.board.create("text", [-3, 0.5, "M_A"]);
+    const MA = this.board.create("text", [
+      -10,
+      -2,
+      () => {
+        let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kNm";
+      }
+    ]);
 
-    // const Ax_Line_Label = this.board.create("text", [-1, -0.5, "A_x"]);
+    // create ax line from cant force
+    const Ax_Line = this.board.create(
+      "line",
+      [
+        [
+          () => {
+            let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -2 * Math.abs(val) + x_shift;
+          },
+          y_shift + y_react_shift
+        ],
+        [x_shift, y_shift + y_react_shift]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: () => {
+          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return val < 0;
+        },
+        lastArrow: () => {
+          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return val > 0;
+        },
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: react_visible
+      }
+    );
 
-    // const Ax = this.board.create("text", [
-    //   -10,
-    //   -4,
-    //   () => {
-    //     let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-    //     if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //     return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-    //   }
-    // ]);
+    const Ax_Line_Label = this.board.create("text", [-1, -0.5, "A_x"]);
 
-    // const Ay_Line = this.board.create(
-    //   "line",
-    //   [
-    //     [1, -1],
-    //     [
-    //       1,
-    //       () => {
-    //         let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-    //         if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //         return -val - 1;
-    //       }
-    //     ]
-    //   ],
-    //   { straightFirst: false, straightLast: false, firstArrow: true, strokeWidth: 3 }
-    // );
+    const Ax = this.board.create("text", [
+      -10,
+      -4,
+      () => {
+        let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+      }
+    ]);
 
-    // const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
-    // const Ay = this.board.create("text", [
-    //   -10,
-    //   -6,
-    //   () => {
-    //     let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-    //     if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-    //     return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-    //   }
-    // ]);
+    // create ay line from cant force
+    const Ay_Line = this.board.create(
+      "line",
+      [
+        [1 + x_shift, -1 + y_shift + y_react_shift],
+        [
+          1 + x_shift,
+          () => {
+            let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -val - 1 + y_shift + y_react_shift;
+          }
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: react_visible
+      }
+    );
+
+    const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
+    const Ay = this.board.create("text", [
+      -10,
+      -6,
+      () => {
+        let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+      }
+    ]);
+
+    // create by line from ss force
+    const By_Line = this.board.create(
+      "line",
+      [
+        [9 + x_shift, -1 + y_shift + y_react_shift],
+        [
+          9 + x_shift,
+          () => {
+            let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+            return -2 * val - 1 + y_shift + y_react_shift;
+          }
+        ]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: () => {
+          return react_visible() && !this.isCantilever;
+        }
+      }
+    );
+
+    const By_Line_Label = this.board.create("text", [1, 0, "B_y"], { anchor: By_Line });
+    const By = this.board.create("text", [
+      -10,
+      -6,
+      () => {
+        let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+        return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+      }
+    ]);
   },
   methods: {
     handleBeam(toBeExcluded) {
+      this.isCantilever = toBeExcluded === 0 ? true : false;
+
       for (let i in this.beam_types) {
         if (Number(i) === toBeExcluded) {
           for (let j in this.beam_types[i]) {
@@ -324,6 +425,10 @@ export default {
           this.beam_types[i][j].setAttribute({ visible: false });
         }
       }
+    },
+    handleLoading(index) {
+      this.isForce = index == 0 ? true : false;
+      this.board.fullUpdate();
     }
   }
 };

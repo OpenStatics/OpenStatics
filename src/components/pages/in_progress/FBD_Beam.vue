@@ -3,14 +3,16 @@
     <h1 class="text-danger text-center my-4">Free Body Diagram of Beam</h1>
     <FBDtext></FBDtext>
     <div class="row my-3">
-      <div class="col-xl-6">
-        <div class="my-3">
-          <button class="btn btn-primary mx-3" @click="handleBeam(0)">Cantilever</button>
-          <button class="btn btn-primary mx-3" @click="handleBeam(1)">Simple Supported</button>
+      <div class="col-xl-6 container">
+        <div class="mt-3 row">
+          <div class="col">Types of Beam</div>
+          <div class="col"><input type="radio" class="mx-3" name="isCantilever" checked @click="handleBeam(0)" /> Cantilever</div>
+          <div class="col"><input type="radio" class="mx-3" name="isCantilever" @click="handleBeam(1)" /> Simple Supported</div>
         </div>
-        <div>
-          <button class="btn btn-primary mx-3" @click="handleLoading(0)">Force</button>
-          <button class="btn btn-primary mx-3" @click="handleLoading(1)">Moment</button>
+        <div class="mt-3 row">
+          <div class="col">Types of Loading</div>
+          <div class="col"><input type="radio" class="mx-3" name="isForce" checked @click="handleLoading(0)" /> Force</div>
+          <div class="col"><input type="radio" class="mx-3" name="isForce" @click="handleLoading(1)" /> Moment</div>
         </div>
         <div id="control" class="jsx-graph"></div>
       </div>
@@ -64,15 +66,14 @@ export default {
     };
 
     // create board
-    this.board = JXG.JSXGraph.initBoard("FBD_BEAM", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false, axis: true });
+    this.board = JXG.JSXGraph.initBoard("FBD_BEAM", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
     const board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 0],
       showCopyright: false,
       pan: { enabled: false },
       zoom: { enabled: false },
       showNavigation: false,
-      showZoom: false,
-      axis: true
+      showZoom: false
     });
     board_control.addChild(this.board);
 
@@ -80,14 +81,14 @@ export default {
     this.position = board_control.create(
       "slider",
       [
-        [2, 13],
-        [12, 13],
+        [5, 14],
+        [10, 14],
         [0, 0.5, 1]
       ],
       { withLabel: false }
     );
     board_control.create("text", [
-      3,
+      0,
       14,
       () => {
         const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
@@ -118,7 +119,7 @@ export default {
       [
         [2, 9],
         [12, 9],
-        [0, 90, 360]
+        [0, 90, 180]
       ],
       { withLabel: false }
     );
@@ -254,6 +255,17 @@ export default {
     });
 
     // create MA curve from cant force
+    const get_MA_Val = () => {
+      let val = 0;
+      if (this.isCantilever) {
+        if (this.isForce) {
+          val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = this.magnitude.Value();
+        }
+      }
+      return val;
+    };
     const MA_Curve = this.board.create(
       "curve",
       [
@@ -264,11 +276,11 @@ export default {
           return -2 * Math.cos(t) + y_shift + y_react_shift;
         },
         () => {
-          let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          let val = get_MA_Val();
           return ((val * 3) / 8 + 0.5) * Math.PI;
         },
         () => {
-          let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          let val = -get_MA_Val();
           return ((val * 3) / 8 + 0.5) * Math.PI;
         }
       ],
@@ -282,24 +294,36 @@ export default {
       }
     );
 
-    const MA_Text = this.board.create("text", [-3, 0.5, "M_A"]);
-    const MA = this.board.create("text", [
-      -10,
-      -2,
-      () => {
-        let val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kNm";
+    const MA_Text = this.board.create("text", [-3 + x_shift, 0.5 + y_shift + y_react_shift, "M_A"], {
+      visible: () => {
+        return react_visible() && this.isCantilever;
       }
-    ]);
+    });
 
     // create ax line from cant force
+    const get_Ax_Val = () => {
+      let val = 0;
+      if (this.isCantilever) {
+        if (this.isForce) {
+          val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = 0;
+        }
+      } else {
+        if (this.isForce) {
+          val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = 0;
+        }
+      }
+      return val;
+    };
     const Ax_Line = this.board.create(
       "line",
       [
         [
           () => {
-            let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
+            let val = get_Ax_Val();
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
             return -2 * Math.abs(val) + x_shift;
           },
@@ -326,19 +350,30 @@ export default {
       }
     );
 
-    const Ax_Line_Label = this.board.create("text", [-1, -0.5, "A_x"]);
-
-    const Ax = this.board.create("text", [
-      -10,
-      -4,
-      () => {
-        let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-      }
-    ]);
+    const Ax_Line_Label = this.board.create("text", [1, 0, "A_x"], {
+      anchor: Ax_Line,
+      visible: react_visible
+    });
 
     // create ay line from cant force
+    const get_Ay_Val = () => {
+      let val = 0;
+      if (this.isCantilever) {
+        if (this.isForce) {
+          val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = 0;
+        }
+      } else {
+        if (this.isForce) {
+          val = (1 - this.position.Value()) * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = -this.magnitude.Value();
+        }
+      }
+      return val;
+    };
+
     const Ay_Line = this.board.create(
       "line",
       [
@@ -346,7 +381,7 @@ export default {
         [
           1 + x_shift,
           () => {
-            let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            let val = get_Ay_Val();
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
             return -val - 1 + y_shift + y_react_shift;
           }
@@ -362,18 +397,20 @@ export default {
       }
     );
 
-    const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line });
-    const Ay = this.board.create("text", [
-      -10,
-      -6,
-      () => {
-        let val = this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
-      }
-    ]);
+    const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible });
 
     // create by line from ss force
+    const get_By_Val = () => {
+      let val = 0;
+      if (!this.isCantilever) {
+        if (this.isForce) {
+          val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+        } else {
+          val = this.magnitude.Value();
+        }
+      }
+      return val;
+    };
     const By_Line = this.board.create(
       "line",
       [
@@ -381,7 +418,7 @@ export default {
         [
           9 + x_shift,
           () => {
-            let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+            let val = get_By_Val();
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
             return -2 * val - 1 + y_shift + y_react_shift;
           }
@@ -399,16 +436,84 @@ export default {
       }
     );
 
-    const By_Line_Label = this.board.create("text", [1, 0, "B_y"], { anchor: By_Line });
-    const By = this.board.create("text", [
-      -10,
-      -6,
-      () => {
-        let val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
-        if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-        return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+    const By_Line_Label = this.board.create("text", [1, 0, "B_y"], {
+      anchor: By_Line,
+      visible: () => {
+        return react_visible() && !this.isCantilever;
       }
-    ]);
+    });
+
+    // text
+    const MA = this.board.create(
+      "text",
+      [
+        2,
+        14,
+        () => {
+          if (!this.isCantilever) return "";
+
+          let val = get_MA_Val();
+          if (this.isForce) {
+            val = -val;
+          }
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "M_A = " + parseFloat(val.toFixed(fixedDecimal)) + "kNm";
+        }
+      ],
+      {
+        visible: () => {
+          return react_visible() && this.isCantilever;
+        }
+      }
+    );
+
+    const Ax = this.board.create(
+      "text",
+      [
+        5,
+        14,
+        () => {
+          let val = get_Ax_Val();
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+        }
+      ],
+      { visible: react_visible }
+    );
+    const Ay = this.board.create(
+      "text",
+      [
+        8,
+        14,
+        () => {
+          let val = get_Ay_Val();
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+        }
+      ],
+      {
+        visible: react_visible
+      }
+    );
+    const By = this.board.create(
+      "text",
+      [
+        11,
+        14,
+        () => {
+          if (this.isCantilever) return "";
+
+          let val = get_By_Val();
+          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
+          return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
+        }
+      ],
+      {
+        visible: () => {
+          return react_visible() && !this.isCantilever;
+        }
+      }
+    );
   },
   methods: {
     handleBeam(toBeExcluded) {

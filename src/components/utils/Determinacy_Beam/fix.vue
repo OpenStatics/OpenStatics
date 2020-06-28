@@ -13,7 +13,7 @@
               <span>Constraints at the left end of beam</span> <br />
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection <= 3 }" @click="clickOnFixed">Fixed</button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 || currentSelection === 4 }" @click="clickOnPin">
-                Smooth pin
+                Smooth pin 
               </button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 6 }" @click="clickOnRoller">Roller</button>
             </div>

@@ -14,7 +14,7 @@
           <div class="col"><input type="radio" class="mx-3" name="isForce" checked @click="handleLoading(0)" /> Force</div>
           <div class="col"><input type="radio" class="mx-3" name="isForce" @click="handleLoading(1)" /> Moment</div>
         </div>
-        <div id="control" class="jsx-graph"></div>
+        <div id="control" class="" style="height:180px"></div>
       </div>
       <div id="FBD_BEAM" class="jsx-graph col-xl-6"></div>
     </div>
@@ -35,7 +35,8 @@ export default {
       magnitude: undefined,
       direction: undefined,
       board: undefined,
-      showReactive: false,
+      board_control: undefined,
+      showReactive: true,
       beam_types: [
         { fix_line: undefined, fix_comb: undefined },
         {
@@ -55,30 +56,33 @@ export default {
     // create style and global parameters
     const fixedDecimal = 3;
     const x_shift = -5;
-    const y_shift = 6;
-    const y_react_shift = -12;
+    const y_shift = 10;
+    const y_react_shift = -10;
     const moment_radius = 1.5;
-    const fontSize = 20;
+    const fontSize = 16;
     const strokeColor = "red";
+    const dash = 3;
 
     const react_visible = () => {
       return this.showReactive;
     };
 
+    const multiplier = 3;
+
     // create board
     this.board = JXG.JSXGraph.initBoard("FBD_BEAM", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
-    const board_control = JXG.JSXGraph.initBoard("control", {
-      boundingbox: [0, 15, 15, 0],
+    this.board_control = JXG.JSXGraph.initBoard("control", {
+      boundingbox: [0, 15, 15, 10],
       showCopyright: false,
       pan: { enabled: false },
       zoom: { enabled: false },
       showNavigation: false,
       showZoom: false
     });
-    board_control.addChild(this.board);
+    this.board_control.addChild(this.board);
 
     // create inputs
-    this.position = board_control.create(
+    this.position = this.board_control.create(
       "slider",
       [
         [5, 14],
@@ -87,54 +91,66 @@ export default {
       ],
       { withLabel: false }
     );
-    board_control.create("text", [
-      0,
-      14,
-      () => {
-        const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
-        return "Position of Loading (m):" + value;
-      }
-    ]);
+    this.board_control.create(
+      "text",
+      [
+        0,
+        14,
+        () => {
+          const value = parseFloat(this.position.Value().toFixed(fixedDecimal));
+          return "Position of Loading (m):" + value;
+        }
+      ],
+      { fontSize }
+    );
 
-    this.magnitude = board_control.create(
+    this.magnitude = this.board_control.create(
       "slider",
       [
-        [2, 11],
-        [12, 11],
+        [5, 13],
+        [10, 13],
         [0, 1, 2]
       ],
       { withLabel: false }
     );
-    board_control.create("text", [
-      3,
-      12,
-      () => {
-        const value = parseFloat(this.magnitude.Value().toFixed(fixedDecimal));
-        return "Magnitude of Loading [kN]:" + value;
-      }
-    ]);
+    this.board_control.create(
+      "text",
+      [
+        0,
+        13,
+        () => {
+          const value = parseFloat(this.magnitude.Value().toFixed(fixedDecimal));
+          return "Magnitude of Loading [kN]:" + value;
+        }
+      ],
+      { fontSize }
+    );
 
-    this.direction = board_control.create(
+    this.direction = this.board_control.create(
       "slider",
       [
-        [2, 9],
-        [12, 9],
+        [5, 12],
+        [10, 12],
         [0, 90, 180]
       ],
       { withLabel: false }
     );
-    board_control.create("text", [
-      3,
-      10,
-      () => {
-        const value = parseFloat(this.direction.Value().toFixed(fixedDecimal));
-        return "Direction of Force [degree]:" + value;
-      }
-    ]);
+    this.board_control.create(
+      "text",
+      [
+        0,
+        12,
+        () => {
+          const value = parseFloat(this.direction.Value().toFixed(fixedDecimal));
+          return "Direction of Force [degree]:" + value;
+        }
+      ],
+      { fontSize }
+    );
 
-    const showReactive = this.board.create("button", [
-      8,
-      4,
+    const showReactive = this.board_control.create("button", [
+      0,
+      11,
       "Show Reactive",
       () => {
         this.showReactive = this.showReactive ? false : true;
@@ -146,7 +162,7 @@ export default {
     const rec_b = this.board.create("point", [0 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_c = this.board.create("point", [10 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_d = this.board.create("point", [10 + x_shift, -1 + y_shift], { fixed: true, visible: false });
-    const rectangle = this.board.create("polygon", [rec_a, rec_b, rec_c, rec_d]);
+    const rectangle = this.board.create("polygon", [rec_a, rec_b, rec_c, rec_d], { strokeColor: "black" });
 
     // reactive force and moment base
     const react_trans = this.board.create("transform", [0, y_react_shift], { type: "translate" });
@@ -156,8 +172,8 @@ export default {
     const cantilever = this.beam_types[0];
     const fix_p1_left = this.board.create("point", [0 + x_shift, 1.5 + y_shift], { fixed: true, visible: false });
     const fix_p2_left = this.board.create("point", [0 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
-    cantilever.fix_line = this.board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false });
-    cantilever.fix_comb = this.board.create("comb", [fix_p2_left, fix_p1_left]);
+    cantilever.fix_line = this.board.create("line", [fix_p1_left, fix_p2_left], { straightFirst: false, straightLast: false, strokeColor: "black" });
+    cantilever.fix_comb = this.board.create("comb", [fix_p2_left, fix_p1_left], { strokeColor: "black" });
 
     const simple_supported = this.beam_types[1];
     const pin_p1_left = this.board.create("point", [-0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
@@ -166,20 +182,40 @@ export default {
     const pin_p4_left = this.board.create("point", [-1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     simple_supported.pin_circ = this.board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], {
       fillColor: "red",
-      fixed: true
+      fixed: true,
+      strokeColor: "black"
     });
     simple_supported.pin_body = this.board.create("polygon", [pin_p1_left, pin_p2_left, pin_p3_left, pin_p4_left], {
-      fillColor: "red"
+      fillColor: "red",
+      strokeColor: "black"
     });
     simple_supported.pin_comb = this.board.create("comb", [pin_p3_left, pin_p4_left]);
 
     // create base fixed on the right side
     const roller_p1 = this.board.create("point", [9.4 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
     const roller_p2 = this.board.create("point", [10.6 + x_shift, -1.6 + y_shift], { fixed: true, visible: false });
-    simple_supported.roller_circ = this.board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], { fillColor: "red", fixed: true });
-    simple_supported.roller_line = this.board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
+    simple_supported.roller_circ = this.board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], {
+      fillColor: "red",
+      fixed: true,
+      strokeColor: "#ffffff"
+    });
+    simple_supported.roller_line = this.board.create("line", [roller_p1, roller_p2], {
+      straightFirst: false,
+      straightLast: false,
+      strokeColor: "black"
+    });
     simple_supported.roller_comb = this.board.create("comb", [roller_p2, roller_p1]);
     this.handleBeam(0);
+
+    // create quator line
+    this.board.create(
+      "line",
+      [
+        [x_shift, y_shift],
+        [x_shift + 10, y_shift]
+      ],
+      { dash, straightFirst: false, straightLast: false }
+    );
 
     // create force
     const F_0 = this.board.create(
@@ -196,10 +232,10 @@ export default {
       "point",
       [
         () => {
-          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * 4 + F_0.X();
+          return this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI) * multiplier + F_0.X();
         },
         () => {
-          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * 4 + F_0.Y();
+          return this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI) * multiplier + F_0.Y();
         }
       ],
       {
@@ -250,7 +286,28 @@ export default {
     const F_Curve_Label = this.board.create("text", [3, 0, "M"], {
       anchor: F_0,
       visible: () => {
-        return this.isForce === true;
+        return this.isForce === false;
+      }
+    });
+
+    // reactive forces
+    // translating variables
+
+    const react_F_0 = this.board.create("line", [forceLine, react_trans], {
+      straightFirst: false,
+      straightLast: false,
+      firstArrow: true,
+      strokeWidth: 3,
+      visible: () => {
+        return react_visible() && this.isForce === true;
+      }
+    });
+    const react_Moment_0 = this.board.create("curve", [F_Curve, react_trans], {
+      strokeWidth: 3,
+      lastArrow: true,
+
+      visible: () => {
+        return react_visible() && this.isForce === false;
       }
     });
 
@@ -259,9 +316,9 @@ export default {
       let val = 0;
       if (this.isCantilever) {
         if (this.isForce) {
-          val = this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
+          val = -this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() / 180) * Math.PI);
         } else {
-          val = this.magnitude.Value();
+          val = -this.magnitude.Value();
         }
       }
       return val;
@@ -323,27 +380,18 @@ export default {
       [
         [
           () => {
-            let val = get_Ax_Val();
+            let val = get_Ax_Val() * multiplier;
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -2 * Math.abs(val) + x_shift;
+            return -Math.abs(val) + x_shift - 1;
           },
           y_shift + y_react_shift
         ],
-        [x_shift, y_shift + y_react_shift]
+        [-0.5 + x_shift, y_shift + y_react_shift]
       ],
       {
         straightFirst: false,
         straightLast: false,
-        firstArrow: () => {
-          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-          return val < 0;
-        },
-        lastArrow: () => {
-          let val = this.magnitude.Value() * Math.cos((this.direction.Value() / 180) * Math.PI);
-          if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-          return val > 0;
-        },
+        lastArrow: true,
         strokeWidth: 3,
         strokeColor: "red",
         visible: react_visible
@@ -377,13 +425,17 @@ export default {
     const Ay_Line = this.board.create(
       "line",
       [
-        [1 + x_shift, -1 + y_shift + y_react_shift],
+        [x_shift, -1.25 + y_shift + y_react_shift],
         [
-          1 + x_shift,
+          x_shift,
           () => {
-            let val = get_Ay_Val();
+            let val = get_Ay_Val() * multiplier;
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -val - 1 + y_shift + y_react_shift;
+            if (val > 0) {
+              return -val - 1.5 + y_shift + y_react_shift;
+            } else {
+              return val - 1.5 + y_shift + y_react_shift;
+            }
           }
         ]
       ],
@@ -414,13 +466,13 @@ export default {
     const By_Line = this.board.create(
       "line",
       [
-        [9 + x_shift, -1 + y_shift + y_react_shift],
+        [10 + x_shift, -1.25 + y_shift + y_react_shift],
         [
-          9 + x_shift,
+          10 + x_shift,
           () => {
-            let val = get_By_Val();
+            let val = get_By_Val() * multiplier;
             if (Math.abs(val) < Math.pow(10, -7)) val = 0;
-            return -2 * val - 1 + y_shift + y_react_shift;
+            return -val - 1.25 + y_shift + y_react_shift;
           }
         ]
       ],
@@ -444,11 +496,11 @@ export default {
     });
 
     // text
-    const MA = this.board.create(
+    const MA = this.board_control.create(
       "text",
       [
         2,
-        14,
+        11,
         () => {
           if (!this.isCantilever) return "";
 
@@ -463,28 +515,29 @@ export default {
       {
         visible: () => {
           return react_visible() && this.isCantilever;
-        }
+        },
+        fontSize
       }
     );
 
-    const Ax = this.board.create(
+    const Ax = this.board_control.create(
       "text",
       [
-        5,
-        14,
+        4,
+        11,
         () => {
           let val = get_Ax_Val();
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
           return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
         }
       ],
-      { visible: react_visible }
+      { visible: react_visible, fontSize }
     );
-    const Ay = this.board.create(
+    const Ay = this.board_control.create(
       "text",
       [
-        8,
-        14,
+        6,
+        11,
         () => {
           let val = get_Ay_Val();
           if (Math.abs(val) < Math.pow(10, -7)) val = 0;
@@ -492,14 +545,15 @@ export default {
         }
       ],
       {
-        visible: react_visible
+        visible: react_visible,
+        fontSize
       }
     );
-    const By = this.board.create(
+    const By = this.board_control.create(
       "text",
       [
+        8,
         11,
-        14,
         () => {
           if (this.isCantilever) return "";
 
@@ -511,9 +565,13 @@ export default {
       {
         visible: () => {
           return react_visible() && !this.isCantilever;
-        }
+        },
+        fontSize
       }
     );
+    this.showReactive = false;
+    this.board.fullUpdate();
+    this.board_control.fullUpdate();
   },
   methods: {
     handleBeam(toBeExcluded) {
@@ -530,10 +588,12 @@ export default {
           this.beam_types[i][j].setAttribute({ visible: false });
         }
       }
+      this.board_control.fullUpdate();
     },
     handleLoading(index) {
       this.isForce = index == 0 ? true : false;
       this.board.fullUpdate();
+      this.board_control.fullUpdate();
     }
   }
 };

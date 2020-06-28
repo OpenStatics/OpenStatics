@@ -39,6 +39,7 @@ export default {
         diagram_b: "on"
       },
       textToUpdate: {},
+      objectsToEnable: {},
       bL: undefined,
       bR: undefined
     };
@@ -104,27 +105,37 @@ export default {
     const TOP_Y = 12;
     const LEFT_X = -1;
     for (let data of [
-      // [key value, label name, y position, true: update button | false: on/off, [min, start, max] (if true) | [lbl1, val1, lbl2, val2] (if false), required state ]
-      ["beam_type", "Types of Beam", INTERVAL * 0, false, ["Cantilever", "C", "Simply-Supported", "S"], 1],
-      ["f_pos", "Position of force (m)", INTERVAL * 0.5, true, [0, 0.4, 1], 1, "blue"],
-      ["f_mag", "Magnitude of force (kN)", INTERVAL * 1.5, true, [0, 0.25, 0.5], 1, "blue"],
-      ["f_dir", "Direction of force (\u00B0)", INTERVAL * 2.5, true, [0, 120, 360], 1, "blue"],
-      ["m_pos", "Position of moment (m)", INTERVAL * 3.5, true, [0, 0.6, 1], 1, "green"],
-      ["m_mag", "Magnitude of moment (kN)", INTERVAL * 4.5, true, [0, 0.25, 0.5], 1, "green"],
-      ["m_dir", "Direction of moment", INTERVAL * 5.5, false, ["CCW", "CCW", "CW", "CW"], 1],
-      ["reactive", "Reactive Forces & Moment", INTERVAL * 6.5, false, ["On", "on", "Off", "off"], 1],
-      ["s_pos", "Position of section (m)", INTERVAL * 8, true, [0, 0.25, 1], 2, "black"],
-      ["i_force", "Internal Forces", INTERVAL * 9, false, ["On", "on", "Off", "off"], 2],
-      ["diagram_n", "Normal Force Diagram", INTERVAL * 10.5, false, ["On", "on", "Off", "off"], 3],
-      ["diagram_s", "Shear Force Diagram", INTERVAL * 11, false, ["On", "on", "Off", "off"], 3],
-      ["diagram_b", "Bending Moment Diagram", INTERVAL * 11.5, false, ["On", "on", "Off", "off"], 3]
+      /* [key value,
+          label name,
+          y position,
+          true: update button | false: on/off,
+          [min, start, max] (if true) | [lbl1, val1, lbl2, val2] (if false),
+          [allowed states],
+          color ]*/
+      ["beam_type", "Types of Beam", INTERVAL * 0, false, ["Cantilever", "C", "Simply-Supported", "S"], [1, 2, 3]],
+      ["f_pos", "Position of force (m)", INTERVAL * 0.5, true, [0, 0.4, 1], [1, 2, 3], "blue"],
+      ["f_mag", "Magnitude of force (kN)", INTERVAL * 1.5, true, [0, 0.25, 0.5], [1, 2, 3], "blue"],
+      ["f_dir", "Direction of force (\u00B0)", INTERVAL * 2.5, true, [0, 120, 360], [1, 2, 3], "blue"],
+      ["m_pos", "Position of moment (m)", INTERVAL * 3.5, true, [0, 0.6, 1], [1, 2, 3], "green"],
+      ["m_mag", "Magnitude of moment (kN)", INTERVAL * 4.5, true, [0, 0.25, 0.5], [1, 2, 3], "green"],
+      ["m_dir", "Direction of moment", INTERVAL * 5.5, false, ["CCW", "CCW", "CW", "CW"], [1, 2, 3]],
+      ["reactive", "Reactive Forces & Moment", INTERVAL * 6.5, false, ["On", "on", "Off", "off"], [1]],
+      ["s_pos", "Position of section (m)", INTERVAL * 8, true, [0, 0.25, 1], [2, 3], "black"],
+      ["i_force", "Internal Forces", INTERVAL * 9, false, ["On", "on", "Off", "off"], [2]],
+      ["diagram_n", "Normal Force Diagram", INTERVAL * 10.5, false, ["On", "on", "Off", "off"], [3]],
+      ["diagram_s", "Shear Force Diagram", INTERVAL * 11, false, ["On", "on", "Off", "off"], [3]],
+      ["diagram_b", "Bending Moment Diagram", INTERVAL * 11.5, false, ["On", "on", "Off", "off"], [3]]
     ]) {
       // console.log(() => {
       //   return this.state >= data[5];
       // });
       //console.log(data[5]);
 
-      bL.create("text", [-15, TOP_Y + data[2], data[1] + ":"], { fontSize: LABEL_SIZE, color: "black", fixed: true });
+      bL.create("text", [-15, TOP_Y + data[2], data[1] + ":"], {
+        fontSize: LABEL_SIZE,
+        color: "black",
+        fixed: true
+      });
 
       if (data[3]) {
         // True case
@@ -136,15 +147,23 @@ export default {
           fillColor: "white",
           highline: { color: data[6] },
           baseline: { color: data[6] },
-          label: { color: "black", fontSize: LABEL_SIZE },
-          snapWidth: 0.01
+          label: {
+            color: "black",
+            fontSize: LABEL_SIZE,
+            visible: () => {
+              return data[5].includes(this.state);
+            }
+          },
+          snapWidth: 0.01,
+          visible: () => {
+            return data[5].includes(this.state);
+          }
         });
         let textbox = bL.create("input", [LEFT_X, TOP_Y + data[2] - 1.5, "", ""], {
           cssStyle: "width: 58px",
           fixed: true
           //visible: false
         });
-
         let button = bL.create("button", [5, TOP_Y + data[2] - 1.5, "Update", buttonClick(textbox, sliders[data[0]])], { fixed: true });
 
         textbox.rendNodeInput.addEventListener("keyup", function(event) {
@@ -154,9 +173,26 @@ export default {
             button.rendNodeButton.click();
           }
         });
+
+        this.objectsToEnable[data[0] + "1"] = {
+          object: textbox,
+          component: "rendNodeInput",
+          formula: () => {
+            return !data[5].includes(this.state);
+          }
+        };
+        this.objectsToEnable[data[0] + "2"] = {
+          object: button,
+          component: "rendNodeButton",
+          formula: () => {
+            return !data[5].includes(this.state);
+          }
+        };
       } else {
         // False case
-        let p1 = bL.create(
+        this.objectsToEnable[data[0] + "1"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
+        this.objectsToEnable[data[0] + "2"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
+        this.objectsToEnable[data[0] + "1"].object = bL.create(
           "button",
           [
             LEFT_X,
@@ -168,10 +204,15 @@ export default {
               //console.log(this.values);
             }
           ],
-          { fixed: true }
+          {
+            fixed: true
+          }
         );
+        this.objectsToEnable[data[0] + "1"].formula = () => {
+          return !data[5].includes(this.state);
+        };
 
-        let p2 = bL.create(
+        this.objectsToEnable[data[0] + "2"].object = bL.create(
           "button",
           [
             5,
@@ -182,9 +223,17 @@ export default {
               this.fixTextAlignment();
             }
           ],
-          { fixed: true }
+          {
+            fixed: true,
+            disabled: () => {
+              return data[5].includes(this.state);
+            }
+          }
           //{ cssClass: "btn btn-primary", highlightCssStyle: "btn-primary" }
         );
+        this.objectsToEnable[data[0] + "2"].formula = () => {
+          return !data[5].includes(this.state);
+        };
         // for (let b of [but1, but2]) {
         //   b.rendNodeButton.setAttribute("class", "btn btn-primary");
         // }
@@ -278,7 +327,7 @@ export default {
     // Final values for Simply Supported (in terms of section position)
     comp.s_MA = ps => {
       return (
-        comp.cMm() * comp.UNIT(ps - sliders.m_pos.Value()) +
+        -comp.cMm() * comp.UNIT(ps - sliders.m_pos.Value()) +
         comp.sAy() * ps +
         comp.fy() * (ps - sliders.f_pos.Value()) * comp.UNIT(ps - sliders.f_pos.Value())
       );
@@ -327,7 +376,7 @@ export default {
             );
           }
         ],
-        { fontSize: LABEL_SIZE, fixed: true, visible: stateValCheck(data[4], data[5], data[6]) }
+        { fontSize: LABEL_SIZE, fixed: true, visible: stateValCheck(data[4], data[5], data[6]), anchorX: "left", anchorY: "top" }
       );
     }
 
@@ -348,8 +397,8 @@ export default {
       bending: {
         corner: { x: 4, y: -11 },
         size: { x: 11, y: 5 },
-        delta: { x: 0.2, y: 0.1 },
-        scale: { x: 1, y: 0.7 },
+        delta: { x: 0.2, y: 0.2 },
+        scale: { x: 1, y: 2 },
         anchor: { x: 0, y: 0.5 },
         axis: { x: "x (m)", y: "M (kN*m)" },
         title: "Bending Moment",
@@ -365,8 +414,8 @@ export default {
       shear: {
         corner: { x: 4, y: -3 },
         size: { x: 11, y: 5 },
-        delta: { x: 0.2, y: 0.1 },
-        scale: { x: 1, y: 0.7 },
+        delta: { x: 0.2, y: 0.2 },
+        scale: { x: 1, y: 2 },
         anchor: { x: 0, y: 0.5 },
         axis: { x: "x (m)", y: "V (kN)" },
         title: "Shear Force",
@@ -382,8 +431,8 @@ export default {
       normal: {
         corner: { x: 4, y: 5 },
         size: { x: 11, y: 5 },
-        delta: { x: 0.2, y: 0.1 },
-        scale: { x: 1, y: 0.7 },
+        delta: { x: 0.2, y: 0.2 },
+        scale: { x: 1, y: 2 },
         anchor: { x: 0, y: 0.5 },
         axis: { x: "x (m)", y: "N (kN)" },
         title: "Normal Force",
@@ -452,7 +501,8 @@ export default {
           offset: [0, -4],
           visible: g.visible
         },
-        visible: g.visible
+        visible: g.visible,
+        minorTicks: 3
       });
 
       bR.create("ticks", [g.lines.top, g.delta.x], {
@@ -462,7 +512,8 @@ export default {
         drawZero: true,
         fixed: true,
         scale: g.size.x / g.scale.x,
-        visible: g.visible
+        visible: g.visible,
+        minorTicks: 3
       });
 
       bR.create("ticks", [g.lines.left, g.delta.y], {
@@ -478,7 +529,8 @@ export default {
           offset: [-6, 0],
           visible: g.visible
         },
-        visible: g.visible
+        visible: g.visible,
+        minorTicks: 3
       });
 
       bR.create("ticks", [g.lines.right, g.delta.y], {
@@ -488,7 +540,8 @@ export default {
         drawZero: true,
         fixed: true,
         scale: g.size.y / g.scale.y,
-        visible: g.visible
+        visible: g.visible,
+        minorTicks: 3
       });
 
       if (g.outlines) {
@@ -505,10 +558,10 @@ export default {
           "line",
           [
             () => {
-              return convXY(sliders.s_pos.Value(), 0.35, g);
+              return convXY(sliders.s_pos.Value(), g.scale.y / 2, g);
             },
             () => {
-              return convXY(sliders.s_pos.Value(), -0.35, g);
+              return convXY(sliders.s_pos.Value(), -g.scale.y / 2, g);
             }
           ],
           {
@@ -536,7 +589,7 @@ export default {
             0,
             1
           ],
-          { strokeColor: g.color, visible: g.visible, strokeWidth: 2 }
+          { strokeColor: g.color, visible: g.visible, strokeWidth: 2, doAdvancedPlot: true, recursionDepthHigh: 13 }
         );
       }
 
@@ -583,7 +636,7 @@ export default {
     };
 
     this.textToUpdate.loadFBD = {
-      object: bR.create("text", [convX(0.5, graphs.large), convY(0.5, graphs.large), ""], {
+      object: bR.create("text", [convX(0.5, graphs.large), convY(0.6, graphs.large), ""], {
         fontSize: 18,
         anchorX: "middle",
         anchorY: "middle",
@@ -593,6 +646,20 @@ export default {
         if (this.state >= 1) {
           if (valCheck("reactive", "on")()) return "Free Body Diagram";
           else return "Load Diagram";
+        } else return "";
+      }
+    };
+    this.textToUpdate.warning = {
+      object: bR.create("text", [convX(0.5, graphs.large), convY(0.5, graphs.large), ""], {
+        fontSize: 14,
+        anchorX: "middle",
+        anchorY: "top",
+        fixed: true,
+        strokeColor: "red"
+      }),
+      formula: () => {
+        if (valCheck("beam_type", "S")() && comp.sBy() < 0) {
+          return "Warning: negative B_y value indicates rotation";
         } else return "";
       }
     };
@@ -623,7 +690,8 @@ export default {
       { name: "", size: 2, fixed: true, fillColor: "green", strokeWidth: 0, visible: stateCheck([1, 2, 3]) }
     );
 
-    lines.force = bR.create(
+    // Force line
+    bR.create(
       "line",
       [
         points.force,
@@ -637,7 +705,7 @@ export default {
               return convY(i_force_drop(sliders.f_pos) + sliders.f_mag.Value() * Math.sin(comp.alfa()), graphs.large);
             }
           ],
-          { ...hidden, name: "F", label: { visible: stateValCheck([1], "reactive", "off") } }
+          { ...hidden, name: "F", label: { visible: stateValCheck([1], "reactive", "off"), strokeColor: "blue" } }
         )
       ],
       {
@@ -650,7 +718,8 @@ export default {
       }
     );
 
-    lines.forceX = bR.create(
+    // ForceX Line
+    bR.create(
       "line",
       [
         points.force,
@@ -664,7 +733,7 @@ export default {
               return convY(i_force_drop(sliders.f_pos), graphs.large);
             }
           ],
-          { ...hidden, name: "F_x", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [-10, 20] } }
+          { ...hidden, name: "F_x", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [-10, 20], strokeColor: "blue" } }
         )
       ],
       {
@@ -677,7 +746,8 @@ export default {
       }
     );
 
-    lines.forceY = bR.create(
+    // ForceY line
+    bR.create(
       "line",
       [
         points.force,
@@ -691,7 +761,7 @@ export default {
               return convY(i_force_drop(sliders.f_pos) - comp.fy(), graphs.large);
             }
           ],
-          { ...hidden, name: "F_y", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [5, 5] } }
+          { ...hidden, name: "F_y", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [5, 5], strokeColor: "blue" } }
         )
       ],
       {
@@ -726,7 +796,7 @@ export default {
           return convY(valCheck("beam_type", "C")() ? 0 : -BOX_HEIGHT, graphs.large);
         }
       ],
-      { ...hidden, name: "A_x", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [-10, 20] } }
+      { ...hidden, name: "A_x", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [-10, 20], strokeColor: "red" } }
     );
 
     points.Ay = bR.create(
@@ -740,7 +810,7 @@ export default {
           //return convY(-1 * Math.abs(comp.cAy()) + (valCheck("beam_type", "C")() ? 0 : -BOX_HEIGHT), graphs.large);
         }
       ],
-      { ...hidden, name: "A_y", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [5, 5] } }
+      { ...hidden, name: "A_y", label: { visible: stateValCheck([1, 2, 3], "reactive", "on"), offset: [5, 5], strokeColor: "red" } }
     );
 
     points.By = bR.create(
@@ -748,7 +818,7 @@ export default {
       [
         convX(1, graphs.large),
         () => {
-          return convY(-1 * Math.abs(comp.sBy()) - BOX_HEIGHT, graphs.large);
+          return convY(-1 * Math.abs(comp.sBy()) - BOX_HEIGHT + i_force_drop(sliders.s_pos), graphs.large);
         }
       ],
       {
@@ -758,12 +828,14 @@ export default {
           visible: () => {
             return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "S")();
           },
-          offset: [5, 5]
+          offset: [5, 5],
+          strokeColor: "red"
         }
       }
     );
 
-    lines.Ax = bR.create("line", [points.reaction, points.Ax], {
+    // Ax line
+    bR.create("line", [points.reaction, points.Ax], {
       straightFirst: false,
       straightLast: false,
       fixed: true,
@@ -777,7 +849,8 @@ export default {
       visible: stateValCheck([1, 2, 3], "reactive", "on")
     });
 
-    lines.Ay = bR.create("line", [points.reaction, points.Ay], {
+    // Ay line
+    bR.create("line", [points.reaction, points.Ay], {
       straightFirst: false,
       straightLast: false,
       fixed: true,
@@ -791,7 +864,8 @@ export default {
       visible: stateValCheck([1, 2, 3], "reactive", "on")
     });
 
-    lines.By = bR.create(
+    // By line
+    bR.create(
       "line",
       [
         bR.create(
@@ -799,7 +873,7 @@ export default {
           [
             convX(1, graphs.large),
             () => {
-              return convY(-BOX_HEIGHT, graphs.large);
+              return convY(-BOX_HEIGHT + i_force_drop(sliders.s_pos), graphs.large);
             }
           ],
           { ...hidden }
@@ -827,20 +901,36 @@ export default {
     // 0.5 magnitude = from -pi/2 to pi/2
     const MOMENT_RADIUS = 0.125;
     bR.create(
-      "curve",
+      "arc",
       [
-        t => {
-          return convX(MOMENT_RADIUS * Math.cos(t) + sliders.m_pos.Value(), graphs.large);
-        },
-        t => {
-          return convY(MOMENT_RADIUS * Math.sin(t) + i_force_drop(sliders.m_pos), graphs.large);
-        },
-        () => {
-          return -sliders.m_mag.Value() * Math.PI;
-        },
-        () => {
-          return sliders.m_mag.Value() * Math.PI;
-        }
+        //Center point
+        points.moment,
+        // CW point
+        bR.create(
+          "point",
+          [
+            () => {
+              return convX(MOMENT_RADIUS * Math.cos(-1 * sliders.m_mag.Value() * Math.PI) + sliders.m_pos.Value(), graphs.large);
+            },
+            () => {
+              return convY(MOMENT_RADIUS * Math.sin(-1 * sliders.m_mag.Value() * Math.PI) + i_force_drop(sliders.m_pos), graphs.large);
+            }
+          ],
+          { name: "M", fixed: true, visible: stateValCheck([1, 2, 3], "m_dir", "CW"), size: 0, label: { offset: [10, 0], strokeColor: "green" } }
+        ),
+        // CCW point
+        bR.create(
+          "point",
+          [
+            () => {
+              return convX(MOMENT_RADIUS * Math.cos(1 * sliders.m_mag.Value() * Math.PI) + sliders.m_pos.Value(), graphs.large);
+            },
+            () => {
+              return convY(MOMENT_RADIUS * Math.sin(1 * sliders.m_mag.Value() * Math.PI) + i_force_drop(sliders.m_pos), graphs.large);
+            }
+          ],
+          { name: "M", fixed: true, visible: stateValCheck([1, 2, 3], "m_dir", "CCW"), size: 0, label: { offset: [10, 10], strokeColor: "green" } }
+        )
       ],
       {
         strokeWidth: 2,
@@ -852,41 +942,60 @@ export default {
       }
     );
 
-    // Moment label
-    for (let data of [
-      [1, "CCW", [10, 10]],
-      [-1, "CW", [10, 0]]
-    ]) {
-      bR.create(
-        "point",
-        [
-          () => {
-            return convX(MOMENT_RADIUS * Math.cos(data[0] * sliders.m_mag.Value() * Math.PI) + sliders.m_pos.Value(), graphs.large);
-          },
-          () => {
-            return convY(MOMENT_RADIUS * Math.sin(data[0] * sliders.m_mag.Value() * Math.PI) + i_force_drop(sliders.m_pos), graphs.large);
-          }
-        ],
-        { name: "M", fixed: true, visible: stateValCheck([1, 2, 3], "m_dir", data[1]), strokeColor: "black", size: 0, label: { offset: data[2] } }
-      );
-    }
-
     // Reaction moment
     bR.create(
-      "curve",
+      "arc",
       [
-        t => {
-          return convX(MOMENT_RADIUS * Math.cos(t) - Math.abs(comp.cAx()), graphs.large);
-        },
-        t => {
-          return convY(MOMENT_RADIUS * Math.sin(t), graphs.large);
-        },
-        () => {
-          return (1 - Math.abs(comp.cMA())) * Math.PI;
-        },
-        () => {
-          return (1 + Math.abs(comp.cMA())) * Math.PI;
-        }
+        //Center point
+        points.Ax,
+        // CW point
+        bR.create(
+          "point",
+          [
+            () => {
+              let t = (1 + -1 * Math.abs(comp.cMA())) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(t) - Math.abs(comp.cAx()), graphs.large);
+            },
+            () => {
+              let t = (1 + -1 * Math.abs(comp.cMA())) * Math.PI;
+              return convY(MOMENT_RADIUS * Math.sin(t), graphs.large);
+            }
+          ],
+          {
+            name: "M_A",
+            fixed: true,
+            visible: () => {
+              return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === false;
+            },
+            strokeColor: "red",
+            size: 0,
+            label: { offset: [-15, 20], strokeColor: "red" }
+          }
+        ),
+        // CWW point
+        bR.create(
+          "point",
+          [
+            () => {
+              let t = (1 + 1 * Math.abs(comp.cMA())) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(t) - Math.abs(comp.cAx()), graphs.large);
+            },
+            () => {
+              let t = (1 + 1 * Math.abs(comp.cMA())) * Math.PI;
+              return convY(MOMENT_RADIUS * Math.sin(t), graphs.large);
+            }
+          ],
+          {
+            name: "M_A",
+            fixed: true,
+            visible: () => {
+              return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === true;
+            },
+            strokeColor: "red",
+            size: 0,
+            label: { offset: [12, 12], strokeColor: "red" }
+          }
+        )
       ],
       {
         strokeWidth: 2,
@@ -903,36 +1012,6 @@ export default {
         }
       }
     );
-
-    // Reaction Moment label
-    for (let data of [
-      [1, true, [-12, -12]],
-      [-1, false, [-15, 20]]
-    ]) {
-      bR.create(
-        "point",
-        [
-          () => {
-            let t = (1 + data[0] * Math.abs(comp.cMA())) * Math.PI;
-            return convX(MOMENT_RADIUS * Math.cos(t) - Math.abs(comp.cAx()), graphs.large);
-          },
-          () => {
-            let t = (1 + data[0] * Math.abs(comp.cMA())) * Math.PI;
-            return convY(MOMENT_RADIUS * Math.sin(t), graphs.large);
-          }
-        ],
-        {
-          name: "M_A",
-          fixed: true,
-          visible: () => {
-            return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === data[1];
-          },
-          strokeColor: "red",
-          size: 0,
-          label: { offset: data[2] }
-        }
-      );
-    }
 
     // Blue box part 1
 
@@ -975,7 +1054,7 @@ export default {
     );
 
     // Dotted line
-    lines.dotted = bR.create("line", [convXY(0, 0, graphs.large), convXY(1, 0, graphs.large)], {
+    bR.create("line", [convXY(0, 0, graphs.large), convXY(1, 0, graphs.large)], {
       straightFirst: false,
       straightLast: false,
       fixed: true,
@@ -986,7 +1065,7 @@ export default {
     });
 
     // Cantilever
-    lines.cantilever = bR.create("line", [convXY(0, -0.1, graphs.large), convXY(0, 0.1, graphs.large)], {
+    bR.create("line", [convXY(0, -0.1, graphs.large), convXY(0, 0.1, graphs.large)], {
       straightFirst: false,
       straightLast: false,
       fixed: true,
@@ -1160,9 +1239,8 @@ export default {
             convY(0.2 - 1, graphs.large)
           ],
           {
-            size: 0,
             name: "a",
-            fixed: true,
+            ...hidden,
             label: {
               offset: [-5, 15],
               visible: stateValCheck([2, 3], "i_force", "on")
@@ -1178,9 +1256,8 @@ export default {
             convY(-0.2 - 1, graphs.large)
           ],
           {
-            size: 0,
             name: "a",
-            fixed: true,
+            ...hidden,
             label: {
               offset: [-5, 0],
               visible: stateValCheck([2, 3], "i_force", "on")
@@ -1232,7 +1309,8 @@ export default {
           visible: () => {
             return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
           },
-          offset: [2, 5]
+          offset: [2, 5],
+          strokeColor: "purple"
         },
         strokeColor: "black",
         fillColor: "black"
@@ -1273,14 +1351,16 @@ export default {
           visible: () => {
             return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
           },
-          offset: [-15, 5]
+          offset: [-15, 5],
+          strokeColor: "purple"
         },
         strokeColor: "black",
         fillColor: "black"
       }
     );
 
-    lines.NA1 = bR.create("line", [points.NA1, points.MA1], {
+    // Upper NA line
+    bR.create("line", [points.NA1, points.MA1], {
       straightFirst: false,
       straightLast: false,
       firstArrow: false,
@@ -1291,7 +1371,8 @@ export default {
       strokeColor: "purple"
     });
 
-    lines.NA2 = bR.create("line", [points.NA2, points.MA2], {
+    // Lower NA line
+    bR.create("line", [points.NA2, points.MA2], {
       straightFirst: false,
       straightLast: false,
       firstArrow: false,
@@ -1329,17 +1410,19 @@ export default {
       ],
       {
         ...hidden,
-        name: "V_A",
+        name: "V_a",
         label: {
           visible: () => {
             return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
           },
-          offset: [-5, -5]
+          offset: [-5, -5],
+          strokeColor: "purple"
         }
       }
     );
 
-    lines.VA1 = bR.create("line", [points.VA1u, points.VA1l], {
+    // Upper VA1 line
+    bR.create("line", [points.VA1u, points.VA1l], {
       straightFirst: false,
       straightLast: false,
       firstArrow: false,
@@ -1377,17 +1460,19 @@ export default {
       ],
       {
         ...hidden,
-        name: "V_A",
+        name: "V_a",
         label: {
           visible: () => {
             return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
           },
-          offset: [-3, 10]
+          offset: [-3, 10],
+          strokeColor: "purple"
         }
       }
     );
 
-    lines.VA2 = bR.create("line", [points.VA2u, points.VA2l], {
+    // Lower VA line
+    bR.create("line", [points.VA2u, points.VA2l], {
       straightFirst: false,
       straightLast: false,
       firstArrow: true,
@@ -1400,169 +1485,212 @@ export default {
 
     // Top right reaction moment
     bR.create(
-      "curve",
+      "arc",
       [
-        t => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
-          const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
-          return convX(MOMENT_RADIUS * Math.cos(t) + sliders.s_pos.Value() + y, graphs.large);
-        },
-        t => {
-          return convY(MOMENT_RADIUS * Math.sin(t), graphs.large);
-        },
-        () => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-          return -x * Math.PI;
-        },
-        () => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-          return x * Math.PI;
-        }
+        //Center point
+        points.MA1,
+        // CW point
+        bR.create(
+          "point",
+          [
+            () => {
+              const ps = sliders.s_pos.Value();
+              const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
+              const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
+              const t = Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps)) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(-t) + sliders.s_pos.Value() + y, graphs.large);
+            },
+            () => {
+              const ps = sliders.s_pos.Value();
+              const t = Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps)) * Math.PI;
+              return convY(0 + MOMENT_RADIUS * Math.sin(-t), graphs.large);
+            }
+          ],
+          {
+            name: "M_a",
+            fixed: true,
+            visible: () => {
+              const ps = sliders.s_pos.Value();
+              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z < 0;
+            },
+            strokeColor: "purple",
+            size: 0,
+            label: { offset: [8, -5], strokeColor: "purple" }
+          }
+        ),
+        // CCW point
+        bR.create(
+          "point",
+          [
+            () => {
+              const ps = sliders.s_pos.Value();
+              const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
+              const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
+              const t = Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps)) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(t) + sliders.s_pos.Value() + y, graphs.large);
+            },
+            () => {
+              const ps = sliders.s_pos.Value();
+              const t = Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps)) * Math.PI;
+              return convY(0 + MOMENT_RADIUS * Math.sin(t), graphs.large);
+            }
+          ],
+          {
+            name: "M_a",
+            fixed: true,
+            visible: () => {
+              const ps = sliders.s_pos.Value();
+              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z >= 0;
+            },
+            strokeColor: "purple",
+            size: 0,
+            label: { offset: [-20, 25], strokeColor: "purple" }
+          }
+        )
       ],
       {
         strokeWidth: 2,
         strokeColor: "purple",
-        firstArrow: false,
-        lastArrow: true,
+        firstArrow: () => {
+          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
+        },
+        lastArrow: () => {
+          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
+        },
         fixed: true,
         visible: () => {
           return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
         }
       }
     );
-    for (let data of [
-      [1, "CCW", [0, 25]]
-      //[-1, "CW", [10, 0]]
-    ]) {
-      bR.create(
-        "point",
-        [
-          () => {
-            const ps = sliders.s_pos.Value();
-            const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
-            const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
-            const t = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-            return convX(MOMENT_RADIUS * Math.cos(t * Math.PI) + sliders.s_pos.Value() + y, graphs.large);
-          },
-          () => {
-            const ps = sliders.s_pos.Value();
-            const t = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-            return convY(MOMENT_RADIUS * Math.sin(t * Math.PI), graphs.large);
-          }
-        ],
-        {
-          name: "M_a",
-          fixed: true,
-          visible: () => {
-            return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
-          },
-          strokeColor: "purple",
-          size: 0,
-          label: { offset: data[2] }
-        }
-      );
-    }
 
     // Bottom left
     bR.create(
-      "curve",
+      "arc",
       [
-        t => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
-          const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
-          return convX(MOMENT_RADIUS * Math.cos(t) + sliders.s_pos.Value() - y, graphs.large);
-        },
-        t => {
-          return convY(-1 + MOMENT_RADIUS * Math.sin(t), graphs.large);
-        },
-        () => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-          return (1 - x) * Math.PI;
-        },
-        () => {
-          const ps = sliders.s_pos.Value();
-          const x = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-          return (1 + x) * Math.PI;
-        }
+        //Center point
+        points.MA2,
+        // CW point
+        bR.create(
+          "point",
+          [
+            () => {
+              const ps = sliders.s_pos.Value();
+              const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
+              const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
+              const t = (1 - Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps))) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(t) + sliders.s_pos.Value() - y, graphs.large);
+            },
+            () => {
+              const ps = sliders.s_pos.Value();
+              const t = (1 - Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps))) * Math.PI;
+              return convY(-1 + MOMENT_RADIUS * Math.sin(t), graphs.large);
+            }
+          ],
+          {
+            name: "M_a",
+            fixed: true,
+            visible: () => {
+              const ps = sliders.s_pos.Value();
+              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z < 0;
+            },
+            strokeColor: "purple",
+            size: 0,
+            label: { offset: [-20, 25], strokeColor: "purple" }
+          }
+        ),
+        // CCW point
+        bR.create(
+          "point",
+          [
+            () => {
+              const ps = sliders.s_pos.Value();
+              const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
+              const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
+              const t = (1 + Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps))) * Math.PI;
+              return convX(MOMENT_RADIUS * Math.cos(t) + sliders.s_pos.Value() - y, graphs.large);
+            },
+            () => {
+              const ps = sliders.s_pos.Value();
+              const t = (1 + Math.abs(valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps))) * Math.PI;
+              return convY(-1 + MOMENT_RADIUS * Math.sin(t), graphs.large);
+            }
+          ],
+          {
+            name: "M_a",
+            fixed: true,
+            visible: () => {
+              const ps = sliders.s_pos.Value();
+              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z >= 0;
+            },
+            strokeColor: "purple",
+            size: 0,
+            label: { offset: [-20, -5], strokeColor: "purple" }
+          }
+        )
       ],
       {
         strokeWidth: 2,
         strokeColor: "purple",
-        firstArrow: true,
-        lastArrow: false,
+        firstArrow: () => {
+          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
+        },
+        lastArrow: () => {
+          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
+        },
         fixed: true,
         visible: () => {
           return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
         }
       }
     );
-    for (let data of [
-      //[1, "CCW", [10, 10]]
-      [-1, "CW", [-20, 25]]
-    ]) {
-      bR.create(
-        "point",
-        [
-          () => {
-            const ps = sliders.s_pos.Value();
-            const x = valCheck("beam_type", "C")() ? comp.c_NA(ps) : comp.s_NA(ps);
-            const y = sliders.f_pos.Value() > sliders.s_pos.Value() ? Math.abs(x) : 0.05;
-            const t = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-            return convX(MOMENT_RADIUS * Math.cos((1 - t) * Math.PI) + sliders.s_pos.Value() - y, graphs.large);
-          },
-          () => {
-            const ps = sliders.s_pos.Value();
-            const t = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-            return convY(-1 + MOMENT_RADIUS * Math.sin((1 - t) * Math.PI), graphs.large);
-          }
-        ],
-        {
-          name: "M_a",
-          fixed: true,
-          visible: () => {
-            return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
-          },
-          strokeColor: "purple",
-          size: 0,
-          label: { offset: data[2] }
-        }
-      );
-    }
 
     // Connecting the two boards together
     bL.addChild(bR);
     bR.addChild(bL);
     this.bL = bL;
     this.bR = bR;
-    this.changeState(3);
+    //this.changeState(3);
     this.changeState(0);
   },
   methods: {
     changeState(newState) {
+      // Handle state specific changes
+      if (newState > this.state) {
+        if (newState >= 2) this.values.reactive = "on";
+        if (newState >= 3) this.values.i_force = "on";
+      } else if (newState <= 1) {
+        this.values.i_force = "off";
+        if (newState === 0) this.values.reactive = "off";
+      }
+
       // Update the current state
       this.state = newState;
-      console.log(this.state);
-      // Correctly align all text that needs aligning
+
+      // Align text and enable/disable components
       this.fixTextAlignment();
       this.bL.fullUpdate();
-      this.bR.fullUpdate();
+      //this.bR.fullUpdate();
     },
     fixTextAlignment() {
       for (const lbl of Object.keys(this.textToUpdate)) {
         this.textToUpdate[lbl].object.setText("");
         this.textToUpdate[lbl].object.setText(this.textToUpdate[lbl].formula);
-        //console.log(this.textToUpdate[lbl].formula());
+      }
+      // Also does buttons
+      for (const lbl of Object.keys(this.objectsToEnable)) {
+        // console.log(lbl);
+        this.objectsToEnable[lbl].object[this.objectsToEnable[lbl].component].disabled = this.objectsToEnable[lbl].formula();
       }
     }
   }
 };
 export const meta = {
-  title: "Comprehensive Truss Problem",
-  description: "truss"
+  title: "Internal Forces 1",
+  description: "IF1"
 };
 </script>

@@ -31,7 +31,7 @@ export default {
       state: 1,
       values: {
         beam_type: "C",
-        m_dir: "CCW",
+        m_dir: "CW",
         reactive: "off",
         i_force: "off",
         diagram_n: "on",
@@ -118,7 +118,7 @@ export default {
       ["f_dir", "Direction of force (\u00B0)", INTERVAL * 2.5, true, [0, 120, 360], [1, 2, 3], "blue"],
       ["m_pos", "Position of moment (m)", INTERVAL * 3.5, true, [0, 0.6, 1], [1, 2, 3], "green"],
       ["m_mag", "Magnitude of moment (kN)", INTERVAL * 4.5, true, [0, 0.25, 0.5], [1, 2, 3], "green"],
-      ["m_dir", "Direction of moment", INTERVAL * 5.5, false, ["CCW", "CCW", "CW", "CW"], [1, 2, 3]],
+      ["m_dir", "Direction of moment", INTERVAL * 5.5, false, ["CCW (+)", "CCW", "CW (-)", "CW"], [1, 2, 3]],
       ["reactive", "Reactive Forces & Moment", INTERVAL * 6.5, false, ["On", "on", "Off", "off"], [1]],
       ["s_pos", "Position of section (m)", INTERVAL * 8, true, [0, 0.25, 1], [2, 3], "black"],
       ["i_force", "Internal Forces", INTERVAL * 9, false, ["On", "on", "Off", "off"], [2]],
@@ -650,7 +650,7 @@ export default {
       }
     };
     this.textToUpdate.warning = {
-      object: bR.create("text", [convX(0.5, graphs.large), convY(0.5, graphs.large), ""], {
+      object: bR.create("text", [convX(0.5, graphs.large), convY(0.55, graphs.large), ""], {
         fontSize: 14,
         anchorX: "middle",
         anchorY: "top",
@@ -658,8 +658,22 @@ export default {
         strokeColor: "red"
       }),
       formula: () => {
-        if (valCheck("beam_type", "S")() && comp.sBy() < 0) {
-          return "Warning: negative B_y value indicates rotation";
+        if (valCheck("beam_type", "S")() && comp.sBy() < 0 && this.state >= 1) {
+          return "Warning: negative B_y value indicates liftoff, system is";
+        } else return "";
+      }
+    };
+    this.textToUpdate.warning2 = {
+      object: bR.create("text", [convX(0.5, graphs.large), convY(0.45, graphs.large), ""], {
+        fontSize: 14,
+        anchorX: "middle",
+        anchorY: "top",
+        fixed: true,
+        strokeColor: "red"
+      }),
+      formula: () => {
+        if (valCheck("beam_type", "S")() && comp.sBy() < 0 && this.state >= 1) {
+          return "not in equilibrium, change force & momentum input values";
         } else return "";
       }
     };
@@ -689,6 +703,22 @@ export default {
       ],
       { name: "", size: 2, fixed: true, fillColor: "green", strokeWidth: 0, visible: stateCheck([1, 2, 3]) }
     );
+
+    // Coordinates
+    bR.create("line", [convXY(-0.3, 0.55, graphs.large), convXY(-0.3, 0.75, graphs.large)], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      fixed: true,
+      strokeColor: "black"
+    });
+    bR.create("line", [convXY(-0.3, 0.55, graphs.large), convXY(-0.1, 0.55, graphs.large)], {
+      straightFirst: false,
+      straightLast: false,
+      lastArrow: true,
+      fixed: true,
+      strokeColor: "black"
+    });
 
     // Force line
     bR.create(
@@ -839,12 +869,14 @@ export default {
       straightFirst: false,
       straightLast: false,
       fixed: true,
-      firstArrow: () => {
-        return comp.cAx() >= 0;
-      },
-      lastArrow: () => {
-        return comp.cAx() < 0;
-      },
+      // firstArrow: () => {
+      //   return comp.cAx() >= 0;
+      // },
+      // lastArrow: () => {
+      //   return comp.cAx() < 0;
+      // },
+      firstArrow: true,
+      lastArrow: false,
       strokeColor: "red",
       visible: stateValCheck([1, 2, 3], "reactive", "on")
     });
@@ -854,12 +886,14 @@ export default {
       straightFirst: false,
       straightLast: false,
       fixed: true,
-      firstArrow: () => {
-        return (valCheck("beam_type", "C")() ? comp.cAy() : comp.sAy()) >= 0;
-      },
-      lastArrow: () => {
-        return (valCheck("beam_type", "C")() ? comp.cAy() : comp.sAy()) < 0;
-      },
+      // firstArrow: () => {
+      //   return (valCheck("beam_type", "C")() ? comp.cAy() : comp.sAy()) >= 0;
+      // },
+      // lastArrow: () => {
+      //   return (valCheck("beam_type", "C")() ? comp.cAy() : comp.sAy()) < 0;
+      // },
+      firstArrow: true,
+      lastArrow: false,
       strokeColor: "red",
       visible: stateValCheck([1, 2, 3], "reactive", "on")
     });
@@ -884,12 +918,14 @@ export default {
         straightFirst: false,
         straightLast: false,
         fixed: true,
-        firstArrow: () => {
-          return comp.sBy() >= 0;
-        },
-        lastArrow: () => {
-          return comp.sBy() < 0;
-        },
+        // firstArrow: () => {
+        //   return comp.sBy() >= 0;
+        // },
+        // lastArrow: () => {
+        //   return comp.sBy() < 0;
+        // },
+        firstArrow: true,
+        lastArrow: false,
         strokeColor: "red",
         visible: () => {
           return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "S")();
@@ -964,9 +1000,10 @@ export default {
           {
             name: "M_A",
             fixed: true,
-            visible: () => {
-              return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === false;
-            },
+            // visible: () => {
+            //   return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === false;
+            // },
+            visible: false,
             strokeColor: "red",
             size: 0,
             label: { offset: [-15, 20], strokeColor: "red" }
@@ -989,8 +1026,9 @@ export default {
             name: "M_A",
             fixed: true,
             visible: () => {
-              return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")() && comp.cMAn() >= 0 === true;
+              return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")();
             },
+            //visible: true,
             strokeColor: "red",
             size: 0,
             label: { offset: [12, 12], strokeColor: "red" }
@@ -1000,12 +1038,14 @@ export default {
       {
         strokeWidth: 2,
         strokeColor: "red",
-        firstArrow: () => {
-          return comp.cMAn() < 0;
-        },
-        lastArrow: () => {
-          return comp.cMAn() >= 0;
-        },
+        // firstArrow: () => {
+        //   return comp.cMAn() < 0;
+        // },
+        // lastArrow: () => {
+        //   return comp.cMAn() >= 0;
+        // },
+        firstArrow: false,
+        lastArrow: true,
         fixed: true,
         visible: () => {
           return stateValCheck([1, 2, 3], "reactive", "on")() && valCheck("beam_type", "C")();
@@ -1509,11 +1549,12 @@ export default {
           {
             name: "M_a",
             fixed: true,
-            visible: () => {
-              const ps = sliders.s_pos.Value();
-              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z < 0;
-            },
+            // visible: () => {
+            //   const ps = sliders.s_pos.Value();
+            //   const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+            //   return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z < 0;
+            // },
+            visible: false,
             strokeColor: "purple",
             size: 0,
             label: { offset: [8, -5], strokeColor: "purple" }
@@ -1541,9 +1582,10 @@ export default {
             fixed: true,
             visible: () => {
               const ps = sliders.s_pos.Value();
-              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z >= 0;
+              //const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
             },
+            //visible: true,
             strokeColor: "purple",
             size: 0,
             label: { offset: [-20, 25], strokeColor: "purple" }
@@ -1553,12 +1595,14 @@ export default {
       {
         strokeWidth: 2,
         strokeColor: "purple",
-        firstArrow: () => {
-          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
-        },
-        lastArrow: () => {
-          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
-        },
+        // firstArrow: () => {
+        //   return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
+        // },
+        // lastArrow: () => {
+        //   return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
+        // },
+        firstArrow: false,
+        lastArrow: true,
         fixed: true,
         visible: () => {
           return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
@@ -1594,9 +1638,10 @@ export default {
             fixed: true,
             visible: () => {
               const ps = sliders.s_pos.Value();
-              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z < 0;
+              //const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
             },
+            // visible: true,
             strokeColor: "purple",
             size: 0,
             label: { offset: [-20, 25], strokeColor: "purple" }
@@ -1622,11 +1667,12 @@ export default {
           {
             name: "M_a",
             fixed: true,
-            visible: () => {
-              const ps = sliders.s_pos.Value();
-              const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
-              return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z >= 0;
-            },
+            // visible: () => {
+            //   const ps = sliders.s_pos.Value();
+            //   const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
+            //   return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value() && z <= 0;
+            // },
+            visible: false,
             strokeColor: "purple",
             size: 0,
             label: { offset: [-20, -5], strokeColor: "purple" }
@@ -1636,12 +1682,14 @@ export default {
       {
         strokeWidth: 2,
         strokeColor: "purple",
-        firstArrow: () => {
-          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
-        },
-        lastArrow: () => {
-          return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
-        },
+        // firstArrow: () => {
+        //   return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) >= 0;
+        // },
+        // lastArrow: () => {
+        //   return (valCheck("beam_type", "C")() ? comp.c_MA(sliders.s_pos.Value()) : comp.s_MA(sliders.s_pos.Value())) < 0;
+        // },
+        firstArrow: true,
+        lastArrow: false,
         fixed: true,
         visible: () => {
           return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();

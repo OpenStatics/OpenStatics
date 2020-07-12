@@ -13,7 +13,7 @@
               <span>Constraints at the left end of beam</span> <br />
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection <= 3 }" @click="clickOnFixed">Fixed</button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 || currentSelection === 4 }" @click="clickOnPin">
-                Smooth pin
+                Smooth pin 
               </button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 6 }" @click="clickOnRoller">Roller</button>
             </div>
@@ -46,7 +46,6 @@
       </div>
       <div id="fixFix" class="jsx-graph col-xl mx-2"></div>
     </div>
-    <div id="fixFix" class="text-center jsx-graph mx-2 col-xl"></div>
   </div>
 </template>
 
@@ -122,7 +121,6 @@ export default {
     // create board
     const board = JXG.JSXGraph.initBoard("fixFix", {
       boundingbox: [-15, 15, 15, -15],
-      axis: true,
       keepAspectRatio: true,
       showCopyright: false,
       showNavigation: false

@@ -45,9 +45,6 @@ export default {
     };
   },
   mounted() {
-    // Scale determines the size of the whole structure
-    const SCALE = 3;
-
     // Setup the two boards
     // The lefthand board (sliders and text)
     const bL = JXG.JSXGraph.initBoard("boxLeft", {
@@ -626,7 +623,7 @@ export default {
 
     // All points and lines are stored like the sliders
     let points = {};
-    let lines = {};
+    // let lines = {};
     const BOX_HEIGHT = 0.05;
 
     let hidden = { fixed: true, visible: false };
@@ -1058,13 +1055,14 @@ export default {
     bR.create(
       "polygon",
       [
-        [convX(0, graphs.large), convY(-BOX_HEIGHT, graphs.large)],
-        [convX(0, graphs.large), convY(BOX_HEIGHT, graphs.large)],
+        convXY(0, -BOX_HEIGHT, graphs.large),
+        //[convX(0, graphs.large), convY(-BOX_HEIGHT, graphs.large)],
+        convXY(0, BOX_HEIGHT, graphs.large),
         () => {
-          return [convX(sliders.s_pos.Value(), graphs.large), convY(BOX_HEIGHT, graphs.large)];
+          return convXY(sliders.s_pos.Value(), BOX_HEIGHT, graphs.large);
         },
         () => {
-          return [convX(sliders.s_pos.Value(), graphs.large), convY(-BOX_HEIGHT, graphs.large)];
+          return convXY(sliders.s_pos.Value(), -BOX_HEIGHT, graphs.large);
         }
       ],
       { vertices: { visible: false }, fixed: true, withLines: false, fillColor: "blue" }
@@ -1075,19 +1073,19 @@ export default {
       [
         () => {
           const offset = valCheck("i_force", "on")() ? -1 : 0;
-          return [convX(sliders.s_pos.Value(), graphs.large), convY(-BOX_HEIGHT + offset, graphs.large)];
+          return convXY(sliders.s_pos.Value(), -BOX_HEIGHT + offset, graphs.large);
         },
         () => {
           const offset = valCheck("i_force", "on")() ? -1 : 0;
-          return [convX(sliders.s_pos.Value(), graphs.large), convY(BOX_HEIGHT + offset, graphs.large)];
+          return convXY(sliders.s_pos.Value(), BOX_HEIGHT + offset, graphs.large);
         },
         () => {
           const offset = valCheck("i_force", "on")() ? -1 : 0;
-          return [convX(1, graphs.large), convY(BOX_HEIGHT + offset, graphs.large)];
+          return convXY(1, BOX_HEIGHT + offset, graphs.large);
         },
         () => {
           const offset = valCheck("i_force", "on")() ? -1 : 0;
-          return [convX(1, graphs.large), convY(-BOX_HEIGHT + offset, graphs.large)];
+          return convXY(1, -BOX_HEIGHT + offset, graphs.large);
         }
       ],
       { vertices: { visible: false }, fixed: true, withLines: false, fillColor: "blue" }
@@ -1581,7 +1579,7 @@ export default {
             name: "M_a",
             fixed: true,
             visible: () => {
-              const ps = sliders.s_pos.Value();
+              // const ps = sliders.s_pos.Value();
               //const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
               return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
             },
@@ -1637,7 +1635,7 @@ export default {
             name: "M_a",
             fixed: true,
             visible: () => {
-              const ps = sliders.s_pos.Value();
+              // const ps = sliders.s_pos.Value();
               //const z = valCheck("beam_type", "C")() ? comp.c_MA(ps) : comp.s_MA(ps);
               return stateValCheck([2, 3], "i_force", "on")() && sliders.f_pos.Value() > sliders.s_pos.Value();
             },

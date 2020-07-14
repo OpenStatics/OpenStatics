@@ -18,11 +18,6 @@
 </template>
 
 <script>
-//import truss from "../../utils/methods_of_sections/truss";
-//import cutSections from "../../utils/methods_of_sections/cutSections";
-//import Fbc from "../../utils/methods_of_sections/Fbc";
-//import Fgc from "../../utils/methods_of_sections/Fgc";
-//import Fgf from "../../utils/methods_of_sections/Fgf";
 import int_forc from "../../utils/Internal_Forces/internal_forces_1.vue";
 
 export default {
@@ -31,28 +26,10 @@ export default {
   },
   components: {
     intforc: int_forc
-    //truss: truss,
-    //cutSections: cutSections,
-    //Fbc: Fbc,
-    //Fgc: Fgc,
-    //Fgf: Fgf
   }
-  //   methods: {
-  //     changeSelection(nextState) {
-  //       this.currentSelection = nextState;
-  //       this.$refs.foo.changeState(nextState);
-  //       // console.log(nextState);
-  //     }
-  //   },
-  //   mounted() {
-  //     // let c1 = document.querySelector(".column1");
-  //     // let c2 = document.querySelector(".column2");
-  //     // let p = c2.parentElement;
-  //     // c1.clientWidth = p.clientWidth - c2.clientWidth;
-  //   }
 };
 export const meta = {
-  title: "Internal Forces of Beam 1",
+  title: "Internal Forces in a Beam 1",
   description: "",
   number: 24
 };

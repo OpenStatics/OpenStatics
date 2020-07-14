@@ -29,7 +29,7 @@ export default {
   }
 };
 export const meta = {
-  title: "Internal Forces of Beam 1",
+  title: "Internal Forces in a Beam 1",
   description: "",
   number: 24
 };

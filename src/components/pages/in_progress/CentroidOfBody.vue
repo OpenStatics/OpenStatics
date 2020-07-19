@@ -1,98 +1,38 @@
 <template>
-  <div>
-    <h1 class="text-danger text-center my-4">Centroid of a Body</h1>
-    <div class="row">
-      <div id="Centroid" class="jsx-graph col-xl mx-2"></div>
-      <div id="Centroid2" class="jsx-graph col-xl mx-2"></div>
-
-      <div class="col-xl mx-2">
-        Text
-      </div>
+  <div class="container-fluid">
+    <h1 class="text-danger text-center my-4">Centroid of Body</h1>
+    <p>
+      The centroid represents the geometric center of a body. This point coincides with the center of mass, or the center of gravity only if the
+      material composing the body is uniform or homogeneous. The formulas used to locate the center of gravity, or the centroid, simply represents a
+      balance between the sum of moments of all the parts of the system. In some cases, the centroid is located at a point that is not on the object.
+    </p>
+    <p>
+      A differential element of thickness <vue-mathjax formula="$dx$" /> is created below. The area of the element is:
+      <vue-mathjax :formula="eq1" /> and its centroid is located at <vue-mathjax :formula="eq2" />
+    </p>
+    <div class="text-center">
+      <vue-mathjax :formula="eq3" />
+      <br />
+      <br />
+      <vue-mathjax :formula="eq4" />
     </div>
+    <centroid ref="foo" />
   </div>
 </template>
 <script>
+import centroid_body from "../../utils/CentroidBody/centroid_body.vue";
+
 export default {
-  name: "Centoid",
   data() {
-    return {};
+    return {
+      eq1: "$A = \\int y dx \\implies dA = ydx$",
+      eq2: "$P=(\\bar{x}, \\bar{y})$",
+      eq3: "$\\bar{x} = \\frac{\\int x dA}{\\int dA} = \\frac{ \\int xy dx}{\\int y dx}$",
+      eq4: "$\\bar{y} = \\frac{\\int y dA}{\\int dA} = \\frac{ \\int (y/2)y dx}{\\int y dx}$"
+    };
   },
-  mounted() {
-    const board = JXG.JSXGraph.initBoard("Centroid", {
-      boundingbox: [-15, 15, 15, -15],
-      axis: true,
-      keepAspectRatio: true,
-      showCopyright: false
-    });
-    const board2 = JXG.JSXGraph.initBoard("Centroid2", {
-      boundingbox: [-15, 15, 15, -15],
-      axis: true,
-      keepAspectRatio: true,
-      showCopyright: false
-    });
-    const a = board.create(
-      "slider",
-      [
-        [-13, 12],
-        [-2, 12],
-        [0, 0.2, 1]
-      ],
-      { name: "a" }
-    );
-    const b = board.create(
-      "slider",
-      [
-        [-13, 10],
-        [-2, 10],
-        [0, 0.3, 1]
-      ],
-      { name: "b" }
-    );
-    const c = board.create(
-      "slider",
-      [
-        [-13, 8],
-        [-2, 8],
-        [15, 45, 60]
-      ],
-      { name: "c" }
-    );
-    const x1 = board.create(
-      "slider",
-      [
-        [-13, 6],
-        [-2, 6],
-        [1, 1, 10]
-      ],
-      { name: "x_1" }
-    );
-    const x2 = board.create(
-      "slider",
-      [
-        [-13, 4],
-        [-2, 4],
-        [0, 1, 10]
-      ],
-      { name: "x_2" }
-    );
-    const x = board.create(
-      "slider",
-      [
-        [-13, 2],
-        [-2, 2],
-        [0, 1, 10]
-      ],
-      { name: "x" }
-    );
-    const xy = board.create(
-      "slider",
-      [
-        [-13, 0],
-        [-2, 0],
-        [0, 1, 10]
-      ],
-      { name: "y" }
-    );
+  components: {
+    centroid: centroid_body
   }
 };
 export const meta = {
@@ -101,3 +41,9 @@ export const meta = {
   number: 28
 };
 </script>
+
+<style>
+p {
+  font-size: 16;
+}
+</style>

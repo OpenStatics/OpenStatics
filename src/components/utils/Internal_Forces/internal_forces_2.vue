@@ -105,17 +105,13 @@ export default {
           [min, start, max] (if true) | [lbl1, val1, lbl2, val2] (if false),
           [allowed states],
           color ]*/
-      //   ["beam_type", "Types of Beam", INTERVAL * 0, false, ["Cantilever", "C", "Simply-Supported", "S"], [1, 2, 3]],
       ["f_pos", "Position of force (ft)", INTERVAL * 0.5, true, [0, 9, 12], [1, 2, 3], "blue"],
       ["f_mag", "Magnitude of force (k-lbs)", INTERVAL * 1.5, true, [0, 2.5, 5], [1, 2, 3], "blue"],
-      //   ["f_dir", "Direction of force (\u00B0)", INTERVAL * 2.5, true, [0, 120, 360], [1, 2, 3], "blue"],
       ["l_pos", "Position of load (ft)", INTERVAL * 2.5, true, [0, 6, 12], [1, 2, 3], "blue"],
       ["l_mag", "Magnitude of load (k-lbs/ft)", INTERVAL * 3.5, true, [0, 0.5, 1], [1, 2, 3], "blue"],
-      //   ["m_dir", "Direction of moment", INTERVAL * 5.5, false, ["CCW (+)", "CCW", "CW (-)", "CW"], [1, 2, 3]],
       ["reactive", "Reactive Forces & Moment", INTERVAL * 4.5, false, ["On", "on", "Off", "off"], [1]],
       ["s_pos", "Position of section (ft)", INTERVAL * 6, true, [0, 6, 12], [2, 3], "black"],
       ["i_force", "Internal Forces", INTERVAL * 7, false, ["On", "on", "Off", "off"], [2]],
-      //   ["diagram_n", "Normal Force Diagram", INTERVAL * 10.5, false, ["On", "on", "Off", "off"], [3]],
       ["diagram_s", "Shear Force Diagram", INTERVAL * 8.5, false, ["On", "on", "Off", "off"], [3]],
       ["diagram_b", "Bending Moment Diagram", INTERVAL * 9, false, ["On", "on", "Off", "off"], [3]]
     ]) {
@@ -1176,9 +1172,5 @@ export default {
       }
     }
   }
-};
-export const meta = {
-  title: "Internal Forces 2",
-  description: "IF2"
 };
 </script>

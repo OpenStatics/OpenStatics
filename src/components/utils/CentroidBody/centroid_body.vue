@@ -55,7 +55,7 @@ export default {
     // All sliders are stored in these objects
     // They can be accessed with brackets sliders["force"] or dot notation sliders.force
     let sliders = {};
-    const LABEL_SIZE = 16;
+    const LABEL_SIZE = 18;
 
     // Function that updates a slider value to that inside the textbox
     let buttonClick = (textbox, slider) => {
@@ -90,14 +90,19 @@ export default {
           color ]*/
       /* For just text: [false, label name, mathJax] */
       ["coords", "Coordinate Visibility", INTERVAL * 0, false, ["On", "on", "Off", "off"], [0]],
-      [false, "$$y = f(x) = ax^2 + bx + c:$$", INTERVAL * 1, true],
-      ["a", "a", INTERVAL * 1.5, true, [-3, 0, 3], [0], "black"],
-      ["b", "b", INTERVAL * 2.5, true, [-3, 0, 3], [0], "black"],
-      ["c", "c", INTERVAL * 3.5, true, [-3, 0, 3], [0], "black"],
+      [
+        false,
+        "<b>y = f(x) = <span style='color:red'>a</span>x^2 + <span style='color:blue'>b</span>x + <span style='color:green'>c</span>:</b>",
+        INTERVAL * 1,
+        false
+      ],
+      ["a", "a", INTERVAL * 1.5, true, [-3, 0, 3], [0], "red"],
+      ["b", "b", INTERVAL * 2.5, true, [-3, 0, 3], [0], "blue"],
+      ["c", "c", INTERVAL * 3.5, true, [-3, 0, 3], [0], "green"],
       [false, "<b>Range of element, from x_1 to x_2:</b>", INTERVAL * 4.75, false],
       ["x1", "x_1", INTERVAL * 5.5, true, [-3, 0, 3], [0], "black"],
       ["x2", "x_2", INTERVAL * 6.5, true, [-3, 3, 3], [0], "black"],
-      [false, "<b>Translate element:</b>", INTERVAL * 7.75, false],
+      [false, "<b>Translate graph:</b>", INTERVAL * 7.75, false],
       ["xT", "x", INTERVAL * 8.5, true, [-3, 0, 3], [0], "black"],
       ["yT", "y", INTERVAL * 9.5, true, [-3, 0, 3], [0], "black"]
     ]) {
@@ -297,45 +302,6 @@ export default {
     comp.yBar = (x1, x2) => {
       return comp.Mx(x1, x2) / comp.Area(x1, x2);
     };
-    //console.log(comp.normalize(-3, 3, 0, 0.1, 0.3));
-
-    // JXG.joinCurves = function(board, parents, attributes) {
-    //   var curves = parents,
-    //     attr = JXG.copyAttributes(attributes, board.options, "curve"),
-    //     c = board.create("curve", [[0], [0]], attr);
-
-    //   c.updateDataArray = function() {
-    //     var i,
-    //       le = curves.length;
-
-    //     // The paths have to be connected
-    //     this.dataX = [];
-    //     this.dataY = [];
-    //     for (i = 0; i < le; i++) {
-    //       console.log(i);
-    //       console.log(curves[i]);
-    //       console.log(curves[i].dataX);
-    //       if (i < le - 1) {
-    //         this.dataX = this.dataX.concat(curves[i].dataX.slice(0, -1));
-    //         this.dataY = this.dataY.concat(curves[i].dataY.slice(0, -1));
-    //       } else {
-    //         this.dataX = this.dataX.concat(curves[i].dataX);
-    //         this.dataY = this.dataY.concat(curves[i].dataY);
-    //       }
-    //     }
-
-    //     if (this.dataX.length < 4) {
-    //       this.bezierDegree = 1;
-    //     } else {
-    //       this.bezierDegree = curves[0].bezierDegree;
-    //     }
-    //   };
-    //   c.prepareUpdate()
-    //     .update()
-    //     .updateVisibility()
-    //     .updateRenderer();
-    //   return c;
-    // };
 
     let graphs = {
       /*
@@ -400,7 +366,8 @@ export default {
           anchorX: "middle",
           anchorY: "top",
           offset: [0, -4],
-          visible: g.visible
+          visible: g.visible,
+          fontSize: 14
         },
         visible: g.visible,
         minorTicks: 3
@@ -427,7 +394,8 @@ export default {
           anchorX: "right",
           anchorY: "middle",
           offset: [-6, 0],
-          visible: g.visible
+          visible: g.visible,
+          fontSize: 14
         },
         visible: g.visible,
         minorTicks: 3
@@ -444,80 +412,64 @@ export default {
       });
 
       if (g.func != undefined) {
-        const curveProps = { strokeColor: g.color, visible: g.visible, strokeWidth: 3, doAdvancedPlot: true };
-        // console.log("here");
+        const curveProps = { strokeColor: g.color, visible: g.visible, strokeWidth: 3 };
+
+        // Function curve
         bR.create(
           "curve",
           [
             t => {
-              if (t < comp.minX()) {
-                // Left range of legit curve
-                let diff = comp.minX() - t;
-                // -2 to -1 below min is the baseline
-                // -1 to 0 below min is the leftline
-                if (diff >= 1) {
-                  return convX(comp.normalize(1, 2, diff, comp.minX(), comp.maxX()) + sliders.xT.Value(), g);
-                } else {
-                  return convX(comp.minX() + sliders.xT.Value(), g);
-                }
-              } else if (t > comp.maxX()) {
-                // Right range of legit curve
-                // 0 to 1 above max is rightline
-                return convX(comp.maxX() + sliders.xT.Value(), g);
-              } else {
-                // General case
-                return convX(t + sliders.xT.Value(), g);
-              }
+              return convX(t + sliders.xT.Value(), g);
             },
             t => {
-              if (t < comp.minX()) {
-                // Left range of legit curve
-                let diff = comp.minX() - t;
-                // -2 to -1 below min is the baseline
-                // -1 to 0 below min is the leftline
-                if (diff > 1) {
-                  return convY(0 + sliders.yT.Value(), g);
-                } else {
-                  return convY(comp.fX(comp.minX()) * (1 - diff) + sliders.yT.Value(), g);
-                }
-              } else if (t >= comp.maxX()) {
-                // Right range of legit curve
-                // 0 to 1 above max is rightline
-                let diff = t - comp.maxX();
-                return convY(g.func(comp.maxX()) * (1 - diff) + sliders.yT.Value(), g);
-              } else {
-                // General case
-                return convY(g.func(t) + sliders.yT.Value(), g);
-              }
+              return convY(g.func(t) + sliders.yT.Value(), g);
             },
-            () => {
-              return comp.minX() - 2;
-            },
-            () => {
-              return comp.maxX() + 1;
-            }
+            comp.minX,
+            comp.maxX
           ],
-          { ...curveProps }
+          { name: "funcCurve", ...curveProps, doAdvancedPlot: false, doAdvancedPlotOld: false, numberPointsHigh: 400, numberPointsLow: 400 }
         );
 
-        // let funcCurve = bR.create(
-        //   "curve",
-        //   [
-        //     t => {
-        //       return convX(t + sliders.xT.Value(), g);
-        //       //return convX(t, g);
-        //     },
-        //     t => {
-        //       return convY(g.func(t) + sliders.yT.Value(), g);
-        //       //return convY(g.func(t), g);
-        //     },
-        //     comp.minX,
-        //     comp.maxX
-        //     // -3,
-        //     // 3
-        //   ],
-        //   { name: "funcCurve", visible: false }
-        // );
+        // Left line
+        bR.create(
+          "line",
+          [
+            () => {
+              return convXY(comp.minX() + sliders.xT.Value(), 0 + sliders.yT.Value(), g);
+            },
+            () => {
+              return convXY(comp.minX() + sliders.xT.Value(), comp.fX(comp.minX()) + sliders.yT.Value(), g);
+            }
+          ],
+          { ...curveProps, straightFirst: false, straightLast: false }
+        );
+        // Right line
+        bR.create(
+          "line",
+          [
+            () => {
+              return convXY(comp.maxX() + sliders.xT.Value(), 0 + sliders.yT.Value(), g);
+            },
+            () => {
+              return convXY(comp.maxX() + sliders.xT.Value(), comp.fX(comp.maxX()) + sliders.yT.Value(), g);
+            }
+          ],
+          { ...curveProps, straightFirst: false, straightLast: false }
+        );
+        // Baseline
+        bR.create(
+          "line",
+          [
+            () => {
+              return convXY(comp.minX() + sliders.xT.Value(), 0 + sliders.yT.Value(), g);
+            },
+            () => {
+              return convXY(comp.maxX() + sliders.xT.Value(), 0 + sliders.yT.Value(), g);
+            }
+          ],
+          { ...curveProps, straightFirst: false, straightLast: false }
+        );
+
         // console.log(funcCurve.points);
         let myCurvePoints = [];
         // myCurvePoints.push(
@@ -679,71 +631,6 @@ export default {
           fixed: true,
           fillOpacity: 0.5
         });
-        // let leftLine = bR.create(
-        //   "line",
-        //   [
-        //     () => {
-        //       return convXY(comp.minX() + sliders.xT.Value(), 0, g);
-        //     },
-        //     () => {
-        //       return convXY(comp.minX() + sliders.xT.Value(), comp.fX(comp.minX()), g);
-        //     }
-        //   ],
-        //   {}
-        // );
-        // let leftCurve = bR.create(
-        //   "curve",
-        //   [
-        //     () => {
-        //       return convX(comp.minX() + sliders.xT.Value(), g);
-        //     },
-        //     t => {
-        //       return convY(t + sliders.yT.Value(), g);
-        //     },
-        //     () => {
-        //       return Math.min(comp.fX(comp.minX()), 0);
-        //     },
-        //     () => {
-        //       return Math.max(comp.fX(comp.minX()), 0);
-        //     }
-        //   ],
-        //   { name: "leftCurve", ...curveProps, numberPointsHigh: 3, numberPointsLow: 3 }
-        // );
-        // let rightCurve = bR.create(
-        //   "curve",
-        //   [
-        //     () => {
-        //       return convX(comp.maxX() + sliders.xT.Value(), g);
-        //     },
-        //     t => {
-        //       return convY(t + sliders.yT.Value(), g);
-        //     },
-        //     () => {
-        //       return Math.min(comp.fX(comp.maxX()), 0);
-        //     },
-        //     () => {
-        //       return Math.max(comp.fX(comp.maxX()), 0);
-        //     }
-        //   ],
-        //   { name: "rightCurve", ...curveProps, numberPointsHigh: 3, numberPointsLow: 3 }
-        // );
-        // let baselineCurve = bR.create(
-        //   "curve",
-        //   [
-        //     t => {
-        //       return convX(t + sliders.xT.Value(), g);
-        //     },
-        //     () => {
-        //       return convY(0 + sliders.yT.Value(), g);
-        //     },
-        //     comp.minX,
-        //     comp.maxX
-        //   ],
-        //   { name: "baselineCurve", ...curveProps, numberPointsHigh: 50, numberPointsLow: 50, doAdvancedPlot: false }
-        // );
-        // console.log(funcCurve);
-        //console.log(baselineCurve);
-        // JXG.joinCurves(bR, [leftCurve, baselineCurve, rightCurve, funcCurve], { strokeWidth: 0, fillColor: "yellow", fillOpacity: 0.2 });
       }
 
       // Text
@@ -795,7 +682,7 @@ export default {
       lastArrow: { size: 4 },
       touchLastPoint: true,
       point1: { ...hidden },
-      point2: { ...hiddenLabel, name: "<b><i>x</i></b>", label: { visible: valCheck("coords", "on"), offset: [-18, -8] } },
+      point2: { ...hiddenLabel, name: "<b><i>x</i></b>", label: { visible: valCheck("coords", "on"), offset: [-18, -8], fontSize: 16 } },
       visible: valCheck("coords", "on"),
       strokeColor: "black",
       strokeWidth: 2
@@ -808,7 +695,7 @@ export default {
       lastArrow: { size: 4 },
       touchLastPoint: true,
       point1: { ...hidden },
-      point2: { ...hiddenLabel, name: "<b><i>y</i></b>", label: { visible: valCheck("coords", "on"), offset: [-18, -8] } },
+      point2: { ...hiddenLabel, name: "<b><i>y</i></b>", label: { visible: valCheck("coords", "on"), offset: [-18, -8], fontSize: 16 } },
       visible: valCheck("coords", "on"),
       strokeColor: "black",
       strokeWidth: 2
@@ -825,7 +712,7 @@ export default {
           return convY(comp.yBar(comp.minX(), comp.maxX()) + sliders.yT.Value(), graphs.large);
         }
       ],
-      { name: "" }
+      { name: "", size: 5 }
     );
 
     bR.create(

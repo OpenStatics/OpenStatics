@@ -8,13 +8,13 @@
     </p>
     <p>
       A differential element of thickness <vue-mathjax formula="$dx$" /> is created below. The area of the element is:
-      <vue-mathjax :formula="eq1" /> and its centroid is located at <vue-mathjax :formula="eq2" />
+      <vue-mathjax :formula="eq1" /> and its centroid is located at <vue-mathjax :formula="eq2" />. The moment arcs are
+      <vue-mathjax formula="$x_c = x, y_c = \frac{y}{2}$" /> because <vue-mathjax formula="$y$" /> is an explicit function of
+      <vue-mathjax formula="$x$" />.
     </p>
     <div class="text-center">
       <vue-mathjax :formula="eq3" />
-      <br />
-      <br />
-      <vue-mathjax :formula="eq4" />
+      <!-- <vue-mathjax :formula="eq4" /> -->
     </div>
     <centroid ref="foo" />
   </div>
@@ -25,10 +25,10 @@ import centroid_body from "../../utils/CentroidBody/centroid_body.vue";
 export default {
   data() {
     return {
-      eq1: "$A = \\int y dx \\implies dA = ydx$",
+      eq1: "$A =\\int \\int dy dx \\implies dA = ydx$",
       eq2: "$P=(\\bar{x}, \\bar{y})$",
-      eq3: "$\\bar{x} = \\frac{\\int x dA}{\\int dA} = \\frac{ \\int xy dx}{\\int y dx}$",
-      eq4: "$\\bar{y} = \\frac{\\int y dA}{\\int dA} = \\frac{ \\int (y/2)y dx}{\\int y dx}$"
+      eq3: "$\\bar{x} = \\frac{\\int x_c dA}{\\int dA}\\ ,\\ \\bar{y} = \\frac{\\int y_c dA}{\\int dA}$"
+      //eq4: "$$"
     };
   },
   components: {

@@ -34,8 +34,26 @@ export default {
         diagram_s: "on",
         diagram_b: "on"
       },
-      textToUpdate: {},
-      objectsToEnable: {},
+      textToUpdate: {
+        /* arbitrary name: {
+            object: reference to object
+            formula: function that returns text (string)
+        }*/
+      },
+      objectsToEnable: {
+        /* arbitrary name: {
+            object: reference to object
+            component: component to enable/disable
+            formula: function that returns true for disable
+        }
+        */
+      },
+      buttonsToToggle: {
+        /* key from values: {
+            possible value: corresponding button
+        }
+        */
+      },
       bL: undefined,
       bR: undefined
     };
@@ -92,6 +110,24 @@ export default {
       };
     };
 
+    let valCheck = (value, target) => {
+      return () => {
+        return this.values[value] === target;
+      };
+    };
+
+    let stateCheck = states => {
+      return () => {
+        return states.includes(this.state);
+      };
+    };
+
+    let stateValCheck = (states, value, target) => {
+      return () => {
+        return states.includes(this.state) && valCheck(value, target)();
+      };
+    };
+
     const INTERVAL = -4.25;
     // Generate sliders, along with their related components
     // Can either have textbox + update button, or on/off system
@@ -134,14 +170,10 @@ export default {
           label: {
             color: "black",
             fontSize: LABEL_SIZE,
-            visible: () => {
-              return data[5].includes(this.state);
-            }
+            visible: stateCheck(data[5])
           },
           snapWidth: 0.01,
-          visible: () => {
-            return data[5].includes(this.state);
-          }
+          visible: stateCheck(data[5])
         });
         let textbox = bL.create("input", [LEFT_X, TOP_Y + data[2] - 1.5, "", ""], {
           cssStyle: "width: 58px",
@@ -184,6 +216,7 @@ export default {
             () => {
               this.values[data[0]] = data[4][1];
               this.fixTextAlignment();
+              this.toggleButtons();
             }
           ],
           {
@@ -203,38 +236,24 @@ export default {
             () => {
               this.values[data[0]] = data[4][3];
               this.fixTextAlignment();
+              this.toggleButtons();
             }
           ],
           {
-            fixed: true,
-            disabled: () => {
-              return data[5].includes(this.state);
-            }
+            fixed: true
           }
         );
         this.objectsToEnable[data[0] + "2"].formula = () => {
           return !data[5].includes(this.state);
         };
+
+        this.objectsToEnable[data[0] + "1"].object.rendNodeButton.classList.add("btn-primary");
+        this.objectsToEnable[data[0] + "2"].object.rendNodeButton.classList.add("btn-primary");
+        this.buttonsToToggle[data[0]] = {};
+        this.buttonsToToggle[data[0]][data[4][1]] = this.objectsToEnable[data[0] + "1"].object;
+        this.buttonsToToggle[data[0]][data[4][3]] = this.objectsToEnable[data[0] + "2"].object;
       }
     }
-
-    let valCheck = (value, target) => {
-      return () => {
-        return this.values[value] === target;
-      };
-    };
-
-    let stateCheck = states => {
-      return () => {
-        return states.includes(this.state);
-      };
-    };
-
-    let stateValCheck = (states, value, target) => {
-      return () => {
-        return states.includes(this.state) && valCheck(value, target)();
-      };
-    };
 
     let comp = {};
     comp.LENGTH = 12;
@@ -1157,6 +1176,7 @@ export default {
 
       // Align text and enable/disable components
       this.fixTextAlignment();
+      this.toggleButtons();
       this.bL.fullUpdate();
       //this.bR.fullUpdate();
     },
@@ -1170,7 +1190,32 @@ export default {
         // console.log(lbl);
         this.objectsToEnable[lbl].object[this.objectsToEnable[lbl].component].disabled = this.objectsToEnable[lbl].formula();
       }
+    },
+    toggleButtons() {
+      for (const lbl of Object.keys(this.values)) {
+        const currVal = this.values[lbl];
+        for (const option of Object.keys(this.buttonsToToggle[lbl])) {
+          if (currVal === option) {
+            if (!this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
+              this.buttonsToToggle[lbl][option].rendNodeButton.classList.add("btn-warning");
+          } else {
+            if (this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
+              this.buttonsToToggle[lbl][option].rendNodeButton.classList.remove("btn-warning");
+          }
+        }
+      }
     }
   }
 };
 </script>
+
+<style>
+button:disabled {
+  opacity: 0.5;
+  /* visibility: hidden; */
+}
+input:disabled {
+  opacity: 0.7;
+  /* visibility: hidden; */
+}
+</style>

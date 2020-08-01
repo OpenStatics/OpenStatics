@@ -316,6 +316,99 @@ export default {
     comp.yBar = (x1, x2) => {
       return comp.Mx(x1, x2) / comp.Area(x1, x2);
     };
+    comp.delta = () => {
+      return Math.pow(sliders.b.Value(), 2) - 4 * sliders.a.Value() * sliders.c.Value();
+    };
+    comp.quad = positive => {
+      const sign = positive ? 1 : -1;
+      return (-1 * sliders.b.Value() + sign * Math.sqrt(comp.delta())) / (2 * sliders.a.Value());
+    };
+    comp.xBarComp = () => {
+      const easyVal = comp.xBar(comp.minX(), comp.maxX());
+      // Check if a, b = 0 (y=c)
+      if (sliders.a.Value() === 0 && sliders.b.Value() === 0) return easyVal;
+      // Check if no quadratic intersects
+      if (comp.delta() < 0) return easyVal;
+
+      let intersects = [];
+      // Check if a = 0 (y = bx + c)
+      // If so, intersect must be at x = -c/b
+      if (sliders.a.Value() === 0) intersects = [-sliders.c.Value() / sliders.b.Value()];
+      else {
+        // Since a != 0, treat like quadratic
+        intersects = [comp.quad(true), comp.quad(false)];
+        intersects.sort();
+      }
+
+      let vals = [comp.minX()];
+      for (let val of intersects) {
+        if (val >= comp.minX() && val <= comp.maxX()) vals.push(val);
+      }
+      vals.push(comp.maxX());
+      vals = [...new Set(vals)];
+
+      // Check if no intersections fit
+      if (vals.length == 2) return easyVal;
+      console.log(vals.length);
+      let xBars = [];
+      let areas = [];
+      let totalArea = 0;
+      for (let i = 0; i < vals.length - 1; i++) {
+        areas.push(comp.Area(vals[i], vals[i + 1]));
+        xBars.push(comp.My(vals[i], vals[i + 1]) / areas[i]);
+        areas[i] = Math.abs(areas[i]);
+        totalArea += areas[i];
+      }
+
+      let finalVal = 0;
+      for (let i = 0; i < areas.length; i++) {
+        finalVal += (xBars[i] * areas[i]) / totalArea;
+      }
+      return finalVal;
+    };
+    comp.yBarComp = () => {
+      const easyVal = comp.yBar(comp.minX(), comp.maxX());
+      // Check if a, b = 0 (y=c)
+      if (sliders.a.Value() === 0 && sliders.b.Value() === 0) return easyVal;
+      // Check if no quadratic intersects
+      if (comp.delta() < 0) return easyVal;
+
+      let intersects = [];
+      // Check if a = 0 (y = bx + c)
+      // If so, intersect must be at x = -c/b
+      if (sliders.a.Value() === 0) intersects = [-sliders.c.Value() / sliders.b.Value()];
+      else {
+        // Since a != 0, treat like quadratic
+        intersects = [comp.quad(true), comp.quad(false)];
+        intersects.sort();
+      }
+
+      let vals = [comp.minX()];
+      for (let val of intersects) {
+        if (val >= comp.minX() && val <= comp.maxX()) vals.push(val);
+      }
+      vals.push(comp.maxX());
+      vals = [...new Set(vals)];
+
+      // Check if no intersections fit
+      if (vals.length == 2) return easyVal;
+
+      let yBars = [];
+      let areas = [];
+      let totalArea = 0;
+      for (let i = 0; i < vals.length - 1; i++) {
+        areas.push(comp.Area(vals[i], vals[i + 1]));
+        yBars.push(comp.Mx(vals[i], vals[i + 1]) / areas[i]);
+        areas[i] = Math.abs(areas[i]);
+        totalArea += areas[i];
+      }
+
+      let finalVal = 0;
+      for (let i = 0; i < areas.length; i++) {
+        finalVal += (yBars[i] * areas[i]) / totalArea;
+      }
+      return finalVal;
+    };
 
     let graphs = {
       /*
@@ -715,8 +808,8 @@ export default {
       strokeWidth: 2
     });
 
-    // Red point
-    const redPoint = bR.create(
+    // Old point
+    bR.create(
       "point",
       [
         () => {
@@ -726,7 +819,20 @@ export default {
           return convY(comp.yBar(comp.minX(), comp.maxX()) + sliders.yT.Value(), graphs.large);
         }
       ],
-      { name: "", size: 5 }
+      { name: "", color: "purple", visible: false, size: 5 }
+    );
+    // New point
+    bR.create(
+      "point",
+      [
+        () => {
+          return convX(comp.xBarComp() + sliders.xT.Value(), graphs.large);
+        },
+        () => {
+          return convY(comp.yBarComp() + sliders.yT.Value(), graphs.large);
+        }
+      ],
+      { name: "", color: "red", size: 5 }
     );
 
     bR.create(
@@ -738,9 +844,9 @@ export default {
           return (
             "<b>" +
             "P = (" +
-            Math.round((comp.xBar(comp.minX(), comp.maxX()) + sliders.xT.Value()) * 1000, 3) / 1000 +
+            Math.round((comp.xBarComp() + sliders.xT.Value()) * 1000, 3) / 1000 +
             ", " +
-            Math.round((comp.yBar(comp.minX(), comp.maxX()) + sliders.yT.Value()) * 1000, 3) / 1000 +
+            Math.round((comp.yBarComp() + sliders.yT.Value()) * 1000, 3) / 1000 +
             ")</b>"
           );
         }
@@ -754,84 +860,6 @@ export default {
     this.bL = bL;
     this.bR = bR;
     this.changeState(0);
-
-    // var brd2 = JXG.JSXGraph.initBoard("jxgbox2", {
-    //   boundingbox: [-1, 14, 14, -1],
-    //   axis: true,
-    //   keepaspectratio: true,
-    //   showcopyright: false,
-    //   shownavigation: false
-    // });
-
-    // var pA = [], // main points (P, Q, R)
-    //   pB = [],
-    //   pC = [],
-    //   fA = [], // the y functions of the graphs 0, 1, 2/3
-    //   gA = []; // the curves (x^2, 24/x + 1, tangent, redo of tangent)
-
-    // gA[0] = brd2.create("curve", [
-    //   function(x) {
-    //     return x;
-    //   },
-    //   function(x) {
-    //     return x * x;
-    //   },
-    //   0,
-    //   14
-    // ]);
-    // gA[1] = brd2.create("curve", [
-    //   function(x) {
-    //     return x;
-    //   },
-    //   function(x) {
-    //     return 24 / x + 1;
-    //   },
-    //   0,
-    //   14
-    // ]);
-    // pA[0] = brd2.create("glider", [1, 1, gA[0]], { name: "$$P(1,1)$$", fixed: true });
-    // pA[1] = brd2.create("intersection", [gA[0], gA[1]], { name: "Q" });
-    // for (let i = 0; i < 2; i++) {
-    //   gA[i].setProperty({ strokeWidth: 2, strokeColor: "#E8981D" });
-    // }
-    // gA[2] = brd2.create("tangent", [pA[0]], { visible: false });
-    // pA[2] = brd2.create("intersection", [gA[2], gA[1]], { name: "R" });
-    // for (let i = 0; i < 3; i++) {
-    //   pA[i].setProperty({ size: 2, color: "#555555" });
-    // }
-    // gA[3] = brd2.create("curve", [
-    //   function(x) {
-    //     return x;
-    //   },
-    //   function(x) {
-    //     return gA[2].getSlope() * x + gA[2].getRise();
-    //   },
-    //   0,
-    //   14
-    // ]);
-    // fA[0] = function(x) {
-    //   return x * x;
-    // };
-    // fA[1] = function(x) {
-    //   return 24 / x + 1;
-    // };
-    // fA[2] = function(x) {
-    //   return gA[2].getSlope() * x + gA[2].getRise();
-    // };
-    // for (let i = 0; i < pA[1].X() * 2; i++) {
-    //   pB.push(brd2.create("point", [i * 0.5, fA[0](i * 0.5)]));
-    // }
-    // for (let i = 0; i < (pA[2].X() * 1 - pA[1].X()) * 2; i++) {
-    //   pB.push(brd2.create("point", [pA[1].X() + i * 0.5, fA[1](pA[1].X() + i * 0.5)]));
-    // }
-    // for (let i = 0; i < (pA[2].X() * 1 - pA[0].X()) * 2; i++) {
-    //   pB.push(brd2.create("point", [pA[2].X() - i * 0.5, fA[2](pA[2].X() - i * 0.5)]));
-    // }
-    // for (let i = 0; i < pB.length; i++) {
-    //   pB[i].setProperty({ visible: false });
-    // }
-    // pC = pB.slice(3, pB.length);
-    // gA[4] = brd2.create("curve", JXG.Math.Numerics.bezier(pC), { fillColor: "red", strokeWidth: 0.5, fixed: true, fillOpacity: 0.5 });
   },
   methods: {
     changeState(newState) {

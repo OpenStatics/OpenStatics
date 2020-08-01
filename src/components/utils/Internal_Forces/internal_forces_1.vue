@@ -656,8 +656,8 @@ export default {
       }),
       formula: () => {
         if (this.state >= 1) {
-          if (valCheck("reactive", "on")()) return "Free Body Diagram";
-          else return "Load Diagram";
+          if (valCheck("reactive", "on")()) return "<b>Free Body Diagram</b>";
+          else return "<b>Load Diagram</b>";
         } else return "";
       }
     };

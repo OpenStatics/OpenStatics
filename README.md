@@ -1,6 +1,6 @@
 # OpenStatics
 Development of Statics and Strength of Materials instructional modules that accelerate delivery and learning through user-controlled animation
-Development of Statics and Strength of Materials instructional modules that accelerate delivery and learning through user-controlled animation.
+Implementation site: https://openstatics.github.io/
 
 # Reference: The Pindera Group
 http://faculty.virginia.edu/pindera/index.html

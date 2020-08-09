@@ -29,6 +29,7 @@ export default {
     return {
       state: 0,
       values: {
+        rotation: "off",
         show_AB: "off",
         show_AC: "off",
         show_F: "off",

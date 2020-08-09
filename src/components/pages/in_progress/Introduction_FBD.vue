@@ -4,16 +4,25 @@
     <IntroFBDText></IntroFBDText>
     <div class="row my-3">
       <div class="col-xl-6 container">
-        <div class="mt-3 row">
+        <div class="mt-3 row" v-if="!showReactive">
+          <div class="col">Remove Roller</div>
+          <div class="col"><input type="radio" class="mx-3" name="removeRoller" @click="toggleRoller(1)" /> Yes</div>
+          <div class="col"><input type="radio" class="mx-3" name="removeRoller" checked @click="toggleRoller(0)" /> No</div>
+        </div>
+        <div class="mt-3 row" v-if="!removeRoller">
           <div class="col">Reactive Force at Equilibrium</div>
           <div class="col"><input type="radio" class="mx-3" name="reactiveForce" @click="toggleReactive(1)" /> On</div>
           <div class="col"><input type="radio" class="mx-3" name="reactiveForce" checked @click="toggleReactive(0)" /> Off</div>
         </div>
-        <div class="mt-3 row">
-          <div class="col">Remove Roller</div>
-          <div class="col"><input type="radio" class="mx-3" name="removeRoller" checked /> Yes</div>
-          <div class="col"><input type="radio" class="mx-3" name="removeRoller" /> No</div>
+        <div class="mt-3" v-if="removeRoller">
+          Show Rotation
+          <button class="btn">
+            <i v-if="!animeOn" class="fas fa-play" @click="playAnimation()"></i>
+            <i v-if="animeOn" class="fas fa-pause" @click="playAnimation()"></i>
+          </button>
+          <button class="btn"><i class="fas fa-redo" @click="resetAnimation()"> </i></button>
         </div>
+        <div class="mt-3" v-if="removeRoller">M :{{ getNetSupportForce() }}</div>
         <div id="control" class="" style="height:180px"></div>
       </div>
       <div id="introFBD" class="jsx-graph col-xl-6"></div>
@@ -34,8 +43,14 @@ export default {
       position: undefined,
       magnitude: undefined,
       direction: undefined,
+      supportForce: undefined,
       board: undefined,
-      showReactive: false
+      board_control: undefined,
+      showReactive: false,
+      removeRoller: false,
+      combs: [undefined, undefined],
+      animeOn: false,
+      angle: 0
     };
   },
 
@@ -43,7 +58,7 @@ export default {
     // create style and global parameters
     const fixedDecimal = 1;
     const x_shift = -5;
-    const y_shift = 10;
+    const y_shift = 4.5;
     const y_react_shift = -10;
     const moment_radius = 1.5;
     const fontSize = 16;
@@ -54,15 +69,24 @@ export default {
     const straightLast = false;
     const firstArrow = true;
 
-    const react_visible = () => {
-      return this.showReactive;
+    const react_visible = (mode = 0) => {
+      if (mode === 0) {
+        // show under both conditions
+        return this.showReactive || this.removeRoller;
+      } else if (mode === 1) {
+        // show under reactive
+        return this.showReactive;
+      } else {
+        // show under roller
+        return this.removeRoller;
+      }
     };
 
     const multiplier = 1.4;
 
     // create board
     this.board = JXG.JSXGraph.initBoard("introFBD", { boundingbox: [-15, 15, 15, -15], keepAspectRatio: true, showCopyright: false });
-    const board_control = JXG.JSXGraph.initBoard("control", {
+    this.board_control = JXG.JSXGraph.initBoard("control", {
       boundingbox: [0, 15, 15, 10],
       showCopyright: false,
       pan: { enabled: false },
@@ -70,10 +94,10 @@ export default {
       showNavigation: false,
       showZoom: false
     });
-    board_control.addChild(this.board);
+    this.board_control.addChild(this.board);
 
     // create inputs
-    this.position = board_control.create(
+    this.position = this.board_control.create(
       "slider",
       [
         [5, 14],
@@ -82,7 +106,7 @@ export default {
       ],
       { withLabel: false }
     );
-    board_control.create(
+    this.board_control.create(
       "text",
       [
         0,
@@ -94,7 +118,7 @@ export default {
       ],
       { fontSize }
     );
-    this.magnitude = board_control.create(
+    this.magnitude = this.board_control.create(
       "slider",
       [
         [5, 13],
@@ -103,7 +127,7 @@ export default {
       ],
       { withLabel: false }
     );
-    board_control.create(
+    this.board_control.create(
       "text",
       [
         0,
@@ -115,7 +139,7 @@ export default {
       ],
       { fontSize }
     );
-    this.direction = board_control.create(
+    this.direction = this.board_control.create(
       "slider",
       [
         [5, 12],
@@ -124,7 +148,7 @@ export default {
       ],
       { withLabel: false }
     );
-    board_control.create(
+    this.board_control.create(
       "text",
       [
         0,
@@ -136,24 +160,54 @@ export default {
       ],
       { fontSize }
     );
+    this.supportForce = this.board_control.create(
+      "slider",
+      [
+        [5, 11],
+        [10, 11],
+        [0, 1, 4]
+      ],
+      { withLabel: false }
+    );
+    this.board_control.create(
+      "text",
+      [
+        0,
+        11,
+        () => {
+          const value = parseFloat(this.supportForce.Value().toFixed(fixedDecimal));
+          return "Change Support Force:" + value;
+        }
+      ],
+      { fontSize }
+    );
 
     // create rectangle
     const rec_a = this.board.create("point", [0 + x_shift, -1 + y_shift], { fixed: true, visible: false });
     const rec_b = this.board.create("point", [0 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_c = this.board.create("point", [10 + x_shift, 1 + y_shift], { fixed: true, visible: false });
     const rec_d = this.board.create("point", [10 + x_shift, -1 + y_shift], { fixed: true, visible: false });
-    const rectangle = this.board.create("polygon", [rec_a, rec_b, rec_c, rec_d], { strokeColor: "black" });
+    const rectangle = this.board.create("polygon", [rec_a, rec_b, rec_c, rec_d], {
+      strokeColor: "black",
+      visible: false,
+      vertices: { visible: false }
+    });
 
     // reactive force and moment base
     const react_trans = this.board.create("transform", [0, y_react_shift], { type: "translate" });
-    const reactive_rec = this.board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
+    const reactive_rec = this.board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: () => react_visible(1) });
+
+    // create labels for diagram
+    this.board.create("text", [-10 + x_shift, y_shift, "Loading Diagram"], { fontSize });
+    this.board.create("text", [-10 + x_shift, y_shift + y_react_shift, "Free Body Diagram"], { fontSize, visible: () => react_visible(1) });
 
     // create the base fixed on the left side
+    const pin_center = this.board.create("point", [0 + x_shift, 0 + y_shift], { visible: false });
     const pin_p1_left = this.board.create("point", [-0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p2_left = this.board.create("point", [0.3 + x_shift, 0 + y_shift], { fixed: true, visible: false });
     const pin_p3_left = this.board.create("point", [1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
     const pin_p4_left = this.board.create("point", [-1 + x_shift, -1.5 + y_shift], { fixed: true, visible: false });
-    this.board.create("circle", [[0 + x_shift, 0 + y_shift], 0.3], {
+    this.board.create("circle", [pin_center, 0.3], {
       fillColor: "red",
       fixed: true,
       strokeColor: "black"
@@ -170,23 +224,25 @@ export default {
     this.board.create("circle", [[10 + x_shift, -1.3 + y_shift], 0.3], {
       fillColor: "red",
       fixed: true,
-      strokeColor: "#ffffff"
+      strokeColor: "#ffffff",
+      visible: () => !react_visible(2)
     });
     this.board.create("line", [roller_p1, roller_p2], {
       straightFirst,
       straightLast,
-      strokeColor: "black"
+      strokeColor: "black",
+      visible: () => !react_visible(2)
     });
-    this.board.create("comb", [roller_p2, roller_p1]);
+    this.combs[0] = this.board.create("comb", [roller_p2, roller_p1]);
 
     // create quator line
-    this.board.create(
+    const equator = this.board.create(
       "line",
       [
         [x_shift, y_shift],
         [x_shift + 10, y_shift]
       ],
-      { dash, straightFirst, straightLast }
+      { dash, straightFirst, straightLast, visible: false }
     );
 
     // create force
@@ -218,10 +274,8 @@ export default {
       straightFirst,
       straightLast,
       firstArrow,
-      strokeWidth
-    });
-    const forceLineLabel = this.board.create("text", [1, 1, "F"], {
-      anchor: forceLine
+      strokeWidth,
+      visible: false
     });
 
     // reactive forces
@@ -230,7 +284,7 @@ export default {
       straightLast,
       firstArrow,
       strokeWidth,
-      visible: react_visible
+      visible: () => react_visible(1)
     });
 
     // ax
@@ -262,11 +316,11 @@ export default {
         },
         strokeWidth,
         strokeColor,
-        visible: react_visible
+        visible: () => react_visible(1)
       }
     );
 
-    const Ax_Line_Label = this.board.create("text", [-1, -0.5, "A_x"], { anchor: Ax_Line, visible: react_visible });
+    const Ax_Line_Label = this.board.create("text", [-1, -0.5, "A_x"], { anchor: Ax_Line, visible: () => react_visible(1) });
 
     const Ax = this.board.create(
       "text",
@@ -279,7 +333,7 @@ export default {
           return "A_x = " + parseFloat(val.toFixed(fixedDecimal)) + "kNm";
         }
       ],
-      { visible: react_visible }
+      { visible: () => react_visible(1) }
     );
 
     // ay
@@ -296,10 +350,10 @@ export default {
           }
         ]
       ],
-      { straightFirst, straightLast, firstArrow, strokeWidth, strokeColor, visible: react_visible }
+      { straightFirst, straightLast, firstArrow, strokeWidth, strokeColor, visible: () => react_visible(1) }
     );
 
-    const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: react_visible });
+    const Ay_Line_Label = this.board.create("text", [1, 0, "A_y"], { anchor: Ay_Line, visible: () => react_visible(1) });
     const Ay = this.board.create(
       "text",
       [
@@ -311,7 +365,7 @@ export default {
           return "A_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
         }
       ],
-      { visible: react_visible }
+      { visible: () => react_visible(1) }
     );
 
     // by
@@ -328,10 +382,10 @@ export default {
           }
         ]
       ],
-      { straightFirst, straightLast, firstArrow, strokeWidth, strokeColor, visible: react_visible }
+      { straightFirst, straightLast, firstArrow, strokeWidth, strokeColor, visible: () => react_visible(1) }
     );
 
-    const By_Line_Label = this.board.create("text", [1, 0, "B_y"], { anchor: By_Line, visible: react_visible });
+    const By_Line_Label = this.board.create("text", [1, 0, "B_y"], { anchor: By_Line, visible: () => react_visible(1) });
     const By = this.board.create(
       "text",
       [
@@ -343,13 +397,111 @@ export default {
           return "B_y = " + parseFloat(val.toFixed(fixedDecimal)) + "kN";
         }
       ],
-      { visible: react_visible }
+      { visible: () => react_visible(1) }
     );
+
+    // R
+    const R_Line = this.board.create(
+      "line",
+      [
+        [10 + x_shift, -1 + y_shift],
+        [
+          10 + x_shift,
+          () => {
+            return -this.supportForce.Value() * multiplier + y_shift - 1;
+          }
+        ]
+      ],
+      { straightFirst, straightLast, firstArrow, strokeWidth, strokeColor, visible: false }
+    );
+
+    const R = this.board.create(
+      "text",
+      [
+        -10,
+        -6,
+        () => {
+          return this.supportForce.Value();
+        }
+      ],
+      { visible: () => react_visible(2) }
+    );
+    const rotate_trans = this.board.create(
+      "transform",
+      [
+        () => {
+          return this.angle;
+        },
+        pin_center
+      ],
+      { type: "rotate" }
+    );
+    this.board.create("polygon", [rectangle, rotate_trans], { vertices: { visible: false } });
+    const transformed_force = this.board.create("line", [forceLine, rotate_trans], {
+      straightFirst,
+      straightLast,
+      firstArrow,
+      strokeWidth
+    });
+    const forceLineLabel = this.board.create("text", [1, 1, "F"], {
+      anchor: transformed_force
+    });
+    this.board.create("line", [equator, rotate_trans], { dash, straightFirst, straightLast });
+    const transformed_R = this.board.create("line", [R_Line, rotate_trans], {
+      straightFirst,
+      straightLast,
+      firstArrow,
+      strokeWidth,
+      strokeColor,
+      visible: () => react_visible(2)
+    });
+    const R_Line_Label = this.board.create("text", [1, 0, "R"], { anchor: transformed_R, visible: () => react_visible(2) });
   },
   methods: {
     toggleReactive(index) {
       this.showReactive = index === 0 ? false : true;
       this.board.fullUpdate();
+    },
+    toggleRoller(index) {
+      this.removeRoller = index === 0 ? false : true;
+      if (index === 1) {
+        this.combs[0].setAttribute({ visible: false });
+      }
+      if (index === 0) {
+        this.combs[0].setAttribute({ visible: true });
+      }
+
+      this.board.fullUpdate();
+      this.board_control.fullUpdate();
+    },
+    getNetSupportForce() {
+      return this.position.Value() * this.magnitude.Value() * Math.sin((this.direction.Value() * Math.PI) / 180) - this.supportForce.Value() * 4;
+    },
+    async playAnimation() {
+      // only on once
+      if (this.animeOn) {
+        this.animeOn = false;
+        return;
+      }
+      this.animeOn = true;
+      let timeout = 0; // control timeout
+      while (this.angle < Math.PI * 4 && this.animeOn && timeout <= 200) {
+        this.angle += Math.PI / 20;
+        this.board.fullUpdate();
+        await this.sleep(30);
+        timeout += 1;
+      }
+      this.animeOn = false;
+      this.angle = 0;
+    },
+    async resetAnimation() {
+      this.animeOn = false;
+      await this.sleep(50);
+      this.angle = 0;
+      this.board.fullUpdate();
+    },
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   }
 };

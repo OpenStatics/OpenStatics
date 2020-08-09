@@ -15,9 +15,9 @@
       </button>
     </div> -->
     <div class="row my-3 justify-content-center">
-      <div id="boxLeft" class="boxLeft my-2" style="width:425px; height:700px;"></div>
+      <div id="boxLeft" class="boxLeft my-2" style="width:425px; height:800px;"></div>
 
-      <div id="boxRight" class="boxRight my-2" style="width:700px; height:700px;"></div>
+      <div id="boxRight" class="boxRight my-2" style="width:800px; height:800px;"></div>
     </div>
   </div>
 </template>
@@ -29,11 +29,10 @@ export default {
     return {
       state: 0,
       values: {
-        pointA: "off",
-        pointB: "off",
-        pos_vec: "off",
-        comps: "off",
-        rotation: "off"
+        show_AB: "off",
+        show_AC: "off",
+        show_F: "off",
+        proj_force: "off"
       },
       textToUpdate: {
         /* arbitrary name: {
@@ -73,7 +72,7 @@ export default {
       axis: false
     });
     // The size of the container (matches explicit css style in html)
-    bL.resizeContainer(425, 700);
+    bL.resizeContainer(425, 800);
 
     const bR = JXG.JSXGraph.initBoard("boxRight", {
       boundingbox: [-11, 11, 11, -11],
@@ -86,7 +85,7 @@ export default {
       axis: false
     });
     // The size of the container (matches explicit css style in html)
-    bR.resizeContainer(700, 700);
+    bR.resizeContainer(800, 800);
     //bR.options.layer["text"] = 10;
 
     // All sliders are stored in these objects
@@ -130,10 +129,10 @@ export default {
       };
     };
 
-    const INTERVAL = -4.25;
+    const INTERVAL = -3.5;
     // Generate sliders, along with their related components
     // Can either have textbox + update button, or on/off system
-    const TOP_Y = 12;
+    const TOP_Y = 12.5;
     const LEFT_X = -1;
     for (let data of [
       /* [key value,
@@ -149,14 +148,20 @@ export default {
       ["xA", "x_A", INTERVAL * 0.5, true, [-5, -3, 5], [0], "blue"],
       ["yA", "y_A", INTERVAL * 1.5, true, [-5, -3, 5], [0], "blue"],
       ["zA", "z_A", INTERVAL * 2.5, true, [-5, -3, 5], [0], "blue"],
-      ["pointA", "Show point A", INTERVAL * 3.5, false, ["On", "on", "Off", "off"], [0]],
-      [false, "<b>Point B Coordinates</b>:", INTERVAL * 4.25, false],
-      ["xB", "x_B", INTERVAL * 4.75, true, [-5, 3, 5], [0], "green"],
-      ["yB", "y_B", INTERVAL * 5.75, true, [-5, 3, 5], [0], "green"],
-      ["zB", "z_B", INTERVAL * 6.75, true, [-5, 3, 5], [0], "green"],
-      ["pointB", "Show point B", INTERVAL * 7.75, false, ["On", "on", "Off", "off"], [0]],
-      ["pos_vec", "<b>Position Vector</b>", INTERVAL * 8.5, false, ["On", "on", "Off", "off"], [0]],
-      ["comps", "Components", INTERVAL * 9, false, ["On", "on", "Off", "off"], [0]]
+      [false, "<b>Point B Coordinates</b>:", INTERVAL * 3.5, false],
+      ["xB", "x_B", INTERVAL * 4, true, [-5, 2, 5], [0], "green"],
+      ["yB", "y_B", INTERVAL * 5, true, [-5, 4, 5], [0], "green"],
+      ["zB", "z_B", INTERVAL * 6, true, [-5, 4, 5], [0], "green"],
+      [false, "<b>Point C Coordinates</b>:", INTERVAL * 7, false],
+      ["xC", "x_C", INTERVAL * 7.5, true, [-5, -3, 5], [0], "orange"],
+      ["yC", "y_C", INTERVAL * 8.5, true, [-5, 2, 5], [0], "orange"],
+      ["zC", "z_C", INTERVAL * 9.5, true, [-5, 4, 5], [0], "orange"],
+      [false, "<b>Magnitude of F_{AC}</b>:", INTERVAL * 10.5, false],
+      ["f", "F_{AC}", INTERVAL * 11, true, [-20, 7, 20], [0], "red"],
+      ["show_AB", "Show line AB", INTERVAL * 12, false, ["On", "on", "Off", "off"], [0]],
+      ["show_AC", "Show line AC", INTERVAL * 12.5, false, ["On", "on", "Off", "off"], [0]],
+      ["show_F", "Show F_{AC}", INTERVAL * 13, false, ["On", "on", "Off", "off"], [0]],
+      ["proj_force", "Projection of Force", INTERVAL * 13.5, false, ["On", "on", "Off", "off"], [0]]
     ]) {
       bL.create("text", [-15, TOP_Y + data[2], data[1] + (data[0] != false ? ":" : "")], {
         fontSize: LABEL_SIZE,
@@ -355,48 +360,85 @@ export default {
     comp.xy = (a, b, c) => {
       return [comp.x(a, b, c), comp.y(a, b, c)];
     };
+    comp.magnitude = v => {
+      // Assumes 3D vector as input
+      return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    };
+    comp.scalar_mult = (v, s) => {
+      // Assumes 3D vector as input
+      return [v[0] * s, v[1] * s, v[2] * s];
+    };
+    comp.dot_mult = (v1, v2) => {
+      return v2[0] * v1[0] + v2[1] * v1[1] + v2[2] * v1[2];
+    };
+    comp.vector_add = (v2, v1) => {
+      return [v2[0] + v1[0], v2[1] + v1[1], v2[2] + v1[2]];
+    };
+    comp.vector_sub = (v2, v1) => {
+      return [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]];
+    };
+    comp.pos_vec = point => {
+      return [sliders["x" + point].Value(), sliders["y" + point].Value(), sliders["z" + point].Value()];
+    };
+    comp.v_AC = () => {
+      //return [sliders.xC.Value() - sliders.xA.Value(), sliders.yC.Value() - sliders.yA.Value(), sliders.zC.Value() - sliders.zA.Value()];
+      return comp.vector_sub(comp.pos_vec("C"), comp.pos_vec("A"));
+    };
+    comp.v_AB = () => {
+      //return [sliders.xB.Value() - sliders.xA.Value(), sliders.yB.Value() - sliders.yA.Value(), sliders.zB.Value() - sliders.zA.Value()];
+      return comp.vector_sub(comp.pos_vec("B"), comp.pos_vec("A"));
+    };
+    comp.unit_vector = v => {
+      // Assumes 3D vector as input
+      let mag = comp.magnitude(v);
+      if (mag != 0) return [v[0] / mag, v[1] / mag, v[2] / mag];
+      else return [0, 0, 0];
+    };
+    comp.v_F = () => {
+      return comp.scalar_mult(comp.unit_vector(comp.v_AC()), sliders.f.Value());
+    };
+    comp.theta = () => {
+      let v1 = comp.v_AC();
+      let v2 = comp.v_AB();
+      return comp.degrees(Math.acos(comp.dot_mult(v1, v2) / (comp.magnitude(v1) * comp.magnitude(v2))));
+    };
+    comp.mag_proj = () => {
+      let v1 = comp.v_F();
+      let v2 = comp.v_AB();
+      let scalar = comp.dot_mult(v1, v2) / comp.dot_mult(v2, v2);
+      return comp.magnitude(comp.scalar_mult(v2, scalar));
+    };
 
-    // comp.xDiff = () => {
-    //   return sliders.xB.Value() - sliders.xA.Value();
-    // };
-    // comp.yDiff = () => {
-    //   return sliders.yB.Value() - sliders.yA.Value();
-    // };
-    // comp.zDiff = () => {
-    //   return sliders.zB.Value() - sliders.zA.Value();
-    // };
-
-    // for (let data of [
-    //   /* [x offset from left side, y coordinate, [label, function, unit], valCheck arg 1, valCheck arg 2, color] */
-    //   [0, INTERVAL * 9.5, ["x_B - x_A", comp.xDiff, ""], "comps", "on", "red"],
-    //   [10, INTERVAL * 9.5, ["y_B - y_A", comp.yDiff, ""], "comps", "on", "red"],
-    //   [20, INTERVAL * 9.5, ["z_B - z_A", comp.zDiff, ""], "comps", "on", "red"]
-    // ]) {
-    //   bL.create(
-    //     "text",
-    //     [
-    //       -15 + data[0],
-    //       TOP_Y + data[1],
-    //       () => {
-    //         let x = data[2][1]();
-    //         return (
-    //           "<span style='color:" +
-    //           data[5] +
-    //           "'><i>" +
-    //           data[2][0] +
-    //           "</i> = </span>" +
-    //           Math.round(x * 1000, 3) / 1000 +
-    //           " <span style='color:" +
-    //           data[5] +
-    //           "'><b>" +
-    //           data[2][2] +
-    //           "</b></span>"
-    //         );
-    //       }
-    //     ],
-    //     { fontSize: LABEL_SIZE, fixed: true, visible: valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
-    //   );
-    // }
+    for (let data of [
+      /* [x offset from left side, y coordinate, [label, function, unit], valCheck arg 1, valCheck arg 2, color] */
+      [0, INTERVAL * 14, ["\u03b8", comp.theta, "\u00b0"], "proj_force", "on", "red"],
+      [10, INTERVAL * 14, ["F_{AB}", comp.mag_proj, ""], "proj_force", "on", "red"]
+    ]) {
+      bL.create(
+        "text",
+        [
+          -15 + data[0],
+          TOP_Y + data[1],
+          () => {
+            let x = data[2][1]();
+            return (
+              "<span style='color:" +
+              data[5] +
+              "'><i>" +
+              data[2][0] +
+              "</i> = </span>" +
+              Math.round(x * 100, 3) / 100 +
+              " <span style='color:" +
+              data[5] +
+              "'><b>" +
+              data[2][2] +
+              "</b></span>"
+            );
+          }
+        ],
+        { fontSize: LABEL_SIZE, fixed: true, visible: valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
+      );
+    }
 
     let points = {};
     const hiddenProps = { fixed: true, visible: false, showInfobox: false };
@@ -444,115 +486,105 @@ export default {
       { ...axisProps, point2: { ...hiddenLabelProps, name: "z" } }
     );
 
-    // for (let i = 0; i < 8; i++) {
-    //   // Each i value converted to binary: 7 -> 111
-    //   // Bit 1 -> x, Bit 2 -> y, Bit 3 -> z
-    //   // 1 -> B, 0 -> A
-    //   let d1 = (i & 4) / 4;
-    //   let d2 = (i & 2) / 2;
-    //   let d3 = (i & 1) / 1;
-    //   let s1 = d1 === 1 ? "xB" : "xA";
-    //   let s2 = d2 === 1 ? "yB" : "yA";
-    //   let s3 = d3 === 1 ? "zB" : "zA";
-    //   // console.log([d1, d2, d3]);
-    //   points[String(i)] = bR.create(
-    //     "point",
-    //     [
-    //       () => {
-    //         return comp.x(sliders[s1].Value(), sliders[s2].Value(), sliders[s3].Value());
-    //       },
-    //       () => {
-    //         return comp.y(sliders[s1].Value(), sliders[s2].Value(), sliders[s3].Value());
-    //       }
-    //     ],
-    //     //{ visible: valCheck("comps", "on"), name: String(i) }
-    //     { ...hiddenProps }
-    //   );
-    // }
+    for (let data of [
+      ["A", "blue"],
+      ["B", "green"],
+      ["C", "orange"]
+    ]) {
+      points[data[0]] = bR.create(
+        "point",
+        [
+          () => {
+            return comp.x(sliders["x" + data[0]].Value(), sliders["y" + data[0]].Value(), sliders["z" + data[0]].Value());
+          },
+          () => {
+            return comp.y(sliders["x" + data[0]].Value(), sliders["y" + data[0]].Value(), sliders["z" + data[0]].Value());
+          }
+        ],
+        { name: data[0], fillColor: data[1], strokeColor: data[1], size: 5, label: { strokeColor: data[1] } }
+      );
+    }
 
-    // // Dotted lines
-    // for (let data of [
-    //   ["0", "1", false],
-    //   ["0", "2", false],
-    //   ["1", "3", false],
-    //   ["2", "3", false],
-    //   ["1", "5", false],
-    //   ["3", "7", false],
-    //   ["5", "7", false],
-    //   ["2", "6", false],
-    //   ["4", "5", false],
-    //   ["0", "4", true],
-    //   ["4", "6", true],
-    //   ["6", "7", true]
-    // ]) {
-    //   if (data[2] === false) {
-    //     bR.create("line", [points[data[0]], points[data[1]]], {
-    //       visible: valCheck("comps", "on"),
-    //       ...lineSegProps,
-    //       strokeColor: "black",
-    //       strokeWidth: 3,
-    //       dash: 2
-    //     });
-    //   } else {
-    //     bR.create("line", [points[data[0]], points[data[1]]], {
-    //       visible: valCheck("comps", "on"),
-    //       ...lineSegProps,
-    //       strokeColor: "red",
-    //       strokeWidth: 3,
-    //       lastArrow: true
-    //     });
-    //   }
-    // }
+    bR.create("line", [points.A, points.B], { ...lineSegProps, strokeColor: "black", dash: 2, strokeWidth: 2, visible: valCheck("show_AB", "on") });
+    bR.create("line", [points.A, points.C], { ...lineSegProps, strokeColor: "black", dash: 2, strokeWidth: 2, visible: valCheck("show_AC", "on") });
 
-    // for (let data of [
-    //   [1 / 2, 0, 0, "x_B - x_A", [0, -5]],
-    //   [1, 1 / 2, 0, "y_B - y_A", [5, 0]],
-    //   [1, 1, 1 / 2, "z_B - z_A", [5, 0]]
-    // ]) {
-    //   bR.create(
-    //     "point",
-    //     [
-    //       () => {
-    //         return comp.x(
-    //           sliders.xA.Value() + data[0] * comp.xDiff(),
-    //           sliders.yA.Value() + data[1] * comp.yDiff(),
-    //           sliders.zA.Value() + data[2] * comp.zDiff()
-    //         );
-    //       },
-    //       () => {
-    //         return comp.y(
-    //           sliders.xA.Value() + data[0] * comp.xDiff(),
-    //           sliders.yA.Value() + data[1] * comp.yDiff(),
-    //           sliders.zA.Value() + data[2] * comp.zDiff()
-    //         );
-    //       }
-    //     ],
-    //     { ...hiddenLabelProps, name: data[3], label: { fontSize: 14, strokeColor: "red", visible: valCheck("comps", "on"), offset: data[4] } }
-    //   );
-    // }
+    points.F = bR.create(
+      "point",
+      [
+        () => {
+          return comp.x.apply(null, comp.vector_add(comp.v_F(), comp.pos_vec("A")));
+          //return comp.x.apply(null, comp.vector_add(comp.scalar_mult(comp.unit_vector(comp.v_AC()), sliders.f.Value()), comp.pos_vec("A")));
+        },
+        () => {
+          return comp.y.apply(null, comp.vector_add(comp.v_F(), comp.pos_vec("A")));
+          //return comp.y.apply(null, comp.vector_add(comp.scalar_mult(comp.unit_vector(comp.v_AC()), sliders.f.Value()), comp.pos_vec("A")));
+        }
+      ],
+      { ...hiddenProps }
+    );
 
-    // points.a = bR.create("point", [points["0"], COPY], {
-    //   visible: valCheck("pointA", "on"),
-    //   name: "<b>A</b>",
-    //   strokeColor: "blue",
-    //   fillColor: "blue",
-    //   label: { strokeColor: "blue", fontSize: 16 }
-    // });
-    // points.b = bR.create("point", [points["7"], COPY], {
-    //   visible: valCheck("pointB", "on"),
-    //   name: "<b>B</b>",
-    //   strokeColor: "green",
-    //   fillColor: "green",
-    //   label: { strokeColor: "green", fontSize: 16 }
-    // });
+    bR.create("line", [points.A, points.F], {
+      ...lineSegProps,
+      strokeColor: "red",
+      strokeWidth: 3,
+      lastArrow: true,
+      visible: valCheck("show_F", "on")
+    });
 
-    // bR.create("line", [points.a, points.b], {
-    //   visible: valCheck("pos_vec", "on"),
-    //   ...lineSegProps,
-    //   strokeColor: "red",
-    //   strokeWidth: 5,
-    //   lastArrow: true
-    // });
+    points.proj = bR.create(
+      "point",
+      [
+        () => {
+          let v1 = comp.v_F();
+          let v2 = comp.v_AB();
+          let scalar = comp.dot_mult(v1, v2) / comp.dot_mult(v2, v2);
+          // console.log(comp.magnitude(comp.scalar_mult(v2, scalar)));
+          return comp.x.apply(null, comp.vector_add(comp.scalar_mult(v2, scalar), comp.pos_vec("A")));
+        },
+        () => {
+          let v1 = comp.v_F();
+          let v2 = comp.v_AB();
+          let scalar = comp.dot_mult(v1, v2) / comp.dot_mult(v2, v2);
+          return comp.y.apply(null, comp.vector_add(comp.scalar_mult(v2, scalar), comp.pos_vec("A")));
+        }
+      ],
+      { ...hiddenProps }
+    );
+
+    bR.create("line", [points.A, points.proj], {
+      ...lineSegProps,
+      strokeColor: "purple",
+      strokeWidth: 3,
+      lastArrow: true,
+      visible: valCheck("proj_force", "on")
+    });
+
+    bR.create("line", [points.F, points.proj], {
+      ...lineSegProps,
+      strokeColor: "black",
+      strokeWidth: 3,
+      dash: 2,
+      visible: valCheck("proj_force", "on")
+    });
+
+    bR.create("polygon", [points.A, points.F, points.proj], {
+      visible: valCheck("proj_force", "on"),
+      withLines: false,
+      fillColor: "blue"
+    });
+
+    let angle = bR.create("angle", [points.F, points.A, points.proj], { name: "\u03b8", strokeColor: "red", label: { strokeColor: "red" } });
+    angle.setAttribute({
+      visible: () => {
+        return valCheck("proj_force", "on")() && angle.Value() < Math.PI;
+      }
+    });
+    let angle2 = bR.create("angle", [points.proj, points.A, points.F], { name: "\u03b8", strokeColor: "red", label: { strokeColor: "red" } });
+    angle2.setAttribute({
+      visible: () => {
+        return valCheck("proj_force", "on")() && angle2.Value() <= Math.PI;
+      }
+    });
 
     bL.addChild(bR);
     bR.addChild(bL);

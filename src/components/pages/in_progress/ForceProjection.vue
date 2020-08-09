@@ -11,7 +11,7 @@
   </div>
 </template>
 <script>
-import force_projection from "../../utils/ForceProj/force_proj.vue";
+import force_projection from "../../utils/ForceProj/force_proj_line.vue";
 
 export default {
   data() {

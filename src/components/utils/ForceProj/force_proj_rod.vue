@@ -306,15 +306,23 @@ export default {
           visible: valCheck("rotation", "on"),
           strokeColor: "purple",
           fillColor: "purple",
-          label: { strokeColor: "purple" }
+          label: { strokeColor: "purple", visible: false }
         }
       );
+      cS.label2 = bR.create("text", [data[1], data[2], data[5]], {
+        fontSize: 12,
+        fixed: true,
+        anchorX: "middle",
+        anchorY: "bottom",
+        visible: valCheck("rotation", "on"),
+        strokeColor: "purple"
+      });
       cS.label = bR.create("text", [data[1], data[2], ""], {
         digits: 0,
         fontSize: 12,
         fixed: true,
         anchorX: "middle",
-        anchorY: "middle",
+        anchorY: "top",
         visible: valCheck("rotation", "on"),
         strokeColor: "purple"
       });

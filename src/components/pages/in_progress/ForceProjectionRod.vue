@@ -16,7 +16,7 @@
     </div>
     <p>The component of the perpendicular force may be found using the following relation</p>
     <div class="text-center">
-      <p><vue-mathjax formula="$F = F_{\perp}^2 + F_{||}^2$" /></p>
+      <p><vue-mathjax formula="$F^2 = F_{\perp}^2 + F_{||}^2$" /></p>
     </div>
     <fp />
   </div>

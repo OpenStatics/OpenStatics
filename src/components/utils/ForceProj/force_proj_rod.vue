@@ -637,7 +637,7 @@ export default {
       visible: valCheck("proj_force", "on")
     });
 
-    points.B = bL.addChild(bR);
+    bL.addChild(bR);
     bR.addChild(bL);
     this.bL = bL;
     this.bR = bR;

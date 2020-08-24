@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { CircleSlider } from "../../../classes/CircleSlider.js";
 export default {
   components: {},
   data: () => {
@@ -118,17 +119,17 @@ export default {
       };
     };
 
-    let stateCheck = states => {
-      return () => {
-        return states.includes(this.state);
-      };
-    };
+    // let stateCheck = states => {
+    //   return () => {
+    //     return states.includes(this.state);
+    //   };
+    // };
 
-    let stateValCheck = (states, value, target) => {
-      return () => {
-        return states.includes(this.state) && valCheck(value, target)();
-      };
-    };
+    // let stateValCheck = (states, value, target) => {
+    //   return () => {
+    //     return states.includes(this.state) && valCheck(value, target)();
+    //   };
+    // };
 
     const INTERVAL = -3.5;
     // Generate sliders, along with their related components
@@ -279,64 +280,21 @@ export default {
       }
     }
 
-    let glideVal = root => {
-      // convert position on circle to angle in radians
-      let cS = circleSlides[root];
-      let angleRad = Math.acos((cS.glider.X() - cS.center.X()) / cS.circle.Radius());
-      angleRad = cS.glider.Y() - cS.center.Y() >= 0 ? angleRad : Math.PI * 2 - angleRad;
-      return (Math.round((angleRad * 180) / Math.PI) * Math.PI) / 180;
-    };
-
-    // Completely functional, can't find a usage
-    // let setGlideVal = (root, deg) => {
-    //   let cS = circleSlides[root];
-    //   let radius = cS.circle.Radius();
-    //   cS.glider.setPositionDirectly(JXG.COORDS_BY_USER, [
-    //     radius * Math.cos((deg * Math.PI) / 180) + cS.center.X(),
-    //     radius * Math.sin((deg * Math.PI) / 180) + cS.center.Y()
-    //   ]);
-    // };
-
+    // Handles circle gliders
+    let CSProps = {};
+    for (let key of ["circle", "glider", "textLabel"]) CSProps[key] = { visible: valCheck("rotation", "on") };
     let circleSlides = {};
     for (let data of [
       ["tx", 8, -8, 1, 250, "\u03b8_x"],
       ["ty", 5, -8, 1, 180, "\u03b8_y"],
       ["tz", 2, -8, 1, 150, "\u03b8_z"]
     ]) {
-      circleSlides[data[0]] = {};
-      let cS = circleSlides[data[0]];
-      cS.center = bR.create("point", [data[1], data[2]], { fixed: true, visible: false, showInfobox: false });
-      cS.circle = bR.create("circle", [cS.center, data[3]], { fixed: true, visible: valCheck("rotation", "on"), strokeColor: "black" });
-      cS.glider = bR.create(
-        "glider",
-        [data[3] * Math.cos((data[4] * Math.PI) / 180) + data[1], data[3] * Math.sin((data[4] * Math.PI) / 180) + data[2], cS.circle],
-        {
-          name: data[5],
-          showInfobox: false,
-          visible: valCheck("rotation", "on"),
-          strokeColor: "purple",
-          fillColor: "purple",
-          label: { strokeColor: "purple" }
-        }
-      );
-      cS.label = bR.create("text", [data[1], data[2], ""], {
-        digits: 0,
-        fontSize: 12,
-        fixed: true,
-        anchorX: "middle",
-        anchorY: "middle",
-        visible: valCheck("rotation", "on"),
-        strokeColor: "purple"
-      });
-      this.textToUpdate[data[0] + "_label"] = {
-        object: cS.label,
-        formula: () => {
-          return Math.round((glideVal(data[0]) * 180) / Math.PI);
-        }
-      };
+      circleSlides[data[0]] = new CircleSlider(bR, data[0], data[1], data[2], data[3], data[4], data[5], this.textToUpdate, CSProps);
     }
 
-    //setGlideVal("tz", 0);
+    const glideVal = root => {
+      return circleSlides[root].glideVal();
+    };
 
     // Handles all calculations
     let comp = {};
@@ -445,7 +403,7 @@ export default {
     const hiddenProps = { fixed: true, visible: false, showInfobox: false };
     const hiddenLabelProps = { fixed: true, visible: true, withLabel: true, size: 0, showInfobox: false };
     const lineSegProps = { straightFirst: false, straightLast: false };
-    const COPY = bR.create("transform", [0, 0], { type: "translate" });
+    // const COPY = bR.create("transform", [0, 0], { type: "translate" });
 
     // axes (x, y, z)
     const axisLength = 10;

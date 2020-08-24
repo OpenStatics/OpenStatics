@@ -24,39 +24,13 @@
 
 <script>
 import { CircleSlider } from "../../../classes/CircleSlider.js";
+import { InputHandler } from "../../../classes/InputHandler.js";
 
 export default {
   components: {},
   data: () => {
     return {
-      state: 0,
-      values: {
-        pointA: "off",
-        pointB: "off",
-        pos_vec: "off",
-        comps: "off",
-        rotation: "off"
-      },
-      textToUpdate: {
-        /* arbitrary name: {
-            object: reference to object
-            formula: function that returns text (string)
-        }*/
-      },
-      objectsToEnable: {
-        /* arbitrary name: {
-            object: reference to object
-            component: component to enable/disable
-            formula: function that returns true for disable
-        }
-        */
-      },
-      buttonsToToggle: {
-        /* key from values: {
-            possible value: corresponding button
-        }
-        */
-      },
+      IH: null,
       bL: undefined,
       bR: undefined
     };
@@ -93,59 +67,24 @@ export default {
 
     // All sliders are stored in these objects
     // They can be accessed with brackets sliders["force"] or dot notation sliders.force
+    this.bL = bL;
+    this.bR = bR;
+
     let sliders = {};
     const LABEL_SIZE = 18;
-
-    // Function that updates a slider value to that inside the textbox
-    let buttonClick = (textbox, slider) => {
-      return () => {
-        if (textbox.Value() === "") return;
-        if (!isNaN(textbox.Value())) {
-          let val = Number(textbox.Value());
-          val = Math.min(slider._smax, val);
-          val = Math.max(slider._smin, val);
-          val = Math.round(val * 100) / 100;
-          slider.setValue(val);
-          textbox.rendNodeInput.value = "";
-          textbox.update();
-          slider.update();
-          this.fixTextAlignment();
-        }
-      };
-    };
-
-    let valCheck = (value, target) => {
-      return () => {
-        return this.values[value] === target;
-      };
-    };
-
-    // let stateCheck = states => {
-    //   return () => {
-    //     return states.includes(this.state);
-    //   };
-    // };
-
-    // let stateValCheck = (states, value, target) => {
-    //   return () => {
-    //     return states.includes(this.state) && valCheck(value, target)();
-    //   };
-    // };
 
     const INTERVAL = -4.25;
     // Generate sliders, along with their related components
     // Can either have textbox + update button, or on/off system
     const TOP_Y = 12;
     const LEFT_X = -1;
+    const RIGHT_X = 5;
+
+    const INITIAL_VALUES = { pointA: "off", pointB: "off", pos_vec: "off", comps: "off", rotation: "off" };
+    let IH = new InputHandler(bL, INTERVAL, TOP_Y, LEFT_X, RIGHT_X, LABEL_SIZE, INITIAL_VALUES, 0);
+    this.IH = IH;
+
     for (let data of [
-      /* [key value,
-          label name,
-          y position,
-          true: update button | false: on/off,
-          [min, start, max] (if true) | [lbl1, val1, lbl2, val2] (if false),
-          [allowed states],
-          color ]*/
-      /* For just text: [false, label name, mathJax] */
       ["rotation", "Rotate Axes", INTERVAL * -0.5, false, ["On", "on", "Off", "off"], [0]],
       [false, "<b>Point A Coordinates</b>:", INTERVAL * 0, false],
       ["xA", "x_A", INTERVAL * 0.5, true, [-5, -3, 5], [0], "blue"],
@@ -160,130 +99,18 @@ export default {
       ["pos_vec", "<b>Position Vector</b>", INTERVAL * 8.5, false, ["On", "on", "Off", "off"], [0]],
       ["comps", "Components", INTERVAL * 9, false, ["On", "on", "Off", "off"], [0]]
     ]) {
-      bL.create("text", [-15, TOP_Y + data[2], data[1] + (data[0] != false ? ":" : "")], {
-        fontSize: LABEL_SIZE,
-        color: "black",
-        fixed: true,
-        useMathJax: data[0] != false ? false : data[3]
-      });
-
-      // Just label
-      if (data[0] === false) continue;
-
-      if (data[3]) {
-        // True case
-
-        sliders[data[0]] = bL.create("slider", [[LEFT_X, TOP_Y + data[2]], [9, TOP_Y + data[2]], data[4]], {
-          name: "",
-          withTicks: false,
-          strokeColor: data[6],
-          fillColor: "white",
-          highline: { color: data[6] },
-          baseline: { color: data[6] },
-          label: {
-            color: "black",
-            fontSize: LABEL_SIZE,
-            visible: () => {
-              return data[5].includes(this.state);
-            }
-          },
-          snapWidth: 0.01,
-          visible: () => {
-            return data[5].includes(this.state);
-          }
-        });
-        let textbox = bL.create("input", [LEFT_X, TOP_Y + data[2] - 1.5, "", ""], {
-          cssStyle: "width: 58px",
-          fixed: true
-        });
-        let button = bL.create("button", [5, TOP_Y + data[2] - 1.5, "Update", buttonClick(textbox, sliders[data[0]])], { fixed: true });
-
-        textbox.rendNodeInput.addEventListener("keyup", function(event) {
-          // Number 13 is the "Enter" key on the keyboard
-          if (event.keyCode === 13) {
-            // Trigger the button element with a click
-            button.rendNodeButton.click();
-          }
-        });
-
-        this.objectsToEnable[data[0] + "1"] = {
-          object: textbox,
-          component: "rendNodeInput",
-          formula: () => {
-            return !data[5].includes(this.state);
-          }
-        };
-        this.objectsToEnable[data[0] + "2"] = {
-          object: button,
-          component: "rendNodeButton",
-          formula: () => {
-            return !data[5].includes(this.state);
-          }
-        };
-      } else {
-        // False case
-        this.objectsToEnable[data[0] + "1"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
-        this.objectsToEnable[data[0] + "2"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
-        this.objectsToEnable[data[0] + "1"].object = bL.create(
-          "button",
-          [
-            LEFT_X,
-            TOP_Y + data[2],
-            data[4][0],
-            () => {
-              this.values[data[0]] = data[4][1];
-              this.fixTextAlignment();
-              this.toggleButtons();
-            }
-          ],
-          {
-            fixed: true
-          }
-        );
-        this.objectsToEnable[data[0] + "1"].formula = () => {
-          return !data[5].includes(this.state);
-        };
-
-        this.objectsToEnable[data[0] + "2"].object = bL.create(
-          "button",
-          [
-            5,
-            TOP_Y + data[2],
-            data[4][2],
-            () => {
-              this.values[data[0]] = data[4][3];
-              this.fixTextAlignment();
-              this.toggleButtons();
-            }
-          ],
-          {
-            fixed: true,
-            disabled: () => {
-              return data[5].includes(this.state);
-            }
-          }
-        );
-        this.objectsToEnable[data[0] + "2"].formula = () => {
-          return !data[5].includes(this.state);
-        };
-
-        this.objectsToEnable[data[0] + "1"].object.rendNodeButton.classList.add("btn-primary");
-        this.objectsToEnable[data[0] + "2"].object.rendNodeButton.classList.add("btn-primary");
-        this.buttonsToToggle[data[0]] = {};
-        this.buttonsToToggle[data[0]][data[4][1]] = this.objectsToEnable[data[0] + "1"].object;
-        this.buttonsToToggle[data[0]][data[4][3]] = this.objectsToEnable[data[0] + "2"].object;
-      }
+      IH.generate(data, sliders);
     }
 
     let CSProps = {};
-    for (let key of ["circle", "glider", "textLabel"]) CSProps[key] = { visible: valCheck("rotation", "on") };
+    for (let key of ["circle", "glider", "textLabel"]) CSProps[key] = { visible: IH.valCheck("rotation", "on") };
     let circleSlides = {};
     for (let data of [
       ["tx", 8, -8, 1, 250, "\u03b8_x"],
       ["ty", 5, -8, 1, 180, "\u03b8_y"],
       ["tz", 2, -8, 1, 150, "\u03b8_z"]
     ]) {
-      circleSlides[data[0]] = new CircleSlider(bR, data[0], data[1], data[2], data[3], data[4], data[5], this.textToUpdate, CSProps);
+      circleSlides[data[0]] = new CircleSlider(bR, data[0], data[1], data[2], data[3], data[4], data[5], IH.textToUpdate, CSProps);
     }
 
     const glideVal = root => {
@@ -349,7 +176,7 @@ export default {
             );
           }
         ],
-        { fontSize: LABEL_SIZE, fixed: true, visible: valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
+        { fontSize: LABEL_SIZE, fixed: true, visible: IH.valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
       );
     }
 
@@ -442,7 +269,7 @@ export default {
     ]) {
       if (data[2] === false) {
         bR.create("line", [points[data[0]], points[data[1]]], {
-          visible: valCheck("comps", "on"),
+          visible: IH.valCheck("comps", "on"),
           ...lineSegProps,
           strokeColor: "black",
           strokeWidth: 3,
@@ -450,7 +277,7 @@ export default {
         });
       } else {
         bR.create("line", [points[data[0]], points[data[1]]], {
-          visible: valCheck("comps", "on"),
+          visible: IH.valCheck("comps", "on"),
           ...lineSegProps,
           strokeColor: "red",
           strokeWidth: 3,
@@ -460,9 +287,9 @@ export default {
     }
 
     for (let data of [
-      [1 / 2, 0, 0, "x_B - x_A", [0, -5]],
-      [1, 1 / 2, 0, "y_B - y_A", [5, 0]],
-      [1, 1, 1 / 2, "z_B - z_A", [5, 0]]
+      [0.5, 0, 0, "x_B - x_A", [0, -5]],
+      [1, 0.5, 0, "y_B - y_A", [5, 0]],
+      [1, 1, 0.5, "z_B - z_A", [5, 0]]
     ]) {
       bR.create(
         "point",
@@ -482,19 +309,19 @@ export default {
             );
           }
         ],
-        { ...hiddenLabelProps, name: data[3], label: { fontSize: 14, strokeColor: "red", visible: valCheck("comps", "on"), offset: data[4] } }
+        { ...hiddenLabelProps, name: data[3], label: { fontSize: 14, strokeColor: "red", visible: IH.valCheck("comps", "on"), offset: data[4] } }
       );
     }
 
     points.a = bR.create("point", [points["0"], COPY], {
-      visible: valCheck("pointA", "on"),
+      visible: IH.valCheck("pointA", "on"),
       name: "<b>A</b>",
       strokeColor: "blue",
       fillColor: "blue",
       label: { strokeColor: "blue", fontSize: 16 }
     });
     points.b = bR.create("point", [points["7"], COPY], {
-      visible: valCheck("pointB", "on"),
+      visible: IH.valCheck("pointB", "on"),
       name: "<b>B</b>",
       strokeColor: "green",
       fillColor: "green",
@@ -502,7 +329,7 @@ export default {
     });
 
     bR.create("line", [points.a, points.b], {
-      visible: valCheck("pos_vec", "on"),
+      visible: IH.valCheck("pos_vec", "on"),
       ...lineSegProps,
       strokeColor: "red",
       strokeWidth: 5,
@@ -511,47 +338,11 @@ export default {
 
     bL.addChild(bR);
     bR.addChild(bL);
-    this.bL = bL;
-    this.bR = bR;
     this.changeState(0);
   },
   methods: {
     changeState(newState) {
-      // Handle state specific changes
-
-      // Update the current state
-      this.state = newState;
-
-      // Align text and enable/disable components
-      this.fixTextAlignment();
-      this.toggleButtons();
-      this.bL.fullUpdate();
-      //this.bR.fullUpdate();
-    },
-    fixTextAlignment() {
-      for (const lbl of Object.keys(this.textToUpdate)) {
-        //console.log(lbl);
-        this.textToUpdate[lbl].object.setText("");
-        this.textToUpdate[lbl].object.setText(this.textToUpdate[lbl].formula);
-      }
-      // Also does buttons
-      for (const lbl of Object.keys(this.objectsToEnable)) {
-        this.objectsToEnable[lbl].object[this.objectsToEnable[lbl].component].disabled = this.objectsToEnable[lbl].formula();
-      }
-    },
-    toggleButtons() {
-      for (const lbl of Object.keys(this.values)) {
-        const currVal = this.values[lbl];
-        for (const option of Object.keys(this.buttonsToToggle[lbl])) {
-          if (currVal === option) {
-            if (!this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
-              this.buttonsToToggle[lbl][option].rendNodeButton.classList.add("btn-warning");
-          } else {
-            if (this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
-              this.buttonsToToggle[lbl][option].rendNodeButton.classList.remove("btn-warning");
-          }
-        }
-      }
+      this.IH.updateState(newState);
     }
   }
 };

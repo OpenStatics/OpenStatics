@@ -1,19 +1,5 @@
 <template>
   <div class="container-fluid">
-    <!-- <div class="row justify-content-center">
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 0 }" @click="() => changeState(0)">
-        Clear
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 1 }" @click="() => changeState(1)">
-        Step 1: External loadings on the beam
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 2 }" @click="() => changeState(2)">
-        Step 2: Internal forces in the beam
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 3 }" @click="() => changeState(3)">
-        Step 3: Internal force diagrams of the beam
-      </button>
-    </div> -->
     <div class="row my-3 justify-content-center">
       <div id="boxLeft" class="boxLeft my-2" style="width:425px; height:700px;"></div>
 
@@ -30,7 +16,7 @@ export default {
   components: {},
   data: () => {
     return {
-      IH: null,
+      IH: undefined,
       bL: undefined,
       bR: undefined
     };
@@ -102,6 +88,7 @@ export default {
       IH.generate(data, sliders);
     }
 
+    // Handles circle gliders
     let CSProps = {};
     for (let key of ["circle", "glider", "textLabel"]) CSProps[key] = { visible: IH.valCheck("rotation", "on") };
     let circleSlides = {};
@@ -189,42 +176,24 @@ export default {
     // axes (x, y, z)
     const axisLength = 10;
     const axisProps = { strokeColor: "black", strokeWidth: 3, ...lineSegProps, lastArrow: true };
-    bR.create(
-      "line",
-      [
-        () => {
-          return comp.xy(-axisLength, 0, 0);
-        },
-        () => {
-          return comp.xy(axisLength, 0, 0);
-        }
-      ],
-      { ...axisProps, point2: { ...hiddenLabelProps, name: "x" } }
-    );
-    bR.create(
-      "line",
-      [
-        () => {
-          return comp.xy(0, -axisLength, 0);
-        },
-        () => {
-          return comp.xy(0, axisLength, 0);
-        }
-      ],
-      { ...axisProps, point2: { ...hiddenLabelProps, name: "y" } }
-    );
-    bR.create(
-      "line",
-      [
-        () => {
-          return comp.xy(0, 0, -axisLength);
-        },
-        () => {
-          return comp.xy(0, 0, axisLength);
-        }
-      ],
-      { ...axisProps, point2: { ...hiddenLabelProps, name: "z" } }
-    );
+    for (let data of [
+      [axisLength, 0, 0, "x"],
+      [0, axisLength, 0, "y"],
+      [0, 0, axisLength, "z"]
+    ]) {
+      bR.create(
+        "line",
+        [
+          () => {
+            return comp.xy(-data[0], -data[1], -data[2]);
+          },
+          () => {
+            return comp.xy(data[0], data[1], data[2]);
+          }
+        ],
+        { ...axisProps, point2: { ...hiddenLabelProps, name: data[3], label: { fontSize: 14 } } }
+      );
+    }
 
     for (let i = 0; i < 8; i++) {
       // Each i value converted to binary: 7 -> 111

@@ -23,39 +23,14 @@
 </template>
 
 <script>
+import { CircleSlider } from "../../../classes/CircleSlider.js";
+import { InputHandler } from "../../../classes/InputHandler.js";
+
 export default {
   components: {},
   data: () => {
     return {
-      state: 0,
-      values: {
-        f_comps: "on",
-        f_vis: "off",
-        sum: "off",
-        alpha: "off",
-        beta: "off",
-        gamma: "off"
-      },
-      textToUpdate: {
-        /* arbitrary name: {
-            object: reference to object
-            formula: function that returns text (string)
-        }*/
-      },
-      objectsToEnable: {
-        /* arbitrary name: {
-            object: reference to object
-            component: component to enable/disable
-            formula: function that returns true for disable
-        }
-        */
-      },
-      buttonsToToggle: {
-        /* key from values: {
-            possible value: corresponding button
-        }
-        */
-      },
+      IH: undefined,
       bL: undefined,
       bR: undefined
     };
@@ -91,76 +66,25 @@ export default {
 
     // All sliders are stored in these objects
     // They can be accessed with brackets sliders["force"] or dot notation sliders.force
+    this.bL = bL;
+    this.bR = bR;
+
     let sliders = {};
     const LABEL_SIZE = 18;
-
-    // Function that updates a slider value to that inside the textbox
-    let buttonClick = (textbox, slider) => {
-      return () => {
-        if (textbox.Value() === "") return;
-        if (!isNaN(textbox.Value())) {
-          let val = Number(textbox.Value());
-          val = Math.min(slider._smax, val);
-          val = Math.max(slider._smin, val);
-          val = Math.round(val * 100) / 100;
-          slider.setValue(val);
-          textbox.rendNodeInput.value = "";
-          textbox.update();
-          slider.update();
-          this.fixTextAlignment();
-        }
-      };
-    };
-
-    let valCheck = (value, target) => {
-      return () => {
-        return this.values[value] === target;
-      };
-    };
-
-    let stateCheck = states => {
-      return () => {
-        return states.includes(this.state);
-      };
-    };
-
-    let stateValCheck = (states, value, target) => {
-      return () => {
-        return states.includes(this.state) && valCheck(value, target)();
-      };
-    };
 
     const INTERVAL = -4.5;
     // Generate sliders, along with their related components
     // Can either have textbox + update button, or on/off system
-    const TOP_Y = 12;
+    const TOP_Y = 11;
     const LEFT_X = -1;
+    const RIGHT_X = 5;
+
+    const INITIAL_VALUES = { rotation: "off", f_comps: "on", f_vis: "off", sum: "off", alpha: "off", beta: "off", gamma: "off" };
+    let IH = new InputHandler(bL, INTERVAL, TOP_Y, LEFT_X, RIGHT_X, LABEL_SIZE, INITIAL_VALUES, 0);
+    this.IH = IH;
+
     for (let data of [
-      /* [key value,
-          label name,
-          y position,
-          true: update button | false: on/off,
-          [min, start, max] (if true) | [lbl1, val1, lbl2, val2] (if false),
-          [allowed states],
-          color ]*/
-      /* For just text: [false, label name, mathJax] */
-      /*
-      ["coords", "Coordinate Visibility", INTERVAL * 0, false, ["On", "on", "Off", "off"], [0]],
-      [
-        false,
-        "<b>y = f(x) = <span style='color:red'>a</span>x^2 + <span style='color:blue'>b</span>x + <span style='color:green'>c</span>:</b>",
-        INTERVAL * 1,
-        false
-      ],
-      ["a", "a", INTERVAL * 1.5, true, [-3, 0, 3], [0], "red"],
-      ["b", "b", INTERVAL * 2.5, true, [-3, 0, 3], [0], "blue"],
-      ["c", "c", INTERVAL * 3.5, true, [-3, 0, 3], [0], "green"],
-      [false, "<b>Range of element, from x_1 to x_2:</b>", INTERVAL * 4.75, false],
-      ["x1", "x_1", INTERVAL * 5.5, true, [-3, 0, 3], [0], "black"],
-      ["x2", "x_2", INTERVAL * 6.5, true, [-3, 3, 3], [0], "black"],
-      [false, "<b>Translate graph:</b>", INTERVAL * 7.75, false],
-      ["xT", "x", INTERVAL * 8.5, true, [-3, 0, 3], [0], "black"],
-      ["yT", "y", INTERVAL * 9.5, true, [-3, 0, 3], [0], "black"]*/
+      ["rotation", "Rotate Axes", INTERVAL * -0.5, false, ["On", "on", "Off", "off"], [0]],
       ["fx", "F_x", INTERVAL * 0, true, [-5, 0, 5], [0], "blue"],
       ["fy", "F_y", INTERVAL * 1, true, [-5, 0, 5], [0], "blue"],
       ["fz", "F_z", INTERVAL * 2, true, [-5, 0, 5], [0], "blue"],
@@ -171,133 +95,23 @@ export default {
       ["beta", "Show \u03b2", INTERVAL * 7, false, ["On", "on", "Off", "off"], [0]],
       ["gamma", "Show \u03b3", INTERVAL * 8, false, ["On", "on", "Off", "off"], [0]]
     ]) {
-      bL.create("text", [-15, TOP_Y + data[2], data[1] + (data[0] != false ? ":" : "")], {
-        fontSize: LABEL_SIZE,
-        color: "black",
-        fixed: true,
-        useMathJax: data[0] != false ? false : data[3]
-      });
-
-      // Just label
-      if (data[0] === false) continue;
-
-      if (data[3]) {
-        // True case
-
-        sliders[data[0]] = bL.create("slider", [[LEFT_X, TOP_Y + data[2]], [9, TOP_Y + data[2]], data[4]], {
-          name: "",
-          withTicks: false,
-          strokeColor: data[6],
-          fillColor: "white",
-          highline: { color: data[6] },
-          baseline: { color: data[6] },
-          label: {
-            color: "black",
-            fontSize: LABEL_SIZE,
-            visible: () => {
-              return data[5].includes(this.state);
-            }
-          },
-          snapWidth: 0.01,
-          visible: () => {
-            return data[5].includes(this.state);
-          }
-        });
-        let textbox = bL.create("input", [LEFT_X, TOP_Y + data[2] - 1.75, "", ""], {
-          cssStyle: "width: 58px",
-          fixed: true
-        });
-        let button = bL.create("button", [5, TOP_Y + data[2] - 1.75, "Update", buttonClick(textbox, sliders[data[0]])], { fixed: true });
-
-        textbox.rendNodeInput.addEventListener("keyup", function(event) {
-          // Number 13 is the "Enter" key on the keyboard
-          if (event.keyCode === 13) {
-            // Trigger the button element with a click
-            button.rendNodeButton.click();
-          }
-        });
-
-        this.objectsToEnable[data[0] + "1"] = {
-          object: textbox,
-          component: "rendNodeInput",
-          formula: () => {
-            return !data[5].includes(this.state);
-          }
-        };
-        this.objectsToEnable[data[0] + "2"] = {
-          object: button,
-          component: "rendNodeButton",
-          formula: () => {
-            return !data[5].includes(this.state);
-          }
-        };
-      } else {
-        // False case
-        this.objectsToEnable[data[0] + "1"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
-        this.objectsToEnable[data[0] + "2"] = { object: undefined, formula: undefined, component: "rendNodeButton" };
-        this.objectsToEnable[data[0] + "1"].object = bL.create(
-          "button",
-          [
-            LEFT_X,
-            TOP_Y + data[2],
-            data[4][0],
-            () => {
-              this.values[data[0]] = data[4][1];
-              this.fixTextAlignment();
-              this.toggleButtons();
-            }
-          ],
-          {
-            fixed: true
-          }
-        );
-        this.objectsToEnable[data[0] + "1"].formula = () => {
-          return !data[5].includes(this.state);
-        };
-
-        this.objectsToEnable[data[0] + "2"].object = bL.create(
-          "button",
-          [
-            5,
-            TOP_Y + data[2],
-            data[4][2],
-            () => {
-              this.values[data[0]] = data[4][3];
-              this.fixTextAlignment();
-              this.toggleButtons();
-            }
-          ],
-          {
-            fixed: true,
-            disabled: () => {
-              return data[5].includes(this.state);
-            }
-          }
-        );
-        this.objectsToEnable[data[0] + "2"].formula = () => {
-          return !data[5].includes(this.state);
-        };
-
-        this.objectsToEnable[data[0] + "1"].object.rendNodeButton.classList.add("btn-primary");
-        this.objectsToEnable[data[0] + "2"].object.rendNodeButton.classList.add("btn-primary");
-        this.buttonsToToggle[data[0]] = {};
-        this.buttonsToToggle[data[0]][data[4][1]] = this.objectsToEnable[data[0] + "1"].object;
-        this.buttonsToToggle[data[0]][data[4][3]] = this.objectsToEnable[data[0] + "2"].object;
-      }
+      IH.generate(data, sliders);
     }
 
-    let convX = (x, g) => {
-      let zero = g.corner.x + g.size.x * g.anchor.x;
-      return zero + (x / g.scale.x) * g.size.x;
-    };
+    // Handles circle gliders
+    let CSProps = {};
+    for (let key of ["circle", "glider", "textLabel"]) CSProps[key] = { visible: IH.valCheck("rotation", "on") };
+    let circleSlides = {};
+    for (let data of [
+      ["tx", 8, -8, 0.8, 250, "\u03b8_x"],
+      ["ty", 5, -8, 0.8, 180, "\u03b8_y"],
+      ["tz", 2, -8, 0.8, 150, "\u03b8_z"]
+    ]) {
+      circleSlides[data[0]] = new CircleSlider(bR, data[0], data[1], data[2], data[3], data[4], data[5], IH.textToUpdate, CSProps);
+    }
 
-    let convY = (y, g) => {
-      let zero = g.corner.y + g.size.y * g.anchor.y;
-      return zero + (y / g.scale.y) * g.size.y;
-    };
-
-    let convXY = (x, y, g) => {
-      return [convX(x, g), convY(y, g)];
+    const glideVal = root => {
+      return circleSlides[root].glideVal();
     };
 
     // Handles all calculations
@@ -305,21 +119,17 @@ export default {
     comp.zero = () => {
       return 0;
     };
-    comp.THETA = { x: 250, y: 180, z: 150 };
     comp.radians = deg => {
       return (deg * Math.PI) / 180;
     };
     comp.degrees = rad => {
       return (rad * 180) / Math.PI;
     };
-    comp.ROT = {};
-    for (let axis of Object.keys(comp.THETA)) comp.ROT[axis] = comp.radians(comp.THETA[axis]);
-
     comp.x = (a, b, c) => {
-      return (a * Math.cos(comp.ROT.z) - b * Math.sin(comp.ROT.z)) * Math.cos(comp.ROT.y) - c * Math.sin(comp.ROT.y);
+      return (a * Math.cos(glideVal("tz")) - b * Math.sin(glideVal("tz"))) * Math.cos(glideVal("ty")) - c * Math.sin(glideVal("ty"));
     };
     comp.y = (a, b, c) => {
-      return (b * Math.cos(comp.ROT.z) + a * Math.sin(comp.ROT.z)) * Math.cos(comp.ROT.x) - c * Math.sin(comp.ROT.x);
+      return (b * Math.cos(glideVal("tz")) + a * Math.sin(glideVal("tz"))) * Math.cos(glideVal("tx")) - c * Math.sin(glideVal("tx"));
     };
     comp.xy = (a, b, c) => {
       return [comp.x(a, b, c), comp.y(a, b, c)];
@@ -339,158 +149,6 @@ export default {
       let val = comp.degrees(Math.acos(sliders.fz.Value() / comp.f_mag()));
       return Math.min(val, 180 - val);
     };
-    // comp.xS = (a, b, c) => {
-    //   return comp.x(a.Value(), b.Value(), c.Value())
-    // }
-
-    // let graphs = {
-    //   /*
-    //   arbitrary name of graph
-    //     corner: lower left point coordinates
-    //     size: length of graph on each side
-    //     delta: tick distancing
-    //     scale: length of relative space to exist on each axis
-    //     anchor: 0 - lowest point, 1 - highest point, 0.5 - middle, location of 0
-    //     axis: Axes labels
-    //     Title: title label
-    //     func: what the curve should use
-    //     Color: undefined for no curve, color for curve
-    //   */
-    //   //   large: {
-    //   //     corner: { x: -13, y: -13 },
-    //   //     size: { x: 26, y: 26 },
-    //   //     delta: { x: 1, y: 1 },
-    //   //     scale: { x: 3.25 * 2, y: 3.25 * 2 },
-    //   //     anchor: { x: 0.5, y: 0.5 },
-    //   //     axis: { x: "", y: "" },
-    //   //     title: "",
-    //   //     visible: true,
-    //   //     func: comp.fX,
-    //   //     color: "blue",
-    //   //     outlines: false
-    //   //   }
-    // };
-
-    // // Setup the graphs
-    // for (let key of Object.keys(graphs)) {
-    //   // The graph of focus
-    //   let g = graphs[key];
-
-    //   // Generate the lines
-    //   g.lines = {};
-    //   for (let data of [
-    //     ["left", [g.corner.x, g.corner.y], [g.corner.x, g.corner.y + g.size.y]],
-    //     ["top", [g.corner.x, g.corner.y + g.size.y], [g.corner.x + g.size.x, g.corner.y + g.size.y]],
-    //     ["right", [g.corner.x + g.size.x, g.corner.y], [g.corner.x + g.size.x, g.corner.y + g.size.y]],
-    //     ["bottom", [g.corner.x, g.corner.y], [g.corner.x + g.size.x, g.corner.y]]
-    //   ]) {
-    //     g.lines[data[0]] = bR.create("line", [data[1], data[2]], {
-    //       straightFirst: false,
-    //       straightLast: false,
-    //       fixed: true,
-    //       strokeWidth: 3,
-    //       strokeColor: "black",
-    //       visible: g.visible
-    //     });
-    //   }
-
-    //   // Generate the ticks
-    //   bR.create("ticks", [g.lines.bottom, g.delta.x], {
-    //     anchor: g.anchor.x,
-    //     includeBoundaries: true,
-    //     drawLabels: true,
-    //     drawZero: true,
-    //     fixed: true,
-    //     scale: g.size.x / g.scale.x,
-    //     label: {
-    //       anchorX: "middle",
-    //       anchorY: "top",
-    //       offset: [0, -4],
-    //       visible: g.visible,
-    //       fontSize: 14
-    //     },
-    //     visible: g.visible,
-    //     minorTicks: 3
-    //   });
-
-    //   bR.create("ticks", [g.lines.top, g.delta.x], {
-    //     anchor: g.anchor.x,
-    //     includeBoundaries: true,
-    //     drawLabels: false,
-    //     fixed: true,
-    //     scale: g.size.x / g.scale.x,
-    //     visible: g.visible,
-    //     minorTicks: 3
-    //   });
-
-    //   bR.create("ticks", [g.lines.left, g.delta.y], {
-    //     anchor: g.anchor.y,
-    //     includeBoundaries: true,
-    //     drawLabels: true,
-    //     drawZero: true,
-    //     fixed: true,
-    //     scale: g.size.y / g.scale.y,
-    //     label: {
-    //       anchorX: "right",
-    //       anchorY: "middle",
-    //       offset: [-6, 0],
-    //       visible: g.visible,
-    //       fontSize: 14
-    //     },
-    //     visible: g.visible,
-    //     minorTicks: 3
-    //   });
-
-    //   bR.create("ticks", [g.lines.right, g.delta.y], {
-    //     anchor: g.anchor.y,
-    //     includeBoundaries: true,
-    //     drawLabels: false,
-    //     fixed: true,
-    //     scale: g.size.y / g.scale.y,
-    //     visible: g.visible,
-    //     minorTicks: 3
-    //   });
-
-    //   if (g.func != undefined) {
-    //     // curve specific options
-    //   }
-
-    //   // Text
-    //   if (g.title != "") {
-    //     this.textToUpdate[key + "_1"] = {};
-    //     this.textToUpdate[key + "_1"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y + g.size.y + 0.5, ""], {
-    //       fixed: true,
-    //       anchorX: "middle",
-    //       anchorY: "bottom",
-    //       visible: g.visible
-    //     });
-    //     this.textToUpdate[key + "_1"].formula = "<b>" + g.title + "</b>";
-    //   }
-
-    //   if (g.axis.x != "") {
-    //     this.textToUpdate[key + "_2"] = {};
-    //     this.textToUpdate[key + "_2"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y - 0.5, ""], {
-    //       fixed: true,
-    //       anchorX: "middle",
-    //       anchorY: "top",
-    //       visible: g.visible
-    //     });
-    //     this.textToUpdate[key + "_2"].formula = g.axis.x;
-    //   }
-
-    //   if (g.axis.y != "") {
-    //     this.textToUpdate[key + "_3"] = {};
-    //     this.textToUpdate[key + "_3"].object = bR.create("text", [g.corner.x - 1.25, g.corner.y + 0.5 * g.size.y, ""], {
-    //       fixed: true,
-    //       anchorX: "middle",
-    //       anchorY: "bottom",
-    //       rotate: 90,
-    //       display: "internal",
-    //       visible: g.visible
-    //     });
-    //     this.textToUpdate[key + "_3"].formula = g.axis.y;
-    //   }
-    // }
 
     const hiddenProps = { fixed: true, visible: false };
     const hiddenLabelProps = { fixed: true, visible: true, withLabel: true, size: 0 };
@@ -499,12 +157,38 @@ export default {
     // axes (x, y, z)
     const axisLength = 10;
     const axisProps = { strokeColor: "black", strokeWidth: 3, ...lineSegProps, lastArrow: true };
-    bR.create("line", [comp.xy(-axisLength, 0, 0), comp.xy(axisLength, 0, 0)], { ...axisProps, point2: { ...hiddenLabelProps, name: "x" } });
-    bR.create("line", [comp.xy(0, -axisLength, 0), comp.xy(0, axisLength, 0)], { ...axisProps, point2: { ...hiddenLabelProps, name: "y" } });
-    bR.create("line", [comp.xy(0, 0, -axisLength), comp.xy(0, 0, axisLength)], { ...axisProps, point2: { ...hiddenLabelProps, name: "z" } });
+    for (let data of [
+      [axisLength, 0, 0, "x"],
+      [0, axisLength, 0, "y"],
+      [0, 0, axisLength, "z"]
+    ]) {
+      bR.create(
+        "line",
+        [
+          () => {
+            return comp.xy(-data[0], -data[1], -data[2]);
+          },
+          () => {
+            return comp.xy(data[0], data[1], data[2]);
+          }
+        ],
+        { ...axisProps, point2: { ...hiddenLabelProps, name: data[3], label: { fontSize: 14 } } }
+      );
+    }
 
     let points = {};
-    points.origin = bR.create("point", [comp.x(0, 0, 0), comp.y(0, 0, 0)], { ...hiddenProps });
+    points.origin = bR.create(
+      "point",
+      [
+        () => {
+          return comp.x(0, 0, 0);
+        },
+        () => {
+          return comp.y(0, 0, 0);
+        }
+      ],
+      { ...hiddenProps }
+    );
     const componentColor = "blue";
 
     for (let data of [
@@ -513,7 +197,7 @@ export default {
       ["fz", "F_z", [0, 0, 1], "fz2", "F_z", [1, 1, 1], "fy2"]
     ]) {
       let vis1 = () => {
-        return valCheck("f_comps", "on")() && valCheck("sum", "off")();
+        return IH.valCheck("f_comps", "on")() && IH.valCheck("sum", "off")();
       };
       points[data[0]] = bR.create(
         "point",
@@ -551,10 +235,14 @@ export default {
             return comp.y(sliders.fx.Value() * data[5][0], sliders.fy.Value() * data[5][1], sliders.fz.Value() * data[5][2]);
           }
         ],
-        { name: "<b>" + data[4] + "</b>", ...hiddenLabelProps, label: { visible: valCheck("sum", "on"), fontSize: 14, strokeColor: componentColor } }
+        {
+          name: "<b>" + data[4] + "</b>",
+          ...hiddenLabelProps,
+          label: { visible: IH.valCheck("sum", "on"), fontSize: 14, strokeColor: componentColor }
+        }
       );
       bR.create("line", [points[data[6]], points[data[3]]], {
-        visible: valCheck("sum", "on"),
+        visible: IH.valCheck("sum", "on"),
         ...lineSegProps,
         strokeColor: componentColor,
         strokeWidth: 5,
@@ -572,7 +260,7 @@ export default {
           return comp.y(sliders.fx.Value(), sliders.fy.Value(), sliders.fz.Value());
         }
       ],
-      { name: "<b>" + "F" + "</b>", ...hiddenLabelProps, label: { visible: valCheck("f_vis", "on"), fontSize: 14, strokeColor: "red" } }
+      { name: "<b>" + "F" + "</b>", ...hiddenLabelProps, label: { visible: IH.valCheck("f_vis", "on"), fontSize: 14, strokeColor: "red" } }
     );
 
     bR.create("line", [points.origin, points.f], {
@@ -580,7 +268,7 @@ export default {
       strokeColor: "red",
       lastArrow: true,
       strokeWidth: 5,
-      visible: valCheck("f_vis", "on")
+      visible: IH.valCheck("f_vis", "on")
     });
 
     for (let data of [
@@ -588,24 +276,24 @@ export default {
       ["fy", "beta", "green", "\u03b2"],
       ["fz", "gamma", "purple", "\u03b3"]
     ]) {
-      bR.create("polygon", [points.origin, points[data[0]], points.f], { withLines: false, fillColor: data[2], visible: valCheck(data[1], "on") });
+      bR.create("polygon", [points.origin, points[data[0]], points.f], { withLines: false, fillColor: data[2], visible: IH.valCheck(data[1], "on") });
       bR.create("line", [points[data[0]], points.f], {
         ...lineSegProps,
         dash: 2,
         strokeWidth: 5,
         strokeColor: "black",
-        visible: valCheck(data[1], "on")
+        visible: IH.valCheck(data[1], "on")
       });
       let angle = bR.create("angle", [points[data[0]], points.origin, points.f], { name: data[3], label: { strokeColor: data[2] } });
       angle.setAttribute({
         visible: () => {
-          return valCheck(data[1], "on")() && angle.Value() < Math.PI;
+          return IH.valCheck(data[1], "on")() && angle.Value() < Math.PI;
         }
       });
       let angle2 = bR.create("angle", [points.f, points.origin, points[data[0]]], { name: data[3], label: { strokeColor: data[2] } });
       angle2.setAttribute({
         visible: () => {
-          return valCheck(data[1], "on")() && angle2.Value() <= Math.PI;
+          return IH.valCheck(data[1], "on")() && angle2.Value() <= Math.PI;
         }
       });
     }
@@ -637,53 +325,18 @@ export default {
             );
           }
         ],
-        { fontSize: LABEL_SIZE, fixed: true, visible: valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
+        { fontSize: LABEL_SIZE, fixed: true, visible: IH.valCheck(data[3], data[4]), anchorX: "left", anchorY: "top" }
       );
     }
 
     bL.addChild(bR);
     bR.addChild(bL);
-    this.bL = bL;
-    this.bR = bR;
+
     this.changeState(0);
   },
   methods: {
     changeState(newState) {
-      // Handle state specific changes
-
-      // Update the current state
-      this.state = newState;
-
-      // Align text and enable/disable components
-      this.fixTextAlignment();
-      this.toggleButtons();
-      this.bL.fullUpdate();
-      //this.bR.fullUpdate();
-    },
-    fixTextAlignment() {
-      for (const lbl of Object.keys(this.textToUpdate)) {
-        this.textToUpdate[lbl].object.setText("");
-        this.textToUpdate[lbl].object.setText(this.textToUpdate[lbl].formula);
-      }
-      // Also does buttons
-      for (const lbl of Object.keys(this.objectsToEnable)) {
-        // console.log(lbl);
-        this.objectsToEnable[lbl].object[this.objectsToEnable[lbl].component].disabled = this.objectsToEnable[lbl].formula();
-      }
-    },
-    toggleButtons() {
-      for (const lbl of Object.keys(this.values)) {
-        const currVal = this.values[lbl];
-        for (const option of Object.keys(this.buttonsToToggle[lbl])) {
-          if (currVal === option) {
-            if (!this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
-              this.buttonsToToggle[lbl][option].rendNodeButton.classList.add("btn-warning");
-          } else {
-            if (this.buttonsToToggle[lbl][option].rendNodeButton.classList.contains("btn-warning"))
-              this.buttonsToToggle[lbl][option].rendNodeButton.classList.remove("btn-warning");
-          }
-        }
-      }
+      this.IH.updateState(newState);
     }
   }
 };

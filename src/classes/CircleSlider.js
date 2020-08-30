@@ -25,7 +25,12 @@ export class CircleSlider {
     this.createCircle(jsxbox, radius);
     this.createGlider(jsxbox, x, y, radius, startAngle);
     this.createTextLabel(jsxbox, x, y, textToUpdate, name);
-    jsxbox.create("text", [x - 0.05, y + radius * 1.2, label], { strokeColor: "purple", visible: this.baseAttributes.textLabel.visible, anchorY: "bottom", anchorX: "middle" });
+    jsxbox.create("text", [x - 0.05, y + radius * 1.2, label], {
+      strokeColor: "purple",
+      visible: this.baseAttributes.textLabel.visible,
+      anchorY: "bottom",
+      anchorX: "middle"
+    });
 
     return this;
   }

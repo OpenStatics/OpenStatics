@@ -1,19 +1,5 @@
 <template>
   <div class="container-fluid">
-    <!-- <div class="row justify-content-center">
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 0 }" @click="() => changeState(0)">
-        Clear
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 1 }" @click="() => changeState(1)">
-        Step 1: External loadings on the beam
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 2 }" @click="() => changeState(2)">
-        Step 2: Internal forces in the beam
-      </button>
-      <button class="btn btn-primary mx-3" :class="{ 'btn-warning': state === 3 }" @click="() => changeState(3)">
-        Step 3: Internal force diagrams of the beam
-      </button>
-    </div> -->
     <div class="row my-3 justify-content-center">
       <div id="boxLeft" class="boxLeft my-2" style="width:425px; height:700px;"></div>
 
@@ -62,7 +48,6 @@ export default {
     });
     // The size of the container (matches explicit css style in html)
     bR.resizeContainer(700, 700);
-    //bR.options.layer["text"] = 10;
 
     // All sliders are stored in these objects
     // They can be accessed with brackets sliders["force"] or dot notation sliders.force
@@ -127,9 +112,6 @@ export default {
     comp.degrees = rad => {
       return (rad * 180) / Math.PI;
     };
-    // comp.THETA = { x: 250, y: 180, z: 150 };
-    // comp.ROT = {};
-    // for (let axis of Object.keys(comp.THETA)) comp.ROT[axis] = comp.radians(comp.THETA[axis]);
     comp.x = (a, b, c) => {
       return (a * Math.cos(glideVal("tz")) - b * Math.sin(glideVal("tz"))) * Math.cos(glideVal("ty")) - c * Math.sin(glideVal("ty"));
     };

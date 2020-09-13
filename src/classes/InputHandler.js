@@ -51,6 +51,10 @@ export class InputHandler {
     this.jsxbox.fullUpdate();
   }
 
+  setCallback(callback) {
+    this.callback = callback;
+  }
+
   generate(data, sliders) {
     /* [key value,
           label name,

@@ -308,30 +308,30 @@ export default {
 
       // Text
       if (g.title != "") {
-        this.textToUpdate[key + "_1"] = {};
-        this.textToUpdate[key + "_1"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y + g.size.y + 0.5, ""], {
+        IH.textToUpdate[key + "_1"] = {};
+        IH.textToUpdate[key + "_1"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y + g.size.y + 0.5, ""], {
           fixed: true,
           anchorX: "middle",
           anchorY: "bottom",
           visible: g.visible
         });
-        this.textToUpdate[key + "_1"].formula = "<b>" + g.title + "</b>";
+        IH.textToUpdate[key + "_1"].formula = "<b>" + g.title + "</b>";
       }
 
       if (g.axis.x != "") {
-        this.textToUpdate[key + "_2"] = {};
-        this.textToUpdate[key + "_2"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y - 0.5, ""], {
+        IH.textToUpdate[key + "_2"] = {};
+        IH.textToUpdate[key + "_2"].object = bR.create("text", [g.corner.x + 0.5 * g.size.x, g.corner.y - 0.5, ""], {
           fixed: true,
           anchorX: "middle",
           anchorY: "top",
           visible: g.visible
         });
-        this.textToUpdate[key + "_2"].formula = g.axis.x;
+        IH.textToUpdate[key + "_2"].formula = g.axis.x;
       }
 
       if (g.axis.y != "") {
-        this.textToUpdate[key + "_3"] = {};
-        this.textToUpdate[key + "_3"].object = bR.create("text", [g.corner.x - 1.25, g.corner.y + 0.5 * g.size.y, ""], {
+        IH.textToUpdate[key + "_3"] = {};
+        IH.textToUpdate[key + "_3"].object = bR.create("text", [g.corner.x - 1.25, g.corner.y + 0.5 * g.size.y, ""], {
           fixed: true,
           anchorX: "middle",
           anchorY: "bottom",
@@ -339,7 +339,7 @@ export default {
           display: "internal",
           visible: g.visible
         });
-        this.textToUpdate[key + "_3"].formula = g.axis.y;
+        IH.textToUpdate[key + "_3"].formula = g.axis.y;
       }
     }
 
@@ -348,8 +348,6 @@ export default {
 
     bL.addChild(bR);
     bR.addChild(bL);
-    this.bL = bL;
-    this.bR = bR;
     this.changeState(0);
   },
   methods: {

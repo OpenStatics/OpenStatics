@@ -14,6 +14,10 @@ export default {
   components: {},
   data: () => {
     return {
+      state: 0,
+      speed: 1,
+      speedOptions: [0.25, 0.5, 1, 1.5, 2, 4],
+      interval: null,
       IH: undefined,
       bL: undefined,
       bR: undefined
@@ -63,7 +67,7 @@ export default {
     const LEFT_X = -1;
     const RIGHT_X = 5;
 
-    const INITIAL_VALUES = { coords: "off" };
+    const INITIAL_VALUES = { coords: "off", direction: "forward", anim: "off" };
     let IH = new InputHandler(bL, INTERVAL, TOP_Y, LEFT_X, RIGHT_X, LABEL_SIZE, INITIAL_VALUES, 0);
     this.IH = IH;
 
@@ -77,16 +81,165 @@ export default {
           color ]*/
       /* For just text: [false, label name, mathJax] */
       ["coords", "Coordinate Visibility", INTERVAL * 0, false, ["On", "on", "Off", "off"], [0]],
-      ["h_pos", "Hinge Position (m)", INTERVAL * 0.5, true, [0, 0, 3], [0], "black"],
-      ["f1_mag", "F_1 Magnitude (N)", INTERVAL * 1.5, true, [-3, 0, 3], [0], "black"],
-      ["f1_angle", "Angle of F_1: \u03b1_1 (\u00b0)", INTERVAL * 2.5, true, [0, 0, 360], [0], "black"],
-      ["f1_pos", "F_1 Position (m)", INTERVAL * 3.5, true, [0, 0, 3], [0], "black"],
-      ["f2_mag", "F_2 Magnitude (N)", INTERVAL * 4.5, true, [-3, 0, 3], [0], "black"],
-      ["f2_angle", "Angle of F_2: \u03b1_2 (\u00b0)", INTERVAL * 5.5, true, [0, 0, 360], [0], "black"],
-      ["f2_pos", "F_2 Position (m)", INTERVAL * 6.5, true, [0, 0, 3], [0], "black"]
+      ["time", "Time (sec)", INTERVAL * 0.5, true, [0, 0, 15], [0], "black"],
+      ["anim", "Animation", INTERVAL * 1.5, false, ["\u23F5", "on", "\u23F8", "off"], [0]],
+      ["direction", "Direction", INTERVAL * 2, false, ["Forward", "forward", "Reverse", "reverse"], [0]],
+      [false, "Speed:", INTERVAL * 2.5, false],
+      ["h_pos", "Hinge Position (m)", INTERVAL * 3, true, [0, 0, 3], [0], "purple"],
+      ["f1_mag", "F_1 Magnitude (N)", INTERVAL * 4, true, [-3, 0, 3], [0], "blue"],
+      ["f1_angle", "Angle of F_1: \u03b1_1 (\u00b0)", INTERVAL * 5, true, [0, 0, 360], [0], "blue"],
+      ["f1_pos", "F_1 Position (m)", INTERVAL * 6, true, [0, 0, 3], [0], "blue"],
+      ["f2_mag", "F_2 Magnitude (N)", INTERVAL * 7, true, [-3, 0, 3], [0], "green"],
+      ["f2_angle", "Angle of F_2: \u03b1_2 (\u00b0)", INTERVAL * 8, true, [0, 0, 360], [0], "green"],
+      ["f2_pos", "F_2 Position (m)", INTERVAL * 9, true, [0, 0, 3], [0], "green"]
     ]) {
       IH.generate(data, sliders);
     }
+
+    let speedChange = delta => {
+      let index = this.speedOptions.findIndex(val => {
+        return val === this.speed;
+      });
+      let newIndex = index + delta;
+      newIndex = Math.min(newIndex, this.speedOptions.length - 1);
+      newIndex = Math.max(newIndex, 0);
+      this.speed = this.speedOptions[newIndex];
+    };
+
+    IH.textToUpdate.speed = {
+      object: bL.create("text", [3.15, TOP_Y + INTERVAL * 2.5, ""], { anchorX: "middle", anchorY: "middle" }),
+      formula: () => {
+        return "x" + this.speed;
+      }
+    };
+
+    // Speed buttons
+    let sp1 = bL.create(
+      "button",
+      [
+        LEFT_X,
+        TOP_Y + INTERVAL * 2.5,
+        "\u25b2",
+        () => {
+          speedChange(1);
+          IH.fixTextAlignment();
+          IH.toggleButtons();
+        }
+      ],
+      {
+        fixed: true
+      }
+    );
+    sp1.rendNodeButton.classList.add("btn-primary");
+
+    let sp2 = bL.create(
+      "button",
+      [
+        5,
+        TOP_Y + INTERVAL * 2.5,
+        "\u25bc",
+        () => {
+          speedChange(-1);
+          IH.fixTextAlignment();
+          IH.toggleButtons();
+        }
+      ],
+      {
+        fixed: true
+      }
+    );
+    sp2.rendNodeButton.classList.add("btn-primary");
+
+    this.timeAdjustmentFunction = () => {
+      let t = (() => {
+        return 0.05 * this.speed * (IH.values.direction === "forward" ? 1 : -1);
+      })();
+      t = (t + sliders.time.Value() + 15) % 15;
+      sliders.time.setValue(t);
+      bL.fullUpdate();
+    };
+
+    IH.setCallback(() => {
+      // Interval handling
+      if (this.interval === null && this.IH.values.anim === "on") {
+        this.interval = setInterval(this.timeAdjustmentFunction, 50);
+      } else if (this.interval !== null && this.IH.values.anim === "off") {
+        clearInterval(this.interval);
+        this.interval = null;
+      }
+    });
+
+    for (let data of ["h_pos", "f1_pos", "f1_angle", "f1_mag", "f2_pos", "f2_angle", "f2_mag"]) {
+      // eslint-disable-next-line no-unused-vars
+      sliders[data].on("drag", (e, i) => {
+        if (this.interval != null) {
+          clearInterval(this.interval);
+          this.interval = null;
+          IH.values.anim = "off";
+          IH.toggleButtons();
+        }
+
+        sliders.time.setValue(0);
+        bL.fullUpdate();
+      });
+    }
+
+    // Handles all calculations
+    let comp = {};
+    comp.zero = () => {
+      return 0;
+    };
+    comp.radians = deg => {
+      return (deg * Math.PI) / 180;
+    };
+    comp.degrees = rad => {
+      return (rad * 180) / Math.PI;
+    };
+    comp.distance = (x1, y1, x2, y2) => {
+      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    };
+    comp.angle = (centerX, centerY, x, y) => {
+      const dX = x - centerX;
+      const dY = y - centerY;
+      // Handles special case of pi/2 or 3pi/2
+      const angle = dX != 0 ? Math.atan(dY / dX) : dY >= 0 ? Math.PI / 2 : 1.5 * Math.PI;
+      return dX >= 0 ? angle : angle + Math.PI;
+    };
+    comp.polarToRadial = (centerX, centerY, length, angle, radians = true) => {
+      if (!radians) {
+        angle = comp.radians(angle);
+      }
+      const myX = centerX + length * Math.cos(angle);
+      const myY = centerY + length * Math.sin(angle);
+      return [myX, myY];
+    };
+    comp.MASS = 3;
+    comp.inertia = () => {
+      const a = sliders.h_pos.Value();
+      return comp.MASS * (a * a - 3 * a + 3);
+    };
+    comp.moment = () => {
+      const t1 = (sliders.f1_pos.Value() - sliders.h_pos.Value()) * sliders.f1_mag.Value() * Math.sin(comp.radians(sliders.f1_angle.Value()));
+      const t2 = (sliders.f2_pos.Value() - sliders.h_pos.Value()) * sliders.f2_mag.Value() * Math.sin(comp.radians(sliders.f2_angle.Value()));
+      return t1 + t2;
+    };
+    comp.angAcc = () => {
+      return comp.moment() / comp.inertia();
+    };
+    comp.currRotation = () => {
+      // Returns value in radians
+      return 0.5 * comp.angAcc() * Math.pow(sliders.time.Value(), 2);
+    };
+    comp.beamRelPos = (x, y) => {
+      const beamX = sliders.h_pos.Value();
+      const beamY = 0;
+      if (beamX === x && beamY === y) {
+        return [x, y];
+      }
+      const dist = comp.distance(beamX, beamY, x, y);
+      const angle = comp.angle(beamX, beamY, x, y);
+      return comp.polarToRadial(beamX, beamY, dist, angle + comp.currRotation());
+    };
 
     let convX = (x, g) => {
       let zero = g.corner.x + g.size.x * g.anchor.x;
@@ -101,50 +254,6 @@ export default {
     let convXY = (x, y, g) => {
       return [convX(x, g), convY(y, g)];
     };
-
-    // Handles all calculations
-    let comp = {};
-    comp.zero = () => {
-      return 0;
-    };
-    comp.radians = deg => {
-      return (deg * Math.PI) / 180;
-    };
-    comp.degrees = rad => {
-      return (rad * 180) / Math.PI;
-    };
-    // comp.magnitude = v => {
-    //   // Assumes 3D vector as input
-    //   return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    // };
-    // comp.scalar_mult = (v, s) => {
-    //   // Assumes 3D vector as input
-    //   return [v[0] * s, v[1] * s, v[2] * s];
-    // };
-    // comp.dot_mult = (v1, v2) => {
-    //   return v2[0] * v1[0] + v2[1] * v1[1] + v2[2] * v1[2];
-    // };
-    // comp.cross_prod = (u, v) => {
-    //   let u1 = u[0],
-    //     u2 = u[1],
-    //     u3 = u[2],
-    //     v1 = v[0],
-    //     v2 = v[1],
-    //     v3 = v[2];
-    //   return [u2 * v3 - v2 * u3, -(u1 * v3 - v1 * u3), u1 * v2 - v1 * u2];
-    // };
-    // comp.vector_add = (v2, v1) => {
-    //   return [v2[0] + v1[0], v2[1] + v1[1], v2[2] + v1[2]];
-    // };
-    // comp.vector_sub = (v2, v1) => {
-    //   return [v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]];
-    // };
-    // comp.unit_vector = v => {
-    //   // Assumes 3D vector as input
-    //   let mag = comp.magnitude(v);
-    //   if (mag != 0) return [v[0] / mag, v[1] / mag, v[2] / mag];
-    //   else return [0, 0, 0];
-    // };
 
     let graphs = {
       /*
@@ -295,8 +404,326 @@ export default {
       }
     }
 
+    let points = {};
     const hidden = { fixed: true, visible: false };
     const hiddenLabel = { fixed: true, visible: true, withLabel: true, size: 0 };
+    const lineSegProps = { straightFirst: false, straightLast: false, fixed: true };
+    // const COPY = bR.create("transform", [0, 0], { type: "translate" });
+
+    for (let data of [
+      [1, 0, "x"],
+      [0, 1, "y"]
+    ]) {
+      bR.create("line", [convXY(-3.25 * data[0], -3.25 * data[1], graphs.large), convXY(3.25 * data[0], 3.25 * data[1], graphs.large)], {
+        ...lineSegProps,
+        lastArrow: true,
+        strokeColor: "black",
+        strokeWidth: 2,
+        visible: IH.valCheck("coords", "on"),
+        point2: { ...hiddenLabel, name: data[2], label: { visible: IH.valCheck("coords", "on") } }
+      });
+    }
+
+    points.hinge = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value(), graphs.large);
+        },
+        () => {
+          return convY(0, graphs.large);
+        }
+      ],
+      {
+        size: 3,
+        strokeColor: "purple",
+        fillColor: "purple",
+        name: ""
+      }
+    );
+
+    const TRIANGLE_LENGTH = 0.2;
+
+    points.t1 = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value() - TRIANGLE_LENGTH / 2, graphs.large);
+        },
+        () => {
+          return convY(0 - TRIANGLE_LENGTH, graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.t2 = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value() + TRIANGLE_LENGTH / 2, graphs.large);
+        },
+        () => {
+          return convY(0 - TRIANGLE_LENGTH, graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.c1 = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value() - TRIANGLE_LENGTH, graphs.large);
+        },
+        () => {
+          return convY(0 - TRIANGLE_LENGTH, graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.c2 = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value() + TRIANGLE_LENGTH, graphs.large);
+        },
+        () => {
+          return convY(0 - TRIANGLE_LENGTH, graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    bR.create("polygon", [points.hinge, points.t1, points.t2], {
+      withLines: "false",
+      borders: { strokeColor: "purple" },
+      fillColor: "purple",
+      fillOpacity: 1
+    });
+
+    bR.create("comb", [points.c2, points.c1], { curve: { strokeColor: "purple" }, width: 0.3 });
+    bR.create("line", [points.c2, points.c1], { ...lineSegProps, strokeColor: "purple" });
+
+    points.beam1 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.beamRelPos(0, 0);
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.beamRelPos(0, 0);
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.beam2 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.beamRelPos(3, 0);
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.beamRelPos(3, 0);
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    bR.create("line", [points.beam1, points.beam2], { ...lineSegProps, strokeColor: "black", strokeWidth: 5 });
+    bR.create("line", [convXY(0, 0, graphs.large), convXY(3, 0, graphs.large)], { ...lineSegProps, strokeWidth: 2, dash: 2, strokeColor: "black" });
+
+    points.f1_1 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.beamRelPos(sliders.f1_pos.Value(), 0);
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.beamRelPos(sliders.f1_pos.Value(), 0);
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.f1_2 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.polarToRadial(sliders.f1_pos.Value(), 0, sliders.f1_mag.Value(), sliders.f1_angle.Value(), false);
+          const coords2 = comp.beamRelPos.apply(null, coords);
+          return convX(coords2[0], graphs.large);
+        },
+        () => {
+          const coords = comp.polarToRadial(sliders.f1_pos.Value(), 0, sliders.f1_mag.Value(), sliders.f1_angle.Value(), false);
+          const coords2 = comp.beamRelPos.apply(null, coords);
+          return convY(coords2[1], graphs.large);
+        }
+      ],
+      {
+        ...hiddenLabel,
+        name: "F_1",
+        label: {
+          strokeColor: "blue",
+          visible: () => {
+            return sliders.f1_mag.Value() > 0;
+          }
+        }
+      }
+    );
+
+    points.f2_1 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.beamRelPos(sliders.f2_pos.Value(), 0);
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.beamRelPos(sliders.f2_pos.Value(), 0);
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.f2_2 = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.polarToRadial(sliders.f2_pos.Value(), 0, sliders.f2_mag.Value(), sliders.f2_angle.Value(), false);
+          const coords2 = comp.beamRelPos.apply(null, coords);
+          return convX(coords2[0], graphs.large);
+        },
+        () => {
+          const coords = comp.polarToRadial(sliders.f2_pos.Value(), 0, sliders.f2_mag.Value(), sliders.f2_angle.Value(), false);
+          const coords2 = comp.beamRelPos.apply(null, coords);
+          return convY(coords2[1], graphs.large);
+        }
+      ],
+      {
+        ...hiddenLabel,
+        name: "F_2",
+        label: {
+          strokeColor: "green",
+          visible: () => {
+            return sliders.f2_mag.Value() > 0;
+          }
+        }
+      }
+    );
+
+    bR.create("line", [points.f1_1, points.f1_2], { ...lineSegProps, lastArrow: true, strokeColor: "blue", strokeWidth: 3 });
+
+    bR.create("line", [points.f2_1, points.f2_2], { ...lineSegProps, lastArrow: true, strokeColor: "green", strokeWidth: 3 });
+
+    bL.create(
+      "text",
+      [
+        -15 + 0,
+        TOP_Y + INTERVAL * 9.5,
+        () => {
+          return "<span style='color:red'><i>M</i> = </span>" + Math.round(comp.moment() * 1000, 3) / 1000;
+        }
+      ],
+      { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top" }
+    );
+
+    const MOMENT_RADIUS = 0.3;
+
+    points.momentCenter = bR.create(
+      "point",
+      [
+        () => {
+          return convX(sliders.h_pos.Value(), graphs.large);
+        },
+        convY(-1, graphs.large)
+      ],
+      {
+        ...hiddenLabel,
+        name: "M",
+        label: {
+          visible: () => {
+            return comp.moment() != 0;
+          },
+          strokeColor: "red",
+          anchorX: "middle",
+          anchorY: "middle",
+          offset: [-4, 9]
+        }
+      }
+    );
+
+    points.momentEnd = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.max(0, (comp.moment() * Math.PI) / 4.5));
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.max(0, (comp.moment() * Math.PI) / 4.5));
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    points.momentStart = bR.create(
+      "point",
+      [
+        () => {
+          const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.min(0, (comp.moment() * Math.PI) / 4.5));
+          return convX(coords[0], graphs.large);
+        },
+        () => {
+          const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.min(0, (comp.moment() * Math.PI) / 4.5));
+          return convY(coords[1], graphs.large);
+        }
+      ],
+      { ...hidden }
+    );
+
+    bR.create(
+      "arc",
+      [
+        // Center point
+        points.momentCenter,
+        // CW point
+        points.momentStart,
+        // CWW point
+        points.momentEnd
+      ],
+      {
+        strokeWidth: 3,
+        strokeColor: "red",
+        firstArrow: () => {
+          return comp.moment() < 0;
+        },
+        lastArrow: () => {
+          return comp.moment() > 0;
+        },
+        visible: () => {
+          return comp.moment() != 0;
+        }
+      }
+    );
+
+    bR.create("circle", [points.momentCenter, points.momentStart], {
+      strokeColor: "red",
+      strokeWidth: 3,
+      visible: () => {
+        return Math.abs(comp.moment()) >= 9;
+      }
+    });
 
     bL.addChild(bR);
     bR.addChild(bL);

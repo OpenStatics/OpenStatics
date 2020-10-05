@@ -14,6 +14,7 @@
 import MovingText from "../../utils/Moving_Down_Up/MovingText";
 
 export default {
+  /* eslint-disable */
   name: "Moving",
   data() {
     return { initBoxPos: 10 };

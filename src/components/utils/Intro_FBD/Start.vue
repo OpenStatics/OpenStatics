@@ -3,7 +3,7 @@
     <div id="startFBD" class="jsx-graph col-xl mx-2"></div>
     <div class="col-xl mx-2">
       <IntroFBDText></IntroFBDText>
-      <div class='my-3'>
+      <div class="my-3">
         <span>Reactive Force at Equilibrium</span>
         <button class="btn btn-primary mx-3" @click="clickOnRF">On</button>
         <button class="btn btn-warning mx-3">Off</button>
@@ -18,6 +18,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import IntroFBDText from "./IntroFBDText";
 export default {
   name: "startFBD",
@@ -63,9 +64,33 @@ export default {
     const roller_line = board.create("line", [roller_p1, roller_p2], { straightFirst: false, straightLast: false });
     const roller_comb = board.create("comb", [roller_p2, roller_p1]);
 
-    this.magnitude = board.create("slider", [[0, -6], [10, -6], [0, magVal, 4]], { name: "Magnitude of Loading[kN]" });
-    this.position = board.create("slider", [[0, -8], [10, -8], [0, posVal, 4]], { name: "Position of Loading (m)" });
-    this.direction = board.create("slider", [[0, -10], [10, -10], [0, dirVal, 180]], { name: "Direction of Force [degree]" });
+    this.magnitude = board.create(
+      "slider",
+      [
+        [0, -6],
+        [10, -6],
+        [0, magVal, 4]
+      ],
+      { name: "Magnitude of Loading[kN]" }
+    );
+    this.position = board.create(
+      "slider",
+      [
+        [0, -8],
+        [10, -8],
+        [0, posVal, 4]
+      ],
+      { name: "Position of Loading (m)" }
+    );
+    this.direction = board.create(
+      "slider",
+      [
+        [0, -10],
+        [10, -10],
+        [0, dirVal, 180]
+      ],
+      { name: "Direction of Force [degree]" }
+    );
 
     const F_0 = board.create(
       "point",

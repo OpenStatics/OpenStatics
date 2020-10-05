@@ -1,5 +1,5 @@
 <template>
-  <div class='container-fluid'>
+  <div class="container-fluid">
     <h1 class="text-danger text-center my-4">Determinacy of Beams</h1>
     <fix></fix>
   </div>

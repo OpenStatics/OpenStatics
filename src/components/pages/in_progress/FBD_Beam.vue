@@ -22,6 +22,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import FBDtext from "../../utils/FBD_Beam/FBD_text";
 
 export default {

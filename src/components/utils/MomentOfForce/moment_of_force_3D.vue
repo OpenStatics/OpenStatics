@@ -17,7 +17,6 @@ export default {
   components: {},
   data: () => {
     return {
-      state: 0,
       speed: 1,
       speedOptions: [0.25, 0.5, 1, 1.5, 2, 4],
       interval: null,

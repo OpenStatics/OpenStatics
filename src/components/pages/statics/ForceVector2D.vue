@@ -93,6 +93,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import ForceText from "../../utils/ForceVec2D/ForceText";
 export default {
   components: {

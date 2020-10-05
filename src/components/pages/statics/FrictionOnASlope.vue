@@ -1,5 +1,5 @@
 <template>
-  <div class='container-fluid'>
+  <div class="container-fluid">
     <h1 class="text-danger text-center my-4">Friction on a slope</h1>
     <SlopeText></SlopeText>
     <div class="row">
@@ -58,6 +58,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import SlopeText from "../../utils/slope/SlopeText";
 
 export default {

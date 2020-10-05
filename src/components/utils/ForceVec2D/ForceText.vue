@@ -2,16 +2,15 @@
   <div>
     For 2D case, a force vector can be represented as
     <vue-mathjax :formula="eq1" />
-    Note that <vue-mathjax :formula="eq2" />, <vue-mathjax :formula="eq3" />, where <vue-mathjax formula="(\\\alpha\\)" /> is the angle 
-    between the vector and x-axis, <vue-mathjax formula="(\\\beta\\)" /> is the angle between the vector and y-axis. 
-    Thus we have
+    Note that <vue-mathjax :formula="eq2" />, <vue-mathjax :formula="eq3" />, where <vue-mathjax formula="(\\\alpha\\)" /> is the angle between the
+    vector and x-axis, <vue-mathjax formula="(\\\beta\\)" /> is the angle between the vector and y-axis. Thus we have
     <vue-mathjax :formula="eq4" />
     Where <vue-mathjax :formula="eq5" /> is the unit vector.
   </div>
 </template>
 
 <script>
-export default { 
+export default {
   data() {
     return {
       eq1: `\\begin{equation} 

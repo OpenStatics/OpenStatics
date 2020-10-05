@@ -1,5 +1,5 @@
 <template>
-  <div class='container-fluid'>
+  <div class="container-fluid">
     <!-- get rid of input/button to optimize -->
     <!-- needs to figure out the moment A value -->
     <!-- need to decide if the dummy value is good or not, and the direction cw and ccw -->
@@ -13,7 +13,7 @@
               <span>Constraints at the left end of beam</span> <br />
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection <= 3 }" @click="clickOnFixed">Fixed</button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 5 || currentSelection === 4 }" @click="clickOnPin">
-                Smooth pin 
+                Smooth pin
               </button>
               <button class="btn btn-primary mx-3" :class="{ 'btn-warning': currentSelection === 6 }" @click="clickOnRoller">Roller</button>
             </div>
@@ -50,6 +50,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import DeterminacyText from "./determinacy_text";
 import Fix from "./fix_analysis";
 import Pin from "./pin_analysis";
@@ -201,7 +202,15 @@ export default {
     const reactive_rec = board.create("polygon", [rectangle, react_trans], { vertices: { visible: false }, visible: react_visible });
 
     // controller
-    this.magnitude = board_control.create("slider", [[2, 13], [12, 13], [0, magVal, 2]], { withLabel: false });
+    this.magnitude = board_control.create(
+      "slider",
+      [
+        [2, 13],
+        [12, 13],
+        [0, magVal, 2]
+      ],
+      { withLabel: false }
+    );
     board_control.create("text", [
       3,
       14,
@@ -211,7 +220,15 @@ export default {
       }
     ]);
 
-    this.position = board_control.create("slider", [[2, 11], [12, 11], [0, posVal, 1]], { withLabel: false });
+    this.position = board_control.create(
+      "slider",
+      [
+        [2, 11],
+        [12, 11],
+        [0, posVal, 1]
+      ],
+      { withLabel: false }
+    );
     board_control.create("text", [
       3,
       12,
@@ -221,7 +238,15 @@ export default {
       }
     ]);
 
-    this.direction = board_control.create("slider", [[2, 9], [12, 9], [0, dirVal, 360]], { withLabel: false });
+    this.direction = board_control.create(
+      "slider",
+      [
+        [2, 9],
+        [12, 9],
+        [0, dirVal, 360]
+      ],
+      { withLabel: false }
+    );
     board_control.create("text", [
       3,
       10,
@@ -231,7 +256,15 @@ export default {
       }
     ]);
 
-    this.momentMag = board_control.create("slider", [[2, 7], [12, 7], [0, magMoment, 2]], { withLabel: false });
+    this.momentMag = board_control.create(
+      "slider",
+      [
+        [2, 7],
+        [12, 7],
+        [0, magMoment, 2]
+      ],
+      { withLabel: false }
+    );
     board_control.create("text", [
       3,
       8,
@@ -241,7 +274,15 @@ export default {
       }
     ]);
 
-    this.momentPos = board_control.create("slider", [[2, 5], [12, 5], [0, posMoment, 1]], { withLabel: false });
+    this.momentPos = board_control.create(
+      "slider",
+      [
+        [2, 5],
+        [12, 5],
+        [0, posMoment, 1]
+      ],
+      { withLabel: false }
+    );
     board_control.create("text", [
       3,
       6,
@@ -567,17 +608,24 @@ export default {
     });
 
     // make reactive force in x direction on the right
-    const Bx_Line = board.create("line", [[10.5 + x_shift, 0 + y_shift + y_react_shift], [11.25 + x_shift, 0 + y_shift + y_react_shift]], {
-      straightFirst: false,
-      straightLast: false,
-      lastArrow: true,
-      strokeWidth: 3,
-      strokeColor: "red",
-      visible: () => {
-        return component_visible([0, 1, 4]);
-      },
-      fixed: true
-    });
+    const Bx_Line = board.create(
+      "line",
+      [
+        [10.5 + x_shift, 0 + y_shift + y_react_shift],
+        [11.25 + x_shift, 0 + y_shift + y_react_shift]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        lastArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: () => {
+          return component_visible([0, 1, 4]);
+        },
+        fixed: true
+      }
+    );
 
     const Bx_Line_Label = board.create("text", [11.25 + x_shift, -0.5 + y_shift + y_react_shift, "B_x"], {
       visible: () => {
@@ -657,18 +705,25 @@ export default {
     });
 
     // length
-    const L = board.create("line", [[0 + x_shift, 6 + y_shift + y_react_shift], [10 + x_shift, 6 + y_shift + y_react_shift]], {
-      straightFirst: false,
-      straightLast: false,
-      firstArrow: true,
-      lastArrow: true,
-      strokeWidth: 3,
-      strokeColor: "red",
-      visible: () => {
-        return component_visible([0, 1, 2, 3, 4, 5, 6]);
-      },
-      fixed: true
-    });
+    const L = board.create(
+      "line",
+      [
+        [0 + x_shift, 6 + y_shift + y_react_shift],
+        [10 + x_shift, 6 + y_shift + y_react_shift]
+      ],
+      {
+        straightFirst: false,
+        straightLast: false,
+        firstArrow: true,
+        lastArrow: true,
+        strokeWidth: 3,
+        strokeColor: "red",
+        visible: () => {
+          return component_visible([0, 1, 2, 3, 4, 5, 6]);
+        },
+        fixed: true
+      }
+    );
     const L_Line_Label = board.create("text", [0, 1.5, "L"], {
       anchor: L,
       visible: () => {

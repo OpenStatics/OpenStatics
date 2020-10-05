@@ -11,6 +11,8 @@
 <script>
 import { CircleSlider } from "../../../classes/CircleSlider.js";
 import { InputHandler } from "../../../classes/InputHandler.js";
+import * as mathjs from "mathjs";
+
 export default {
   components: {},
   data: () => {
@@ -259,7 +261,11 @@ export default {
       // Assumes 3D vector as input
       let mag = comp.magnitude(v);
       if (mag != 0) return [v[0] / mag, v[1] / mag, v[2] / mag];
-      else return [0, 0, 0];
+      else {
+        // console.log("MAYDAY");
+        // console.log(v);
+        return [0, 0, 0];
+      }
     };
 
     comp.v_r = () => {
@@ -293,6 +299,14 @@ export default {
       return comp.scalar_mult(comp.angAcc(), 0.5 * Math.pow(sliders.time.Value(), 2));
     };
 
+    comp.angAccS = () => {
+      return comp.magnitude(comp.moment()) / comp.inertia();
+    };
+    comp.currRotationS = () => {
+      // Returns value in radians
+      return 0.5 * comp.angAccS() * Math.pow(sliders.time.Value(), 2);
+    };
+
     comp.distance = (x, y) => {
       return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
     };
@@ -313,44 +327,107 @@ export default {
       const myY = length * Math.sin(angle + prevAngle);
       return [myX, myY];
     };
+    // comp.angle3D = (x, y, z) => {
+    //   return [comp.angle(x, y), comp.angle(x, z), comp.angle(y, z)];
+    // };
+    comp.planeX = () => {
+      return comp.unit_vector(comp.v_r());
+    };
+    comp.planeY = () => {
+      return comp.unit_vector(comp.cross_prod(comp.moment(), comp.v_r()));
+    };
+    comp.pointToPlane = (a, b, c) => {
+      const x = comp.planeX();
+      const y = comp.planeY();
+      let matrixFull = [
+        [x[0] || 0, y[0] || 0],
+        [x[1] || 0, y[1] || 0],
+        [x[2] || 0, y[2] || 0]
+      ];
 
-    comp.xt = (a, b, c) => {
-      let rot = comp.currRotation();
-      let adjXY = comp.rotateOnAxis(a, b, rot[2]);
-      a = adjXY[0];
-      b = adjXY[1];
-
-      let adjXZ = comp.rotateOnAxis(a, c, -rot[1]);
-      a = adjXZ[0];
-      c = adjXZ[1];
-
-      if (rot[1] == 0 || rot[2] == 0) {
-        let adjYZ = comp.rotateOnAxis(b, c, rot[0]);
-        b = adjYZ[0];
-        c = adjYZ[1];
+      let matrix = [matrixFull[0], matrixFull[1]];
+      let endGoal = [a, b];
+      if (mathjs.det(matrix) === 0) {
+        matrix = [matrixFull[1], matrixFull[2]];
+        endGoal = [b, c];
       }
-      return comp.x(a, b, c);
+      if (mathjs.det(matrix) === 0) {
+        matrix = [matrixFull[0], matrixFull[2]];
+        endGoal = [a, c];
+      }
+      if (mathjs.det(matrix) === 0) {
+        return [0, 0];
+      }
+      // if (matrixFull[0][0] === 0 && matrixFull[0][1] === 0) {
+      //   matrix = [matrixFull[1], matrixFull[2]];
+      //   endGoal = [b, c];
+      // }
+      // if (matrixFull[1][0] === 0 && matrixFull[1][1] === 0) {
+      //   matrix = [matrixFull[0], matrixFull[2]];
+      //   endGoal = [a, c];
+      // }
+      //console.log(matrixFull);
+      //console.log(matrix);
+      let mInverse = mathjs.inv(matrix);
+      let answer = mathjs.multiply(mInverse, endGoal);
+      //let answer = mathjs.usolve(matrix, endGoal);
+      return answer;
+    };
+
+    // comp.adjT = (a, b, c) => {
+    //   let defRot = comp.angle3D(a, b, c);
+    //   let rot = comp.currRotation();
+    //   let targetRot = [defRot[0] + rot[2], defRot[1] - rot[1], defRot[2] + rot[0]];
+
+    //   let adjXY = comp.rotateOnAxis(a, b, rot[2]);
+    //   a = adjXY[0];
+    //   b = adjXY[1];
+
+    //   let adjXZ = comp.rotateOnAxis(a, c, -rot[1]);
+    //   a = adjXZ[0];
+    //   c = adjXZ[1];
+
+    //   //if (rot[1] == 0) {
+    //   let adjYZ = comp.rotateOnAxis(b, c, rot[0]);
+    //   b = adjYZ[0];
+    //   c = adjYZ[1];
+    //   //}
+    //   return [a, b, c];
+    // };
+    comp.adjT = (a, b, c) => {
+      if (comp.magnitude(comp.moment()) === 0) return [a, b, c];
+      let coords2D = comp.pointToPlane(a, b, c);
+      // console.log(coords2D);
+      coords2D = comp.rotateOnAxis(coords2D[0], coords2D[1], comp.currRotationS());
+      return comp.vector_add(comp.scalar_mult(comp.planeX(), coords2D[0]), comp.scalar_mult(comp.planeY(), coords2D[1]));
+    };
+    comp.xt = (a, b, c) => {
+      return comp.x.apply(null, comp.adjT(a, b, c));
     };
     comp.yt = (a, b, c) => {
-      let rot = comp.currRotation();
-      let adjXY = comp.rotateOnAxis(a, b, rot[2]);
-      a = adjXY[0];
-      b = adjXY[1];
-
-      let adjXZ = comp.rotateOnAxis(a, c, -rot[1]);
-      a = adjXZ[0];
-      c = adjXZ[1];
-
-      if (rot[1] == 0 || rot[2] == 0) {
-        let adjYZ = comp.rotateOnAxis(b, c, rot[0]);
-        b = adjYZ[0];
-        c = adjYZ[1];
-      }
-      return comp.y(a, b, c);
+      return comp.y.apply(null, comp.adjT(a, b, c));
     };
     comp.xyt = (a, b, c) => {
       return [comp.xt(a, b, c), comp.yt(a, b, c)];
     };
+    // comp.getMomentPolar = () => {
+    //   let u = comp.unit_vector(comp.moment());
+    //   let mag = 1;
+    //   let theta = comp.angle(u[0], u[1]);
+    //   let phi = Math.acos(u[2] / mag);
+    //   return [theta, phi];
+    // };
+    // comp.getRotatedAxes = () => {
+    //   // Assume that moment was the z-axis
+    //   // let adjustments = comp.getMomentPolar();
+    //   // let dTheta = adjustments[0];
+    //   // let dPhi = adjustments[1];
+    //   // let newPhi = Math.PI / 2 + dPhi;
+
+    //   // let xPolar = [(0 + dTheta) % (2*Math.PI) , Math.PI / 2 + dPhi];
+    //   // let yPolar = [(Math.PI / 2 + dTheta) % (2*Math.PI) , Math.PI / 2 + dPhi];
+
+    // }
 
     let points = {};
     const hidden = { fixed: true, visible: false };
@@ -377,7 +454,7 @@ export default {
         ],
         {
           ...axisProps,
-          point2: { ...hiddenLabel, name: data[3], label: { fontSize: 14, visible: IH.valCheck("coords", "on") } },
+          point2: { ...hiddenLabel, name: data[3], label: { fontSize: 18, visible: IH.valCheck("coords", "on") } },
           visible: IH.valCheck("coords", "on")
         }
       );
@@ -406,7 +483,16 @@ export default {
           return comp.yt.apply(null, comp.v_r());
         }
       ],
-      { ...hiddenLabel, name: "<b>r</b>", label: { fontSize: LABEL_SIZE, strokeColor: "green", visible: IH.valCheck("r_vis", "on") } }
+      {
+        visible: IH.valCheck("s_vis", "on"),
+        fillColor: "gold",
+        strokeColor: "gold",
+        size: () => {
+          return sliders.R.Value() * 5;
+        },
+        name: "<b>r</b>",
+        label: { fontSize: LABEL_SIZE, strokeColor: "green", visible: IH.valCheck("r_vis", "on") }
+      }
     );
 
     bR.create("line", [points.origin, points.sphere], {
@@ -453,6 +539,19 @@ export default {
       { ...hiddenLabel, name: "<b>M_0</b>", label: { fontSize: LABEL_SIZE, strokeColor: "blue", visible: IH.valCheck("m_vis", "on") } }
     );
 
+    // points.planeY = bR.create(
+    //   "point",
+    //   [
+    //     () => {
+    //       return comp.x.apply(null, comp.planeY());
+    //     },
+    //     () => {
+    //       return comp.y.apply(null, comp.planeY());
+    //     }
+    //   ],
+    //   { ...hiddenLabel, name: "<b>y</b>", label: { fontSize: LABEL_SIZE, strokeColor: "purle", visible: IH.valCheck("m_vis", "on") } }
+    // );
+
     bR.create("line", [points.origin, points.moment], {
       ...lineSegProps,
       strokeColor: "blue",
@@ -460,6 +559,14 @@ export default {
       strokeWidth: 4,
       visible: IH.valCheck("m_vis", "on")
     });
+
+    // bR.create("line", [points.origin, points.planeY], {
+    //   ...lineSegProps,
+    //   strokeColor: "purple",
+    //   lastArrow: true,
+    //   strokeWidth: 4,
+    //   visible: IH.valCheck("m_vis", "on")
+    // });
 
     bL.create(
       "text",
@@ -484,352 +591,107 @@ export default {
       { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
     );
 
-    bR.create(
-      "text",
-      [
-        -9,
-        9,
-        () => {
-          let u = comp.currRotation();
-          return (
-            "<span style='color:blue'><i>Rot</i> = </span>" +
-            "1 {" +
-            Math.round(u[0] * 10000) / 10000 +
-            ", " +
-            Math.round(u[1] * 10000) / 10000 +
-            ", " +
-            Math.round(u[2] * 10000) / 10000 +
-            "}"
-          );
-        }
-      ],
-      { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
-    );
-
-    points.sphere2 = bR.create(
-      "point",
-      [
-        () => {
-          // const length = comp.magnitude(comp.v_r()) - sliders.R.Value();
-          // const vec = comp.scalar_mult(comp.unit_vector(comp.v_r()), [sliders.R.Value(), 0, 0]);
-          const vec = comp.vector_add(comp.v_r(), [sliders.R.Value(), 0, 0]);
-          return comp.xt.apply(null, vec);
-        },
-        () => {
-          const vec = comp.vector_add(comp.v_r(), [sliders.R.Value(), 0, 0]);
-          return comp.yt.apply(null, vec);
-        }
-      ],
-      { ...hidden }
-    );
-
-    bR.create("circle", [points.sphere, points.sphere2], { fillColor: "gold", strokeColor: "gold" });
-    bR.create("polygon", [points.origin, points.sphere, points.force], { fillColor: "teal", withLines: false });
-
-    // const COPY = bR.create("transform", [0, 0], { type: "translate" });
-
-    // for (let data of [
-    //   [1, 0, "x"],
-    //   [0, 1, "y"]
-    // ]) {
-    //   bR.create("line", [convXY(-3.25 * data[0], -3.25 * data[1], graphs.large), convXY(3.25 * data[0], 3.25 * data[1], graphs.large)], {
-    //     ...lineSegProps,
-    //     lastArrow: true,
-    //     strokeColor: "black",
-    //     strokeWidth: 2,
-    //     visible: IH.valCheck("coords", "on"),
-    //     point2: { ...hiddenLabel, name: data[2], label: { visible: IH.valCheck("coords", "on") } }
-    //   });
-    // }
-
-    // points.hinge = bR.create(
-    //   "point",
+    // bR.create(
+    //   "text",
     //   [
+    //     -9,
+    //     9,
     //     () => {
-    //       return convX(sliders.h_pos.Value(), graphs.large);
-    //     },
-    //     () => {
-    //       return convY(0, graphs.large);
+    //       let u = comp.scalar_mult(comp.currRotation(), 180 / Math.PI);
+    //       return (
+    //         "<span style='color:blue'><i>Rot</i> = </span>" +
+    //         "1 {" +
+    //         Math.round(u[0] * 100) / 100 +
+    //         ", " +
+    //         Math.round(u[1] * 100) / 100 +
+    //         ", " +
+    //         Math.round(u[2] * 100) / 100 +
+    //         "}"
+    //       );
     //     }
     //   ],
-    //   {
-    //     size: 3,
-    //     strokeColor: "purple",
-    //     fillColor: "purple",
-    //     name: ""
-    //   }
-    // );
-
-    // const TRIANGLE_LENGTH = 0.2;
-
-    // points.t1 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return convX(sliders.h_pos.Value() - TRIANGLE_LENGTH / 2, graphs.large);
-    //     },
-    //     () => {
-    //       return convY(0 - TRIANGLE_LENGTH, graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.t2 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return convX(sliders.h_pos.Value() + TRIANGLE_LENGTH / 2, graphs.large);
-    //     },
-    //     () => {
-    //       return convY(0 - TRIANGLE_LENGTH, graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.c1 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return convX(sliders.h_pos.Value() - TRIANGLE_LENGTH, graphs.large);
-    //     },
-    //     () => {
-    //       return convY(0 - TRIANGLE_LENGTH, graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.c2 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return convX(sliders.h_pos.Value() + TRIANGLE_LENGTH, graphs.large);
-    //     },
-    //     () => {
-    //       return convY(0 - TRIANGLE_LENGTH, graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // bR.create("polygon", [points.hinge, points.t1, points.t2], {
-    //   withLines: "false",
-    //   borders: { strokeColor: "purple" },
-    //   fillColor: "purple",
-    //   fillOpacity: 1
-    // });
-
-    // bR.create("comb", [points.c2, points.c1], { curve: { strokeColor: "purple" }, width: 0.3 });
-    // bR.create("line", [points.c2, points.c1], { ...lineSegProps, strokeColor: "purple" });
-
-    // points.beam1 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.beamRelPos(0, 0);
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.beamRelPos(0, 0);
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.beam2 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.beamRelPos(3, 0);
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.beamRelPos(3, 0);
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // bR.create("line", [points.beam1, points.beam2], { ...lineSegProps, strokeColor: "black", strokeWidth: 5 });
-    // bR.create("line", [convXY(0, 0, graphs.large), convXY(3, 0, graphs.large)], { ...lineSegProps, strokeWidth: 2, dash: 2, strokeColor: "black" });
-
-    // points.f1_1 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.beamRelPos(sliders.f1_pos.Value(), 0);
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.beamRelPos(sliders.f1_pos.Value(), 0);
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.f1_2 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.f1_pos.Value(), 0, sliders.f1_mag.Value(), sliders.f1_angle.Value(), false);
-    //       const coords2 = comp.beamRelPos.apply(null, coords);
-    //       return convX(coords2[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.f1_pos.Value(), 0, sliders.f1_mag.Value(), sliders.f1_angle.Value(), false);
-    //       const coords2 = comp.beamRelPos.apply(null, coords);
-    //       return convY(coords2[1], graphs.large);
-    //     }
-    //   ],
-    //   {
-    //     ...hiddenLabel,
-    //     name: "F_1",
-    //     label: {
-    //       strokeColor: "blue",
-    //       visible: () => {
-    //         return sliders.f1_mag.Value() > 0;
-    //       }
-    //     }
-    //   }
-    // );
-
-    // points.f2_1 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.beamRelPos(sliders.f2_pos.Value(), 0);
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.beamRelPos(sliders.f2_pos.Value(), 0);
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.f2_2 = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.f2_pos.Value(), 0, sliders.f2_mag.Value(), sliders.f2_angle.Value(), false);
-    //       const coords2 = comp.beamRelPos.apply(null, coords);
-    //       return convX(coords2[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.f2_pos.Value(), 0, sliders.f2_mag.Value(), sliders.f2_angle.Value(), false);
-    //       const coords2 = comp.beamRelPos.apply(null, coords);
-    //       return convY(coords2[1], graphs.large);
-    //     }
-    //   ],
-    //   {
-    //     ...hiddenLabel,
-    //     name: "F_2",
-    //     label: {
-    //       strokeColor: "green",
-    //       visible: () => {
-    //         return sliders.f2_mag.Value() > 0;
-    //       }
-    //     }
-    //   }
-    // );
-
-    // bR.create("line", [points.f1_1, points.f1_2], { ...lineSegProps, lastArrow: true, strokeColor: "blue", strokeWidth: 3 });
-
-    // bR.create("line", [points.f2_1, points.f2_2], { ...lineSegProps, lastArrow: true, strokeColor: "green", strokeWidth: 3 });
-
-    // const MOMENT_RADIUS = 0.3;
-
-    // points.momentCenter = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       return convX(sliders.h_pos.Value(), graphs.large);
-    //     },
-    //     convY(-1, graphs.large)
-    //   ],
-    //   {
-    //     ...hiddenLabel,
-    //     name: "M",
-    //     label: {
-    //       visible: () => {
-    //         return comp.moment() != 0;
-    //       },
-    //       strokeColor: "red",
-    //       anchorX: "middle",
-    //       anchorY: "middle",
-    //       offset: [-4, 9]
-    //     }
-    //   }
-    // );
-
-    // points.momentEnd = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.max(0, (comp.moment() * Math.PI) / 4.5));
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.max(0, (comp.moment() * Math.PI) / 4.5));
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
-    // );
-
-    // points.momentStart = bR.create(
-    //   "point",
-    //   [
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.min(0, (comp.moment() * Math.PI) / 4.5));
-    //       return convX(coords[0], graphs.large);
-    //     },
-    //     () => {
-    //       const coords = comp.polarToRadial(sliders.h_pos.Value(), -1, MOMENT_RADIUS, Math.min(0, (comp.moment() * Math.PI) / 4.5));
-    //       return convY(coords[1], graphs.large);
-    //     }
-    //   ],
-    //   { ...hidden }
+    //   { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
     // );
 
     // bR.create(
-    //   "arc",
+    //   "text",
     //   [
-    //     // Center point
-    //     points.momentCenter,
-    //     // CW point
-    //     points.momentStart,
-    //     // CWW point
-    //     points.momentEnd
-    //   ],
-    //   {
-    //     strokeWidth: 3,
-    //     strokeColor: "red",
-    //     firstArrow: () => {
-    //       return comp.moment() < 0;
-    //     },
-    //     lastArrow: () => {
-    //       return comp.moment() > 0;
-    //     },
-    //     visible: () => {
-    //       return comp.moment() != 0;
+    //     -9,
+    //     8,
+    //     () => {
+    //       let u = comp.v_r();
+    //       return (
+    //         "<span style='color:blue'><i>a,b,c</i> = </span>" +
+    //         "1 {" +
+    //         Math.round(u[0] * 10000) / 10000 +
+    //         ", " +
+    //         Math.round(u[1] * 10000) / 10000 +
+    //         ", " +
+    //         Math.round(u[2] * 10000) / 10000 +
+    //         "}"
+    //       );
     //     }
-    //   }
+    //   ],
+    //   { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
     // );
 
-    // bR.create("circle", [points.momentCenter, points.momentStart], {
-    //   strokeColor: "red",
-    //   strokeWidth: 3,
-    //   visible: () => {
-    //     return Math.abs(comp.moment()) >= 9;
-    //   }
-    // });
+    // bR.create(
+    //   "text",
+    //   [
+    //     -9,
+    //     7,
+    //     () => {
+    //       let u = comp.adjT.apply(null, comp.v_r());
+    //       return (
+    //         "<span style='color:blue'><i>adj(a,b,c)</i> = </span>" +
+    //         "1 {" +
+    //         Math.round(u[0] * 10000) / 10000 +
+    //         ", " +
+    //         Math.round(u[1] * 10000) / 10000 +
+    //         ", " +
+    //         Math.round(u[2] * 10000) / 10000 +
+    //         "}"
+    //       );
+    //     }
+    //   ],
+    //   { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
+    // );
+
+    // bR.create(
+    //   "text",
+    //   [
+    //     -9,
+    //     6,
+    //     () => {
+    //       let u = comp.pointToPlane.apply(null, comp.v_r());
+    //       return (
+    //         "<span style='color:blue'><i>PtP</i> = </span>" + "1 {" + Math.round(u[0] * 10000) / 10000 + ", " + Math.round(u[1] * 10000) / 10000 + "}"
+    //       );
+    //     }
+    //   ],
+    //   { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top", visible: IH.valCheck("m_vis", "on") }
+    // );
+    //coords2D = comp.pointToPlane(a, b, c);
+
+    // points.sphere2 = bR.create(
+    //   "point",
+    //   [
+    //     () => {
+    //       // const length = comp.magnitude(comp.v_r()) - sliders.R.Value();
+    //       // const vec = comp.scalar_mult(comp.unit_vector(comp.v_r()), [sliders.R.Value(), 0, 0]);
+    //       const vec = comp.vector_add(comp.v_r(), [sliders.R.Value(), 0, 0]);
+    //       return comp.xt.apply(null, vec);
+    //     },
+    //     () => {
+    //       const vec = comp.vector_add(comp.v_r(), [sliders.R.Value(), 0, 0]);
+    //       return comp.yt.apply(null, vec);
+    //     }
+    //   ],
+    //   { ...hidden }
+    // );
+
+    //bR.create("circle", [points.sphere, points.sphere2], { fillColor: "gold", strokeColor: "gold" });
+    bR.create("polygon", [points.origin, points.sphere, points.force], { fillColor: "teal", withLines: false });
 
     bL.addChild(bR);
     bR.addChild(bL);

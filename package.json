@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/mathjs": "^6.0.4",
     "core-js": "^2.6.10",
-    "mathjs": "^6.5.0",
+    "mathjs": "^6.6.5",
     "three": "^0.110.0",
     "vue": "^2.6.11",
     "vue-mathjax": "0.0.11"

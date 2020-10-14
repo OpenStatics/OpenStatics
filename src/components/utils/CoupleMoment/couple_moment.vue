@@ -290,21 +290,6 @@ export default {
     };
 
     comp.findIntersect = () => {
-      // let slopePerp = -comp.vec_F_A()[0] / comp.vec_F_A()[1];
-      // let b_A = -slopePerp * comp.vec_pos_A()[0] + comp.vec_pos_A()[1];
-
-      // let slopeB = comp.vec_F_B()[1] / comp.vec_F_B()[0];
-      // let b_B = -slopeB * comp.vec_pos_B()[0] + comp.vec_pos_B()[1];
-
-      // let A = [
-      //   [-slopePerp, 1],
-      //   [-slopeB, 1]
-      // ];
-      // let B = [b_A, b_B];
-      // // console.log(A);
-      // // console.log(B);
-      // let answer = mathjs.usolve(A, B);
-      // return answer;
       let u = comp.unit_vector(comp.vec_F_A());
       let uP = [-u[1], u[0]];
       let p1 = comp.vector_add(comp.scalar_mult(uP, 10), comp.vec_pos_A());
@@ -312,6 +297,10 @@ export default {
       let p3 = comp.vector_add(comp.scalar_mult(u, 10), comp.vec_pos_B());
       let p4 = comp.vector_add(comp.scalar_mult(u, -10), comp.vec_pos_B());
       return mathjs.intersect(p1, p2, p3, p4);
+    };
+
+    comp.distancePoints = (p1, p2) => {
+      return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
     };
 
     let points = {};
@@ -392,6 +381,20 @@ export default {
       ],
       { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top" }
     );
+
+    // bL.create(
+    //   "text",
+    //   [
+    //     -15 + 6,
+    //     TOP_Y + INTERVAL * 11,
+    //     () => {
+    //       return (
+    //         "<span style='color:black'><i>D</i> = </span>" + Math.round(comp.distancePoints(comp.findIntersect(), comp.vec_pos_B()) * 1000, 3) / 1000
+    //       );
+    //     }
+    //   ],
+    //   { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top" }
+    // );
 
     const MOMENT_RADIUS = 0.4;
 

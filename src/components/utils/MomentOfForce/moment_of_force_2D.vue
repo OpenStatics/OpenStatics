@@ -419,7 +419,7 @@ export default {
         strokeColor: "black",
         strokeWidth: 2,
         visible: IH.valCheck("coords", "on"),
-        point2: { ...hiddenLabel, name: data[2], label: { visible: IH.valCheck("coords", "on") } }
+        point2: { ...hiddenLabel, name: data[2], label: { fontSize: LABEL_SIZE, visible: IH.valCheck("coords", "on") } }
       });
     }
 
@@ -572,6 +572,7 @@ export default {
         name: "F_1",
         label: {
           strokeColor: "blue",
+          fontSize: LABEL_SIZE,
           visible: () => {
             return sliders.f1_mag.Value() > 0;
           }
@@ -613,6 +614,7 @@ export default {
         name: "F_2",
         label: {
           strokeColor: "green",
+          fontSize: LABEL_SIZE,
           visible: () => {
             return sliders.f2_mag.Value() > 0;
           }
@@ -623,6 +625,42 @@ export default {
     bR.create("line", [points.f1_1, points.f1_2], { ...lineSegProps, lastArrow: true, strokeColor: "blue", strokeWidth: 3 });
 
     bR.create("line", [points.f2_1, points.f2_2], { ...lineSegProps, lastArrow: true, strokeColor: "green", strokeWidth: 3 });
+
+    const ANGLE_RADIUS = 0.3 * (convX(1, graphs.large) - convX(0, graphs.large));
+
+    bR.create("angle", [points.beam2, points.f1_1, points.f1_2], {
+      name: "\u03b1_1",
+      radius: ANGLE_RADIUS,
+      strokeColor: "blue",
+      fillColor: "blue",
+      visible: () => {
+        return sliders.f1_mag.Value() > 0 && sliders.f1_angle.Value() > 0;
+      },
+      label: {
+        strokeColor: "blue",
+        fontSize: LABEL_SIZE - 2,
+        visible: () => {
+          return sliders.f1_mag.Value() > 0 && sliders.f1_angle.Value() > 0;
+        }
+      }
+    });
+
+    bR.create("angle", [points.beam2, points.f2_1, points.f2_2], {
+      name: "\u03b1_2",
+      radius: ANGLE_RADIUS,
+      strokeColor: "green",
+      fillColor: "green",
+      visible: () => {
+        return sliders.f2_mag.Value() > 0 && sliders.f2_angle.Value() > 0;
+      },
+      label: {
+        strokeColor: "green",
+        fontSize: LABEL_SIZE - 2,
+        visible: () => {
+          return sliders.f2_mag.Value() > 0 && sliders.f2_angle.Value() > 0;
+        }
+      }
+    });
 
     bL.create(
       "text",
@@ -650,6 +688,7 @@ export default {
         ...hiddenLabel,
         name: "M",
         label: {
+          fontSize: LABEL_SIZE,
           visible: () => {
             return comp.moment() != 0;
           },

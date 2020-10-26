@@ -690,7 +690,112 @@ export default {
     // );
 
     //bR.create("circle", [points.sphere, points.sphere2], { fillColor: "gold", strokeColor: "gold" });
+    // points.elip1 = bR.create(
+    //   "point",
+    //   [
+    //     () => {
+    //       let u = comp.adjT.apply(null, comp.v_r());
+    //       u[1] = u[1] + sliders.R.Value();
+    //       return comp.x.apply(null, u);
+    //     },
+    //     () => {
+    //       let u = comp.adjT.apply(null, comp.v_r());
+    //       u[1] = u[1] + sliders.R.Value();
+    //       return comp.y.apply(null, u);
+    //     }
+    //   ],
+    //   { ...hidden }
+    // );
+    // points.elip2 = bR.create(
+    //   "point",
+    //   [
+    //     () => {
+    //       let u = comp.adjT.apply(null, comp.v_r());
+    //       u[1] = u[1] - sliders.R.Value();
+    //       return comp.x.apply(null, u);
+    //     },
+    //     () => {
+    //       let u = comp.adjT.apply(null, comp.v_r());
+    //       u[1] = u[1] - sliders.R.Value();
+    //       return comp.y.apply(null, u);
+    //     }
+    //   ],
+    //   { ...hidden }
+    // );
+    // bR.create(
+    //   "ellipse",
+    //   [
+    //     points.elip1,
+    //     points.elip2,
+    //     () => {
+    //       return sliders.R.Value() * 2;
+    //     }
+    //   ],
+    //   { fillColor: "gold", withLines: "false" }
+    // );
+
+    for (let data of [
+      ["1", 1, 0],
+      ["2", 0, 1],
+      ["3", -1, 0],
+      ["4", 0, -1],
+      ["5", comp.radians(45), -comp.radians(45)]
+    ]) {
+      points["elip" + data[0]] = bR.create(
+        "point",
+        [
+          () => {
+            let center = comp.scalar_mult(comp.moment(), 0.75);
+            let u1 = comp.scalar_mult(comp.unit_vector(comp.v_r()), data[1]);
+            let u2 = comp.scalar_mult(comp.unit_vector(comp.v_f()), data[2]);
+            return comp.x.apply(null, comp.vector_add(center, comp.vector_add(u1, u2)));
+          },
+          () => {
+            let center = comp.scalar_mult(comp.moment(), 0.75);
+            let u1 = comp.scalar_mult(comp.unit_vector(comp.v_r()), data[1]);
+            let u2 = comp.scalar_mult(comp.unit_vector(comp.v_f()), data[2]);
+            return comp.y.apply(null, comp.vector_add(center, comp.vector_add(u1, u2)));
+          }
+        ],
+        { ...hidden }
+      );
+    }
+    /*let conic = */
+    bR.create("conic", [points.elip1, points.elip2, points.elip3, points.elip4, points.elip5], { strokeColor: "purple", strokeWidth: 4 });
+    // conic.setArrow(false, true);
+
     bR.create("polygon", [points.origin, points.sphere, points.force], { fillColor: "teal", withLines: false });
+
+    let angle1 = bR.create("angle", [points.sphere, points.origin, points.moment], {
+      strokeColor: "black",
+      fillColor: "white",
+      strokeWidth: 3,
+      dash: 2,
+      name: "",
+      radius: 0.5,
+      label: { visible: false },
+      orthoSensitivity: 90
+    });
+    angle1.setAttribute({
+      visible: () => {
+        return 0 < angle1.Value() && angle1.Value() < Math.PI;
+      }
+    });
+    let angle2 = bR.create("angle", [points.moment, points.origin, points.sphere], {
+      strokeColor: "black",
+      fillColor: "white",
+      strokeWidth: 3,
+      dash: 2,
+      name: "",
+      radius: 0.5,
+      label: { visible: false },
+      orthoSensitivity: 90
+    });
+    angle2.setAttribute({
+      visible: () => {
+        return 0 < angle2.Value() && angle2.Value() < Math.PI;
+      }
+    });
 
     bL.addChild(bR);
     bR.addChild(bL);

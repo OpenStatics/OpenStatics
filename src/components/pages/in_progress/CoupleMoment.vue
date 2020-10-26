@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <h1 class="text-danger text-center my-4">Moment of a Force 2D</h1>
+    <h1 class="text-danger text-center my-4">Couple Moment</h1>
     <p>
       A couple is defined as two parallel forces that have the same magnitude, but opposite directions, and are separated by a perpendicular distance
       d. Since the resultant force is zero, the only effect of a couple is to produce an actual rotation, or if no movement is possible, there is a

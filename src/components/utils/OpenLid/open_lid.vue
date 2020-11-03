@@ -299,6 +299,14 @@ export default {
       lastArrow: true
     });
 
+    bR.create("line", [points.center_flat, points.A], {
+      ...lineSegProps,
+      strokeColor: "black",
+      visible: true,
+      strokeWidth: 3,
+      lastArrow: false
+    });
+
     points.M = bR.create(
       "point",
       [
@@ -420,7 +428,7 @@ export default {
           let u = comp.unit_vector(comp.moment());
           return (
             "<span style='color:purple'><i>M</i> = </span>" +
-            Math.round(comp.magnitude(comp.moment()) * 1000) / 1000 +
+            Math.round(comp.magnitude(comp.moment()) * 1000 * 500) / 1000 +
             " {" +
             Math.round(u[0] * 10000) / 10000 +
             ", " +

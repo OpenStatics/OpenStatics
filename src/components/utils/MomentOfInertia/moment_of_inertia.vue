@@ -195,6 +195,20 @@ export default {
           sliders.c.Value() * sliders.c.Value() * comp.diffInt(x1, x2, 1))
       );
     };
+    comp.Ix = (x1, x2) => {
+      // \int \frac{1}{3}\left(ax^b+c\right)^3dx = \int \frac{1}{3}\left(ax^b+c\right)^3dx
+      return (
+        (sliders.a.Value() * sliders.a.Value() * sliders.a.Value() * comp.diffInt(x1, x2, 3 * comp.b() + 1)) / (3 * (3 * comp.b() + 1)) +
+        (sliders.a.Value() * sliders.a.Value() * sliders.c.Value() * comp.diffInt(x1, x2, 2 * comp.b() + 1)) / (2 * comp.b() + 1) +
+        (sliders.a.Value() * sliders.c.Value() * sliders.c.Value() * comp.diffInt(x1, x2, 1 * comp.b() + 1)) / (1 * comp.b() + 1) +
+        (sliders.c.Value() * sliders.c.Value() * sliders.c.Value() * comp.diffInt(x1, x2, 0 * comp.b() + 1)) / 3
+      );
+    };
+    comp.Iy = (x1, x2) => {
+      // \int \int \:x^2abx^{b-1}dxdx=\frac{ab}{b+2}\cdot \frac{x^{b+3}}{b+3}+Cx+C
+      // \int \left(ax^b+c\right)x^2dx=\frac{ax^{b+3}}{b+3}+\frac{cx^3}{3}+C
+      return (sliders.a.Value() * comp.diffInt(x1, x2, comp.b() + 3)) / (comp.b() + 3) + (sliders.c.Value() / 3) * comp.diffInt(x1, x2, 3);
+    };
     comp.delta = () => {
       return -4 * sliders.a.Value() * sliders.c.Value();
     };
@@ -246,7 +260,7 @@ export default {
       // Check if a, b = 0 (y=c)
       let vals = comp.getBoundVals();
       // Check if no intersections fit
-      if (sliders.a.Value() === 0 && sliders.c.Value() === 0) return;
+      if (sliders.a.Value() === 0 && sliders.c.Value() === 0) return (sliders.x1.Value() + sliders.x2.Value()) / 2;
       if (vals.length === 2) return easyVal;
       if (vals.length === 1) return comp.minX();
       //console.log(vals.length);
@@ -270,6 +284,7 @@ export default {
       // Check if a, b = 0 (y=c)
       let vals = comp.getBoundVals();
       // Check if no intersections fit
+      if (sliders.a.Value() === 0 && sliders.c.Value() === 0) return 0;
       if (vals.length == 2) return easyVal;
       if (vals.length == 1) return comp.fX(comp.minX()) / 2;
 
@@ -288,6 +303,14 @@ export default {
         finalVal += (yBars[i] * areas[i]) / totalArea;
       }
       return finalVal;
+    };
+    comp.IxComp = () => {
+      const easyVal = comp.Ix(comp.minX(), comp.maxX());
+      return easyVal;
+    };
+    comp.IyComp = () => {
+      const easyVal = comp.Iy(comp.minX(), comp.maxX());
+      return easyVal;
     };
 
     let graphs = {
@@ -547,8 +570,47 @@ export default {
           return convY(comp.yBarComp(), graphs.large);
         }
       ],
-      { name: "" }
+      { name: "", strokeColor: "purple", fillColor: "purple" }
     );
+
+    for (let data of [
+      [0, INTERVAL * 7.5, ["x_{bar}", comp.xBarComp, "", false], "purple"],
+      [15, INTERVAL * 7.5, ["y_{bar}", comp.yBarComp, "", false], "purple"],
+      [0, INTERVAL * 8.5, ["I_x", comp.IxComp, "", false], "purple"],
+      [15, INTERVAL * 8.5, ["I_y", comp.IyComp, "", false], "purple"]
+    ]) {
+      bL.create(
+        "text",
+        [
+          -15 + data[0],
+          TOP_Y + data[1],
+          () => {
+            // let x = data[2][3]
+            //   ? data[2][1](
+            //       (() => {
+            //         return sliders.s_pos.Value();
+            //       })()
+            //     )
+            //   : data[2][1]();
+            let x = data[2][1]();
+            return (
+              "<span style='color:" +
+              data[3] +
+              "'><i>" +
+              data[2][0] +
+              "</i> = </span>" +
+              Math.round(x * 1000, 3) / 1000 +
+              " <span style='color:" +
+              data[3] +
+              "'><b>" +
+              data[2][2] +
+              "</b></span>"
+            );
+          }
+        ],
+        { fontSize: LABEL_SIZE, fixed: true, anchorX: "left", anchorY: "top" }
+      );
+    }
 
     bL.addChild(bR);
     bR.addChild(bL);
